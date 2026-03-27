@@ -69,6 +69,11 @@ function App() {
   const [selectedStepper, setSelectedStepper] = useState("par");
 
   const [openedCourse, setOpenedCourse] = useState(null);
+  const [showRoundSetup, setShowRoundSetup] = useState(false);
+  const [roundSetup, setRoundSetup] = useState({
+    totalCompetitionHoles: 18,
+    startHole: 1
+  });
   const [roundScores, setRoundScores] = useState([]);
   const [savedRounds, setSavedRounds] = useState(() => {
     try {
@@ -326,19 +331,70 @@ function App() {
     }
   };
 
-  const openCourse = (course) => {
+  const prepareRoundSetup = (course) => {
     setOpenedCourse(course);
-    const startingScores =
-      course.holes && course.holes.length > 0
-        ? course.holes.map((hole) => Number(hole.par))
-        : Array.from({ length: course.holesCount || 0 }, () => "");
+    setShowRoundSetup(true);
+    setShowRoundsHistory(false);
+    setRoundSetup({
+      totalCompetitionHoles: course.holesCount === 18 ? 18 : 18,
+      startHole: 1
+    });
+    setRoundScores([]);
+  };
+
+  const getCompetitionSequence = (course, totalCompetitionHoles, startHole) => {
+    const courseHoleCount = Number(course.holesCount || 0);
+    const start = Number(startHole || 1);
+
+    if (!courseHoleCount || !course.holes || course.holes.length === 0) return [];
+
+    return Array.from({ length: totalCompetitionHoles }, (_, index) => {
+      const relativeIndex = (start - 1 + index) % courseHoleCount;
+      const baseHole = course.holes[relativeIndex];
+      const competitionHoleNumber = index + 1;
+      const roundNumber = Math.floor(index / courseHoleCount) + 1;
+      const totalRounds = totalCompetitionHoles / courseHoleCount;
+
+      return {
+        competitionHoleNumber,
+        courseHoleNumber: baseHole.hole,
+        par: baseHole.par,
+        strokeIndex: baseHole.strokeIndex,
+        roundNumber,
+        totalRounds
+      };
+    });
+  };
+
+  const competitionHoles = useMemo(() => {
+    if (!openedCourse || !openedCourse.holes || !showRoundSetup && roundScores.length === 0) {
+      if (!openedCourse) return [];
+    }
+
+    if (!openedCourse) return [];
+
+    return getCompetitionSequence(
+      openedCourse,
+      Number(roundSetup.totalCompetitionHoles),
+      Number(roundSetup.startHole)
+    );
+  }, [openedCourse, roundSetup, showRoundSetup, roundScores.length]);
+
+  const startRound = () => {
+    const startingScores = competitionHoles.map((hole) => Number(hole.par));
     setRoundScores(startingScores);
+    setShowRoundSetup(false);
   };
 
   const closeCourse = () => {
     setOpenedCourse(null);
+    setShowRoundSetup(false);
     setRoundScores([]);
     setShowRoundsHistory(false);
+    setRoundSetup({
+      totalCompetitionHoles: 18,
+      startHole: 1
+    });
   };
 
   const getReceivedShots = (playerHcp, strokeIndex) => {
@@ -361,9 +417,9 @@ function App() {
   };
 
   const stablefordTotal = useMemo(() => {
-    if (!openedCourse || !openedCourse.holes) return 0;
+    if (!competitionHoles.length) return 0;
 
-    return openedCourse.holes.reduce((sum, hole, index) => {
+    return competitionHoles.reduce((sum, hole, index) => {
       const receivedShots = getReceivedShots(userProfile.hcp, hole.strokeIndex);
       const points = getStablefordPoints(
         hole.par,
@@ -372,21 +428,21 @@ function App() {
       );
       return sum + points;
     }, 0);
-  }, [openedCourse, roundScores, userProfile.hcp]);
+  }, [competitionHoles, roundScores, userProfile.hcp]);
 
   const netTotal = useMemo(() => {
-    if (!openedCourse || !openedCourse.holes) return 0;
+    if (!competitionHoles.length) return 0;
 
-    return openedCourse.holes.reduce((sum, hole, index) => {
+    return competitionHoles.reduce((sum, hole, index) => {
       const receivedShots = getReceivedShots(userProfile.hcp, hole.strokeIndex);
       const strokes = Number(roundScores[index] || 0);
       if (!strokes) return sum;
       return sum + (strokes - receivedShots);
     }, 0);
-  }, [openedCourse, roundScores, userProfile.hcp]);
+  }, [competitionHoles, roundScores, userProfile.hcp]);
 
   const estimatedHcpAfterRound = useMemo(() => {
-    if (!openedCourse || stablefordTotal === 0) return userProfile.hcp;
+    if (!competitionHoles.length || stablefordTotal === 0) return userProfile.hcp;
 
     let delta = 0;
 
@@ -398,7 +454,7 @@ function App() {
 
     const next = Math.max(0, Number(userProfile.hcp) + delta);
     return Number(next.toFixed(1));
-  }, [openedCourse, stablefordTotal, userProfile.hcp]);
+  }, [competitionHoles, stablefordTotal, userProfile.hcp]);
 
   const updateRoundScore = (index, value) => {
     const updated = [...roundScores];
@@ -460,7 +516,7 @@ function App() {
   };
 
   const saveRound = () => {
-    if (!openedCourse) return;
+    if (!openedCourse || !competitionHoles.length) return;
 
     const newRound = {
       id: Date.now(),
@@ -468,6 +524,8 @@ function App() {
       courseName: openedCourse.name,
       createdAt: Date.now(),
       playerHcp: userProfile.hcp,
+      totalCompetitionHoles: roundSetup.totalCompetitionHoles,
+      startHole: roundSetup.startHole,
       grossTotal,
       netTotal,
       stablefordTotal,
@@ -565,10 +623,20 @@ function App() {
     padding: "16px"
   };
 
+  const setupCardOptionStyle = (active) => ({
+    padding: "16px",
+    borderRadius: "14px",
+    border: active ? "1px solid #2ecc71" : "1px solid #333",
+    backgroundColor: active ? "#141f18" : "#1a1a1a",
+    cursor: "pointer",
+    fontWeight: 600,
+    textAlign: "center"
+  });
+
   const renderCourseRow = (course) => (
     <div
       key={course.id}
-      onClick={() => openCourse(course)}
+      onClick={() => prepareRoundSetup(course)}
       style={{
         padding: "14px 0",
         borderBottom: "1px solid #222",
@@ -606,7 +674,169 @@ function App() {
     </div>
   );
 
-  if (openedCourse) {
+  if (openedCourse && showRoundSetup) {
+    const allowedCompetitionOptions = openedCourse.holesCount === 18
+      ? [18, 36, 54]
+      : [9, 18, 27, 36, 45, 54];
+
+    const allowedStartHoles = Array.from(
+      { length: openedCourse.holesCount },
+      (_, index) => index + 1
+    );
+
+    return (
+      <div
+        style={{
+          backgroundColor: "black",
+          color: "white",
+          minHeight: "100vh",
+          padding: "20px",
+          boxSizing: "border-box",
+          fontFamily: appFont
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "12px"
+          }}
+        >
+          <button
+            onClick={closeCourse}
+            style={{
+              width: "46px",
+              height: "46px",
+              borderRadius: "23px",
+              border: "1px solid #444",
+              backgroundColor: "#111",
+              color: "white",
+              fontSize: "22px",
+              cursor: "pointer",
+              fontFamily: appFont
+            }}
+          >
+            ←
+          </button>
+
+          <div style={{ fontSize: "16px", fontWeight: 500 }}>
+            Imposta il giro
+          </div>
+
+          <div style={{ width: "46px" }} />
+        </div>
+
+        <div
+          style={{
+            marginTop: "24px",
+            padding: "18px",
+            backgroundColor: "#111",
+            border: "1px solid #222",
+            borderRadius: "18px"
+          }}
+        >
+          <div style={{ fontSize: "24px", fontWeight: 700 }}>
+            {openedCourse.name}
+          </div>
+
+          <div
+            style={{
+              marginTop: "8px",
+              color: "#9a9a9a",
+              fontSize: "14px",
+              lineHeight: 1.5
+            }}
+          >
+            Campo da {openedCourse.holesCount} buche
+          </div>
+        </div>
+
+        <h2 style={titleStyle}>Buche di gara</h2>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: "12px"
+          }}
+        >
+          {allowedCompetitionOptions.map((option) => (
+            <div
+              key={option}
+              onClick={() =>
+                setRoundSetup((prev) => ({
+                  ...prev,
+                  totalCompetitionHoles: option
+                }))
+              }
+              style={setupCardOptionStyle(
+                roundSetup.totalCompetitionHoles === option
+              )}
+            >
+              {option}
+            </div>
+          ))}
+        </div>
+
+        <h2 style={titleStyle}>Buca di partenza</h2>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns:
+              openedCourse.holesCount === 18 ? "repeat(6, 1fr)" : "repeat(3, 1fr)",
+            gap: "12px"
+          }}
+        >
+          {allowedStartHoles.map((holeNumber) => (
+            <div
+              key={holeNumber}
+              onClick={() =>
+                setRoundSetup((prev) => ({
+                  ...prev,
+                  startHole: holeNumber
+                }))
+              }
+              style={setupCardOptionStyle(roundSetup.startHole === holeNumber)}
+            >
+              {holeNumber}
+            </div>
+          ))}
+        </div>
+
+        <div
+          style={{
+            marginTop: "20px",
+            backgroundColor: "#111",
+            border: "1px solid #222",
+            borderRadius: "16px",
+            padding: "16px"
+          }}
+        >
+          <div style={{ color: "#8e8e8e", fontSize: "13px" }}>Anteprima</div>
+          <div style={{ marginTop: "8px", fontSize: "16px", fontWeight: 600 }}>
+            {roundSetup.totalCompetitionHoles} buche • partenza dalla {roundSetup.startHole}
+          </div>
+          <div
+            style={{
+              marginTop: "8px",
+              color: "#8c8c8c",
+              fontSize: "13px",
+              lineHeight: 1.5
+            }}
+          >
+            Il sistema calcolerà automaticamente i giri e mostrerà per ogni buca
+            il riferimento reale del campo.
+          </div>
+        </div>
+
+        <button onClick={startRound} style={primaryButtonStyle(true)}>
+          Inizia giro
+        </button>
+      </div>
+    );
+  }
+
+  if (openedCourse && !showRoundSetup) {
     return (
       <div
         style={{
@@ -677,7 +907,7 @@ function App() {
               lineHeight: 1.5
             }}
           >
-            {openedCourse.holesCount} buche • Par {openedCourse.totalPar}
+            {roundSetup.totalCompetitionHoles} buche di gara • partenza dalla {roundSetup.startHole}
           </div>
 
           <div
@@ -771,8 +1001,8 @@ function App() {
 
         <h2 style={titleStyle}>Giro</h2>
 
-        {openedCourse.holes && openedCourse.holes.length > 0 ? (
-          openedCourse.holes.map((hole, index) => {
+        {competitionHoles.length > 0 ? (
+          competitionHoles.map((hole, index) => {
             const receivedShots = getReceivedShots(
               userProfile.hcp,
               hole.strokeIndex
@@ -785,7 +1015,7 @@ function App() {
 
             return (
               <div
-                key={hole.hole}
+                key={`${hole.competitionHoleNumber}-${hole.courseHoleNumber}-${index}`}
                 style={{
                   backgroundColor: "#111",
                   border: "1px solid #222",
@@ -796,14 +1026,35 @@ function App() {
               >
                 <div
                   style={{
+                    color: "#8c8c8c",
+                    fontSize: "13px",
+                    marginBottom: "6px"
+                  }}
+                >
+                  Giro {hole.roundNumber} di {hole.totalRounds}
+                </div>
+
+                <div
+                  style={{
                     display: "flex",
                     justifyContent: "space-between",
-                    alignItems: "center",
+                    alignItems: "flex-start",
                     gap: "12px"
                   }}
                 >
-                  <div style={{ fontSize: "18px", fontWeight: 700 }}>
-                    Buca {hole.hole}
+                  <div>
+                    <div style={{ fontSize: "20px", fontWeight: 700 }}>
+                      Buca {hole.competitionHoleNumber}
+                    </div>
+                    <div
+                      style={{
+                        marginTop: "4px",
+                        color: "#8c8c8c",
+                        fontSize: "14px"
+                      }}
+                    >
+                      ⛳️ {hole.courseHoleNumber}
+                    </div>
                   </div>
 
                   <div
@@ -974,6 +1225,16 @@ function App() {
                     <div style={{ color: "#8e8e8e", fontSize: "12px" }}>
                       HCP stimato {round.estimatedHcpAfterRound}
                     </div>
+                  </div>
+
+                  <div
+                    style={{
+                      marginTop: "8px",
+                      color: "#8e8e8e",
+                      fontSize: "12px"
+                    }}
+                  >
+                    {round.totalCompetitionHoles} buche • partenza dalla {round.startHole}
                   </div>
 
                   <div
@@ -1826,4 +2087,3 @@ function App() {
 }
 
 export default App;
-// test
