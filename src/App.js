@@ -1,0 +1,1828 @@
+import { useEffect, useMemo, useState } from "react";
+
+const appFont =
+  "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+
+const STORAGE_KEY = "golf-score-app-courses-v1";
+const ROUNDS_STORAGE_KEY = "golf-score-app-rounds-v1";
+
+const stepperButtonStyle = {
+  width: "44px",
+  height: "44px",
+  borderRadius: "12px",
+  border: "1px solid #333",
+  backgroundColor: "#1a1a1a",
+  color: "white",
+  fontSize: "22px",
+  cursor: "pointer",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  fontFamily: appFont
+};
+
+const stepperValueStyle = {
+  flex: 1,
+  height: "44px",
+  borderRadius: "12px",
+  border: "1px solid #333",
+  backgroundColor: "#1a1a1a",
+  color: "white",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  fontSize: "18px",
+  fontWeight: 600,
+  fontFamily: appFont
+};
+
+const stepperInputStyle = {
+  flex: 1,
+  height: "44px",
+  borderRadius: "12px",
+  border: "1px solid #333",
+  backgroundColor: "#1a1a1a",
+  color: "white",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  fontSize: "18px",
+  fontWeight: 600,
+  fontFamily: appFont,
+  textAlign: "center",
+  outline: "none",
+  boxSizing: "border-box",
+  width: "100%"
+};
+
+function App() {
+  const [showDialog, setShowDialog] = useState(false);
+  const [dialogStep, setDialogStep] = useState(1);
+
+  const [courseName, setCourseName] = useState("");
+  const [holesCount, setHolesCount] = useState(null);
+
+  const [holesData, setHolesData] = useState([]);
+  const [currentHoleIndex, setCurrentHoleIndex] = useState(0);
+
+  const [showStrokeInfo, setShowStrokeInfo] = useState(false);
+  const [selectedStepper, setSelectedStepper] = useState("par");
+
+  const [openedCourse, setOpenedCourse] = useState(null);
+  const [roundScores, setRoundScores] = useState([]);
+  const [savedRounds, setSavedRounds] = useState(() => {
+    try {
+      const stored = localStorage.getItem(ROUNDS_STORAGE_KEY);
+      if (!stored) return [];
+      const parsed = JSON.parse(stored);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+      return [];
+    }
+  });
+  const [showRoundsHistory, setShowRoundsHistory] = useState(false);
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showLatestAdded, setShowLatestAdded] = useState(false);
+
+  const [userProfile] = useState({
+    firstName: "Giuseppe",
+    hcp: 37.4
+  });
+
+  const [savedCourses, setSavedCourses] = useState(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (!stored) return [];
+      const parsed = JSON.parse(stored);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    document.body.style.margin = "0";
+    document.body.style.backgroundColor = "black";
+    document.body.style.color = "white";
+    document.body.style.fontFamily = appFont;
+
+    return () => {
+      document.body.style.margin = "";
+      document.body.style.backgroundColor = "";
+      document.body.style.color = "";
+      document.body.style.fontFamily = "";
+    };
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(savedCourses));
+  }, [savedCourses]);
+
+  useEffect(() => {
+    localStorage.setItem(ROUNDS_STORAGE_KEY, JSON.stringify(savedRounds));
+  }, [savedRounds]);
+
+  const favorites = savedCourses.filter((course) => course.favorite);
+  const nearbyCourses = savedCourses.slice(0, 5);
+  const latestAddedCourses = [...savedCourses]
+    .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
+    .slice(0, 5);
+
+  const filteredCourses = savedCourses.filter((course) =>
+    course.name.toLowerCase().includes(searchQuery.trim().toLowerCase())
+  );
+
+  const currentHole =
+    holesData[currentHoleIndex] || { hole: 1, par: 4, strokeIndex: "" };
+
+  const totalPar = useMemo(() => {
+    return holesData.reduce((sum, hole) => sum + Number(hole.par || 0), 0);
+  }, [holesData]);
+
+  const grossTotal = useMemo(() => {
+    return roundScores.reduce((sum, score) => sum + Number(score || 0), 0);
+  }, [roundScores]);
+
+  const resetDialogState = () => {
+    setDialogStep(1);
+    setCourseName("");
+    setHolesCount(null);
+    setHolesData([]);
+    setCurrentHoleIndex(0);
+    setShowStrokeInfo(false);
+    setSelectedStepper("par");
+  };
+
+  const openDialog = () => {
+    resetDialogState();
+    setShowDialog(true);
+  };
+
+  const closeDialog = () => {
+    setShowDialog(false);
+    resetDialogState();
+  };
+
+  const goToStepTwo = () => {
+    if (courseName.trim() === "") return;
+    setDialogStep(2);
+  };
+
+  const goBackToStepOne = () => {
+    setDialogStep(1);
+  };
+
+  const goToIntroStep = () => {
+    if (!holesCount) return;
+
+    const generatedHoles = Array.from({ length: holesCount }, (_, index) => ({
+      hole: index + 1,
+      par: 4,
+      strokeIndex: ""
+    }));
+
+    setHolesData(generatedHoles);
+    setCurrentHoleIndex(0);
+    setSelectedStepper("par");
+    setDialogStep(3);
+  };
+
+  const startMapping = () => {
+    setDialogStep(4);
+    setSelectedStepper("par");
+  };
+
+  const goBackToStepTwoFromIntro = () => {
+    setDialogStep(2);
+  };
+
+  const updateCurrentHoleField = (field, value) => {
+    const updated = [...holesData];
+    updated[currentHoleIndex] = {
+      ...updated[currentHoleIndex],
+      [field]: value
+    };
+    setHolesData(updated);
+  };
+
+  const adjustPar = (delta) => {
+    const currentValue = Number(currentHole.par || 4);
+    const nextValue = Math.min(5, Math.max(3, currentValue + delta));
+    updateCurrentHoleField("par", nextValue);
+  };
+
+  const adjustStrokeIndex = (delta) => {
+    const rawValue = currentHole.strokeIndex;
+    const isEmpty =
+      rawValue === "" || rawValue === null || typeof rawValue === "undefined";
+    const currentValue = isEmpty ? 0 : Number(rawValue);
+
+    if (delta < 0) {
+      if (isEmpty || currentValue === 0) {
+        updateCurrentHoleField("strokeIndex", 18);
+        return;
+      }
+
+      const nextValue = currentValue === 1 ? 18 : currentValue - 1;
+      updateCurrentHoleField("strokeIndex", nextValue);
+      return;
+    }
+
+    if (delta > 0) {
+      if (isEmpty || currentValue === 0) {
+        updateCurrentHoleField("strokeIndex", 1);
+        return;
+      }
+
+      const nextValue = currentValue === 18 ? 1 : currentValue + 1;
+      updateCurrentHoleField("strokeIndex", nextValue);
+    }
+  };
+
+  const handleStrokeInputChange = (value) => {
+    if (value === "") {
+      updateCurrentHoleField("strokeIndex", "");
+      return;
+    }
+
+    const numericValue = value.replace(/\D/g, "");
+    updateCurrentHoleField("strokeIndex", numericValue);
+  };
+
+  const normalizeStrokeInput = () => {
+    if (currentHole.strokeIndex === "") return;
+
+    let value = Number(currentHole.strokeIndex);
+
+    if (Number.isNaN(value)) {
+      updateCurrentHoleField("strokeIndex", "");
+      return;
+    }
+
+    if (value < 1) value = 1;
+    if (value > 18) value = 18;
+
+    updateCurrentHoleField("strokeIndex", value);
+  };
+
+  const currentHoleCompleted =
+    currentHole.par !== "" && currentHole.strokeIndex !== "";
+
+  const nextHole = () => {
+    if (!currentHoleCompleted) return;
+
+    if (currentHoleIndex < holesData.length - 1) {
+      setCurrentHoleIndex((prev) => prev + 1);
+      setSelectedStepper("par");
+    } else {
+      setDialogStep(5);
+    }
+  };
+
+  const previousHole = () => {
+    if (currentHoleIndex > 0) {
+      setCurrentHoleIndex((prev) => prev - 1);
+      setSelectedStepper("par");
+    } else {
+      setDialogStep(3);
+    }
+  };
+
+  const goBackFromSummary = () => {
+    setDialogStep(4);
+    setCurrentHoleIndex(holesData.length - 1);
+    setSelectedStepper("par");
+  };
+
+  const saveCourse = () => {
+    const newCourse = {
+      id: Date.now(),
+      name: courseName.trim(),
+      favorite: false,
+      totalPar,
+      holesCount,
+      holes: holesData,
+      createdAt: Date.now()
+    };
+
+    setSavedCourses((prev) => [newCourse, ...prev]);
+    closeDialog();
+  };
+
+  const toggleFavorite = (courseId) => {
+    setSavedCourses((prev) =>
+      prev.map((course) =>
+        course.id === courseId
+          ? { ...course, favorite: !course.favorite }
+          : course
+      )
+    );
+
+    if (openedCourse && openedCourse.id === courseId) {
+      setOpenedCourse((prev) =>
+        prev ? { ...prev, favorite: !prev.favorite } : prev
+      );
+    }
+  };
+
+  const openCourse = (course) => {
+    setOpenedCourse(course);
+    const startingScores =
+      course.holes && course.holes.length > 0
+        ? course.holes.map((hole) => Number(hole.par))
+        : Array.from({ length: course.holesCount || 0 }, () => "");
+    setRoundScores(startingScores);
+  };
+
+  const closeCourse = () => {
+    setOpenedCourse(null);
+    setRoundScores([]);
+    setShowRoundsHistory(false);
+  };
+
+  const getReceivedShots = (playerHcp, strokeIndex) => {
+    const hcp = Math.floor(Number(playerHcp || 0));
+    const si = Number(strokeIndex || 0);
+
+    if (hcp <= 0 || si <= 0) return 0;
+
+    return Math.max(0, Math.floor((hcp - si) / 18) + 1);
+  };
+
+  const getStablefordPoints = (par, strokesMade, receivedShots) => {
+    const parValue = Number(par || 0);
+    const strokes = Number(strokesMade || 0);
+    const shots = Number(receivedShots || 0);
+
+    if (!strokes) return 0;
+
+    return Math.max(0, 2 + parValue + shots - strokes);
+  };
+
+  const stablefordTotal = useMemo(() => {
+    if (!openedCourse || !openedCourse.holes) return 0;
+
+    return openedCourse.holes.reduce((sum, hole, index) => {
+      const receivedShots = getReceivedShots(userProfile.hcp, hole.strokeIndex);
+      const points = getStablefordPoints(
+        hole.par,
+        roundScores[index],
+        receivedShots
+      );
+      return sum + points;
+    }, 0);
+  }, [openedCourse, roundScores, userProfile.hcp]);
+
+  const netTotal = useMemo(() => {
+    if (!openedCourse || !openedCourse.holes) return 0;
+
+    return openedCourse.holes.reduce((sum, hole, index) => {
+      const receivedShots = getReceivedShots(userProfile.hcp, hole.strokeIndex);
+      const strokes = Number(roundScores[index] || 0);
+      if (!strokes) return sum;
+      return sum + (strokes - receivedShots);
+    }, 0);
+  }, [openedCourse, roundScores, userProfile.hcp]);
+
+  const estimatedHcpAfterRound = useMemo(() => {
+    if (!openedCourse || stablefordTotal === 0) return userProfile.hcp;
+
+    let delta = 0;
+
+    if (stablefordTotal >= 37) {
+      delta = -Math.min(1.8, (stablefordTotal - 36) * 0.1);
+    } else if (stablefordTotal <= 30) {
+      delta = Math.min(1.2, (31 - stablefordTotal) * 0.05);
+    }
+
+    const next = Math.max(0, Number(userProfile.hcp) + delta);
+    return Number(next.toFixed(1));
+  }, [openedCourse, stablefordTotal, userProfile.hcp]);
+
+  const updateRoundScore = (index, value) => {
+    const updated = [...roundScores];
+    updated[index] = value;
+    setRoundScores(updated);
+  };
+
+  const handleScoreInputChange = (index, value) => {
+    if (value === "") {
+      updateRoundScore(index, "");
+      return;
+    }
+
+    const numericValue = value.replace(/\D/g, "");
+    updateRoundScore(index, numericValue);
+  };
+
+  const normalizeScoreInput = (index) => {
+    const rawValue = roundScores[index];
+    if (rawValue === "") return;
+
+    let value = Number(rawValue);
+
+    if (Number.isNaN(value)) {
+      updateRoundScore(index, "");
+      return;
+    }
+
+    if (value < 1) value = 1;
+    if (value > 15) value = 15;
+
+    updateRoundScore(index, value);
+  };
+
+  const adjustRoundScore = (index, delta) => {
+    const rawValue = roundScores[index];
+    const isEmpty =
+      rawValue === "" || rawValue === null || typeof rawValue === "undefined";
+    const currentValue = isEmpty ? 0 : Number(rawValue);
+
+    if (delta < 0) {
+      if (isEmpty || currentValue <= 1) {
+        updateRoundScore(index, "");
+        return;
+      }
+
+      updateRoundScore(index, currentValue - 1);
+      return;
+    }
+
+    if (delta > 0) {
+      if (isEmpty || currentValue === 0) {
+        updateRoundScore(index, 1);
+        return;
+      }
+
+      updateRoundScore(index, Math.min(15, currentValue + 1));
+    }
+  };
+
+  const saveRound = () => {
+    if (!openedCourse) return;
+
+    const newRound = {
+      id: Date.now(),
+      courseId: openedCourse.id,
+      courseName: openedCourse.name,
+      createdAt: Date.now(),
+      playerHcp: userProfile.hcp,
+      grossTotal,
+      netTotal,
+      stablefordTotal,
+      estimatedHcpAfterRound,
+      scores: roundScores
+    };
+
+    setSavedRounds((prev) => [newRound, ...prev]);
+    setShowRoundsHistory(true);
+  };
+
+  const roundsForOpenedCourse = openedCourse
+    ? savedRounds.filter((round) => round.courseId === openedCourse.id)
+    : [];
+
+  const titleStyle = {
+    fontSize: "22px",
+    fontWeight: 600,
+    letterSpacing: "0.2px",
+    marginTop: "28px",
+    marginBottom: "14px",
+    fontFamily: appFont
+  };
+
+  const primaryButtonStyle = (enabled = true) => ({
+    marginTop: "20px",
+    width: "100%",
+    padding: "13px",
+    backgroundColor: enabled ? "#2ecc71" : "#244233",
+    border: "none",
+    color: "black",
+    fontWeight: 700,
+    borderRadius: "12px",
+    cursor: enabled ? "pointer" : "not-allowed",
+    opacity: enabled ? 1 : 0.6,
+    fontFamily: appFont,
+    fontSize: "15px"
+  });
+
+  const secondaryButtonStyle = {
+    marginTop: "10px",
+    width: "100%",
+    padding: "13px",
+    backgroundColor: "#2a2a2a",
+    border: "none",
+    color: "white",
+    borderRadius: "12px",
+    cursor: "pointer",
+    fontFamily: appFont,
+    fontSize: "15px"
+  };
+
+  const subtleButtonStyle = {
+    marginTop: "10px",
+    width: "100%",
+    padding: "13px",
+    backgroundColor: "#1b1b1b",
+    border: "1px solid #333",
+    color: "#bbb",
+    borderRadius: "12px",
+    cursor: "pointer",
+    fontFamily: appFont,
+    fontSize: "15px"
+  };
+
+  const stepperCardStyle = (active) => ({
+    marginBottom: "16px",
+    padding: "14px",
+    borderRadius: "14px",
+    border: active ? "1px solid #2ecc71" : "1px solid #2b2b2b",
+    backgroundColor: active ? "#141f18" : "#111",
+    transition: "all 0.2s ease",
+    cursor: "pointer"
+  });
+
+  const favoriteIconStyle = (active) => ({
+    width: "34px",
+    height: "34px",
+    borderRadius: "50%",
+    border: active ? "1px solid #2ecc71" : "1px solid #444",
+    backgroundColor: active ? "#163322" : "#151515",
+    color: active ? "#2ecc71" : "#8b8b8b",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    fontSize: "16px",
+    flexShrink: 0
+  });
+
+  const cardStyle = {
+    backgroundColor: "#111",
+    border: "1px solid #222",
+    borderRadius: "16px",
+    padding: "16px"
+  };
+
+  const renderCourseRow = (course) => (
+    <div
+      key={course.id}
+      onClick={() => openCourse(course)}
+      style={{
+        padding: "14px 0",
+        borderBottom: "1px solid #222",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        gap: "12px",
+        fontFamily: appFont,
+        cursor: "pointer"
+      }}
+    >
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: "16px", fontWeight: 500 }}>{course.name}</div>
+        <div
+          style={{
+            color: "#8c8c8c",
+            fontSize: "13px",
+            marginTop: "3px"
+          }}
+        >
+          {course.holesCount} buche • Par {course.totalPar}
+        </div>
+      </div>
+
+      <div
+        onClick={(e) => {
+          e.stopPropagation();
+          toggleFavorite(course.id);
+        }}
+        style={favoriteIconStyle(course.favorite)}
+        title="Preferito"
+      >
+        ⛳️
+      </div>
+    </div>
+  );
+
+  if (openedCourse) {
+    return (
+      <div
+        style={{
+          backgroundColor: "black",
+          color: "white",
+          minHeight: "100vh",
+          padding: "20px",
+          boxSizing: "border-box",
+          fontFamily: appFont
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "12px"
+          }}
+        >
+          <button
+            onClick={closeCourse}
+            style={{
+              width: "46px",
+              height: "46px",
+              borderRadius: "23px",
+              border: "1px solid #444",
+              backgroundColor: "#111",
+              color: "white",
+              fontSize: "22px",
+              cursor: "pointer",
+              fontFamily: appFont
+            }}
+          >
+            ←
+          </button>
+
+          <div style={{ fontSize: "16px", fontWeight: 500 }}>
+            Scorecard
+          </div>
+
+          <div
+            onClick={() => toggleFavorite(openedCourse.id)}
+            style={favoriteIconStyle(openedCourse.favorite)}
+            title="Preferito"
+          >
+            ⛳️
+          </div>
+        </div>
+
+        <div
+          style={{
+            marginTop: "24px",
+            padding: "18px",
+            backgroundColor: "#111",
+            border: "1px solid #222",
+            borderRadius: "18px"
+          }}
+        >
+          <div style={{ fontSize: "24px", fontWeight: 700 }}>
+            {openedCourse.name}
+          </div>
+
+          <div
+            style={{
+              marginTop: "8px",
+              color: "#9a9a9a",
+              fontSize: "14px",
+              lineHeight: 1.5
+            }}
+          >
+            {openedCourse.holesCount} buche • Par {openedCourse.totalPar}
+          </div>
+
+          <div
+            style={{
+              marginTop: "10px",
+              color: "#8c8c8c",
+              fontSize: "13px"
+            }}
+          >
+            {userProfile.firstName} • HCP {userProfile.hcp}
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "12px",
+            marginTop: "18px"
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: "#111",
+              border: "1px solid #222",
+              borderRadius: "16px",
+              padding: "16px"
+            }}
+          >
+            <div style={{ color: "#8e8e8e", fontSize: "13px" }}>Lordo</div>
+            <div style={{ marginTop: "6px", fontSize: "26px", fontWeight: 700 }}>
+              {grossTotal}
+            </div>
+          </div>
+
+          <div
+            style={{
+              backgroundColor: "#111",
+              border: "1px solid #222",
+              borderRadius: "16px",
+              padding: "16px"
+            }}
+          >
+            <div style={{ color: "#8e8e8e", fontSize: "13px" }}>Stableford</div>
+            <div
+              style={{
+                marginTop: "6px",
+                fontSize: "26px",
+                fontWeight: 700,
+                color: "#2ecc71"
+              }}
+            >
+              {stablefordTotal}
+            </div>
+          </div>
+        </div>
+
+        <div
+          style={{
+            marginTop: "12px",
+            backgroundColor: "#111",
+            border: "1px solid #222",
+            borderRadius: "16px",
+            padding: "16px"
+          }}
+        >
+          <div style={{ color: "#8e8e8e", fontSize: "13px" }}>
+            HCP stimato dopo il giro
+          </div>
+          <div
+            style={{
+              marginTop: "6px",
+              fontSize: "24px",
+              fontWeight: 700,
+              color: "#2ecc71"
+            }}
+          >
+            {estimatedHcpAfterRound}
+          </div>
+          <div
+            style={{
+              marginTop: "8px",
+              color: "#8e8e8e",
+              fontSize: "12px",
+              lineHeight: 1.5
+            }}
+          >
+            Stima provvisoria basata sul punteggio Stableford del round.
+          </div>
+        </div>
+
+        <h2 style={titleStyle}>Giro</h2>
+
+        {openedCourse.holes && openedCourse.holes.length > 0 ? (
+          openedCourse.holes.map((hole, index) => {
+            const receivedShots = getReceivedShots(
+              userProfile.hcp,
+              hole.strokeIndex
+            );
+            const stablefordPoints = getStablefordPoints(
+              hole.par,
+              roundScores[index],
+              receivedShots
+            );
+
+            return (
+              <div
+                key={hole.hole}
+                style={{
+                  backgroundColor: "#111",
+                  border: "1px solid #222",
+                  borderRadius: "16px",
+                  padding: "16px",
+                  marginBottom: "12px"
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: "12px"
+                  }}
+                >
+                  <div style={{ fontSize: "18px", fontWeight: 700 }}>
+                    Buca {hole.hole}
+                  </div>
+
+                  <div
+                    style={{
+                      color: "#2ecc71",
+                      fontSize: "14px",
+                      fontWeight: 600
+                    }}
+                  >
+                    {stablefordPoints} pt
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "8px",
+                    flexWrap: "wrap",
+                    marginTop: "12px"
+                  }}
+                >
+                  <div
+                    style={{
+                      padding: "8px 12px",
+                      borderRadius: "999px",
+                      backgroundColor: "#171717",
+                      border: "1px solid #2b2b2b",
+                      color: "#d0d0d0",
+                      fontSize: "13px"
+                    }}
+                  >
+                    Par {hole.par}
+                  </div>
+
+                  <div
+                    style={{
+                      padding: "8px 12px",
+                      borderRadius: "999px",
+                      backgroundColor: "#171717",
+                      border: "1px solid #2b2b2b",
+                      color: "#d0d0d0",
+                      fontSize: "13px"
+                    }}
+                  >
+                    SI {hole.strokeIndex}
+                  </div>
+
+                  <div
+                    style={{
+                      padding: "8px 12px",
+                      borderRadius: "999px",
+                      backgroundColor: "#16261c",
+                      border: "1px solid #244233",
+                      color: "#2ecc71",
+                      fontSize: "13px"
+                    }}
+                  >
+                    Ricevi {receivedShots}
+                  </div>
+                </div>
+
+                <div style={{ marginTop: "14px" }}>
+                  <div
+                    style={{
+                      color: "#a0a0a0",
+                      fontSize: "13px",
+                      marginBottom: "8px"
+                    }}
+                  >
+                    Colpi fatti
+                  </div>
+
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: "10px" }}
+                  >
+                    <button
+                      onClick={() => adjustRoundScore(index, -1)}
+                      style={stepperButtonStyle}
+                    >
+                      -
+                    </button>
+
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={roundScores[index]}
+                      onChange={(e) => handleScoreInputChange(index, e.target.value)}
+                      onBlur={() => normalizeScoreInput(index)}
+                      placeholder="0"
+                      style={stepperInputStyle}
+                    />
+
+                    <button
+                      onClick={() => adjustRoundScore(index, 1)}
+                      style={stepperButtonStyle}
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <div
+            style={{
+              color: "#8f8f8f",
+              backgroundColor: "#111",
+              border: "1px solid #222",
+              borderRadius: "14px",
+              padding: "16px"
+            }}
+          >
+            Per questo campo non c’è ancora una mappatura completa.
+          </div>
+        )}
+
+        <button onClick={saveRound} style={primaryButtonStyle(true)}>
+          Salva giro
+        </button>
+
+        <button
+          onClick={() => setShowRoundsHistory((prev) => !prev)}
+          style={secondaryButtonStyle}
+        >
+          {showRoundsHistory ? "Nascondi storico" : "Mostra storico"}
+        </button>
+
+        {showRoundsHistory && (
+          <div style={{ marginTop: "14px" }}>
+            <h2 style={{ ...titleStyle, marginTop: "0" }}>Storico giri</h2>
+
+            {roundsForOpenedCourse.length === 0 ? (
+              <div
+                style={{
+                  color: "#8f8f8f",
+                  backgroundColor: "#111",
+                  border: "1px solid #222",
+                  borderRadius: "14px",
+                  padding: "16px"
+                }}
+              >
+                Nessun giro salvato per questo campo.
+              </div>
+            ) : (
+              roundsForOpenedCourse.map((round) => (
+                <div
+                  key={round.id}
+                  style={{
+                    backgroundColor: "#111",
+                    border: "1px solid #222",
+                    borderRadius: "16px",
+                    padding: "16px",
+                    marginBottom: "12px"
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      gap: "12px",
+                      alignItems: "center"
+                    }}
+                  >
+                    <div style={{ fontSize: "14px", fontWeight: 600 }}>
+                      {new Date(round.createdAt).toLocaleDateString()}
+                    </div>
+                    <div style={{ color: "#8e8e8e", fontSize: "12px" }}>
+                      HCP stimato {round.estimatedHcpAfterRound}
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "8px",
+                      flexWrap: "wrap",
+                      marginTop: "12px"
+                    }}
+                  >
+                    <div
+                      style={{
+                        padding: "8px 12px",
+                        borderRadius: "999px",
+                        backgroundColor: "#171717",
+                        border: "1px solid #2b2b2b",
+                        fontSize: "13px"
+                      }}
+                    >
+                      Lordo {round.grossTotal}
+                    </div>
+
+                    <div
+                      style={{
+                        padding: "8px 12px",
+                        borderRadius: "999px",
+                        backgroundColor: "#171717",
+                        border: "1px solid #2b2b2b",
+                        fontSize: "13px"
+                      }}
+                    >
+                      Netto {round.netTotal}
+                    </div>
+
+                    <div
+                      style={{
+                        padding: "8px 12px",
+                        borderRadius: "999px",
+                        backgroundColor: "#16261c",
+                        border: "1px solid #244233",
+                        color: "#2ecc71",
+                        fontSize: "13px"
+                      }}
+                    >
+                      Stableford {round.stablefordTotal}
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div
+      style={{
+        backgroundColor: "black",
+        color: "white",
+        minHeight: "100vh",
+        padding: "20px",
+        boxSizing: "border-box",
+        fontFamily: appFont
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: "12px"
+        }}
+      >
+        <button
+          onClick={openDialog}
+          style={{
+            width: "46px",
+            height: "46px",
+            borderRadius: "23px",
+            border: "1px solid #444",
+            backgroundColor: "#111",
+            color: "white",
+            fontSize: "24px",
+            cursor: "pointer",
+            fontFamily: appFont,
+            flexShrink: 0
+          }}
+        >
+          +
+        </button>
+
+        <div
+          style={{
+            flex: 1,
+            textAlign: "right",
+            lineHeight: 1.2
+          }}
+        >
+          <div
+            style={{
+              fontSize: "16px",
+              fontWeight: 500,
+              color: "white"
+            }}
+          >
+            {userProfile.firstName}
+          </div>
+
+          <div
+            style={{
+              fontSize: "13px",
+              color: "#8c8c8c",
+              marginTop: "3px"
+            }}
+          >
+            HCP {userProfile.hcp}
+          </div>
+        </div>
+      </div>
+
+      <h2 style={titleStyle}>Preferiti</h2>
+      <div style={cardStyle}>
+        {favorites.length === 0 ? (
+          <div style={{ color: "#888" }}>
+            Usa ⛳️ per salvare i campi
+          </div>
+        ) : (
+          favorites.map((course) => renderCourseRow(course))
+        )}
+      </div>
+
+      <h2 style={titleStyle}>Vicino a te</h2>
+      <div style={cardStyle}>
+        {nearbyCourses.length === 0 ? (
+          <div style={{ color: "#888", lineHeight: 1.5 }}>
+            Quando aggiungerai i primi campi, li vedrai qui. Più avanti collegheremo
+            anche la geolocalizzazione.
+          </div>
+        ) : (
+          nearbyCourses.map((course) => renderCourseRow(course))
+        )}
+      </div>
+
+      <h2 style={titleStyle}>Cerca un campo</h2>
+      <div style={cardStyle}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            backgroundColor: "#1a1a1a",
+            border: "1px solid #333",
+            borderRadius: "14px",
+            padding: "12px 14px"
+          }}
+        >
+          <div style={{ color: "#7d7d7d", fontSize: "16px" }}>⌕</div>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Cerca un campo"
+            style={{
+              flex: 1,
+              background: "transparent",
+              border: "none",
+              outline: "none",
+              color: "white",
+              fontSize: "15px",
+              fontFamily: appFont
+            }}
+          />
+        </div>
+
+        {searchQuery.trim() !== "" && (
+          <div style={{ marginTop: "12px" }}>
+            {filteredCourses.length > 0 ? (
+              filteredCourses.map((course) => renderCourseRow(course))
+            ) : (
+              <div
+                style={{
+                  color: "#9a9a9a",
+                  lineHeight: 1.5,
+                  paddingTop: "8px"
+                }}
+              >
+                Campo non trovato. Usa il pulsante + per aggiungerlo.
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div
+        onClick={() => setShowLatestAdded((prev) => !prev)}
+        style={{
+          ...titleStyle,
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "8px",
+          cursor: "pointer",
+          marginBottom: "14px"
+        }}
+      >
+        <span>Ultimi aggiunti</span>
+        <span
+          style={{
+            color: "#b5b5b5",
+            fontSize: "18px",
+            lineHeight: 1,
+            transform: showLatestAdded ? "rotate(180deg)" : "rotate(0deg)",
+            transition: "transform 0.2s ease"
+          }}
+        >
+          ▾
+        </span>
+      </div>
+
+      {showLatestAdded && (
+        <div style={cardStyle}>
+          {latestAddedCourses.length === 0 ? (
+            <div style={{ color: "#888" }}>
+              Nessun campo aggiunto di recente.
+            </div>
+          ) : (
+            latestAddedCourses.map((course) => renderCourseRow(course))
+          )}
+        </div>
+      )}
+
+      {showDialog && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            backgroundColor: "rgba(0,0,0,0.86)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: "20px",
+            boxSizing: "border-box"
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: "#111",
+              padding: "24px",
+              borderRadius: "18px",
+              width: "100%",
+              maxWidth: "390px",
+              maxHeight: "90vh",
+              overflowY: "auto",
+              border: "1px solid #222",
+              boxSizing: "border-box",
+              fontFamily: appFont
+            }}
+          >
+            {dialogStep === 1 && (
+              <>
+                <h3
+                  style={{
+                    marginTop: 0,
+                    marginBottom: "8px",
+                    fontSize: "24px",
+                    fontWeight: 700
+                  }}
+                >
+                  Aggiungi campo
+                </h3>
+
+                <p
+                  style={{
+                    color: "#aaa",
+                    fontSize: "14px",
+                    marginTop: 0,
+                    marginBottom: "16px",
+                    lineHeight: 1.4
+                  }}
+                >
+                  Inserisci il nome del campo.
+                </p>
+
+                <input
+                  type="text"
+                  placeholder="Nome campo"
+                  value={courseName}
+                  onChange={(e) => setCourseName(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "13px 14px",
+                    backgroundColor: "#1a1a1a",
+                    border: "1px solid #333",
+                    borderRadius: "12px",
+                    color: "white",
+                    boxSizing: "border-box",
+                    outline: "none",
+                    fontSize: "15px",
+                    fontFamily: appFont
+                  }}
+                />
+
+                <button
+                  onClick={goToStepTwo}
+                  disabled={courseName.trim() === ""}
+                  style={primaryButtonStyle(courseName.trim() !== "")}
+                >
+                  Continua
+                </button>
+
+                <button onClick={closeDialog} style={secondaryButtonStyle}>
+                  Annulla
+                </button>
+              </>
+            )}
+
+            {dialogStep === 2 && (
+              <>
+                <h3
+                  style={{
+                    marginTop: 0,
+                    marginBottom: "8px",
+                    fontSize: "24px",
+                    fontWeight: 700
+                  }}
+                >
+                  Numero buche
+                </h3>
+
+                <p
+                  style={{
+                    color: "#aaa",
+                    fontSize: "14px",
+                    marginTop: 0,
+                    marginBottom: "20px",
+                    lineHeight: 1.4
+                  }}
+                >
+                  Seleziona il numero di buche
+                </p>
+
+                <div style={{ display: "flex", gap: "12px" }}>
+                  <div
+                    onClick={() => setHolesCount(9)}
+                    style={{
+                      flex: 1,
+                      padding: "16px",
+                      backgroundColor: "#1a1a1a",
+                      border:
+                        holesCount === 9 ? "1px solid #2ecc71" : "1px solid #333",
+                      borderRadius: "14px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      cursor: "pointer"
+                    }}
+                  >
+                    <span style={{ fontWeight: 600, fontSize: "16px" }}>9</span>
+                    <div
+                      style={{
+                        width: "22px",
+                        height: "22px",
+                        borderRadius: "50%",
+                        border:
+                          holesCount === 9 ? "2px solid #2ecc71" : "2px solid #666",
+                        backgroundColor:
+                          holesCount === 9 ? "#2ecc71" : "transparent"
+                      }}
+                    />
+                  </div>
+
+                  <div
+                    onClick={() => setHolesCount(18)}
+                    style={{
+                      flex: 1,
+                      padding: "16px",
+                      backgroundColor: "#1a1a1a",
+                      border:
+                        holesCount === 18 ? "1px solid #2ecc71" : "1px solid #333",
+                      borderRadius: "14px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      cursor: "pointer"
+                    }}
+                  >
+                    <span style={{ fontWeight: 600, fontSize: "16px" }}>18</span>
+                    <div
+                      style={{
+                        width: "22px",
+                        height: "22px",
+                        borderRadius: "50%",
+                        border:
+                          holesCount === 18 ? "2px solid #2ecc71" : "2px solid #666",
+                        backgroundColor:
+                          holesCount === 18 ? "#2ecc71" : "transparent"
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <button
+                  onClick={goToIntroStep}
+                  disabled={!holesCount}
+                  style={primaryButtonStyle(Boolean(holesCount))}
+                >
+                  Continua
+                </button>
+
+                <button onClick={goBackToStepOne} style={secondaryButtonStyle}>
+                  Indietro
+                </button>
+
+                <button onClick={closeDialog} style={subtleButtonStyle}>
+                  Annulla
+                </button>
+              </>
+            )}
+
+            {dialogStep === 3 && (
+              <>
+                <div
+                  style={{
+                    width: "70px",
+                    height: "70px",
+                    borderRadius: "35px",
+                    backgroundColor: "#16261c",
+                    border: "1px solid #244233",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "28px",
+                    margin: "0 auto 18px auto"
+                  }}
+                >
+                  ⛳️
+                </div>
+
+                <h3
+                  style={{
+                    marginTop: 0,
+                    marginBottom: "10px",
+                    fontSize: "24px",
+                    fontWeight: 700,
+                    textAlign: "center"
+                  }}
+                >
+                  Bene!
+                </h3>
+
+                <p
+                  style={{
+                    color: "#b5b5b5",
+                    fontSize: "15px",
+                    marginTop: 0,
+                    marginBottom: "10px",
+                    lineHeight: 1.5,
+                    textAlign: "center"
+                  }}
+                >
+                  Ora mappiamo il campo buca per buca.
+                </p>
+
+                <p
+                  style={{
+                    color: "#8e8e8e",
+                    fontSize: "14px",
+                    marginTop: 0,
+                    marginBottom: "18px",
+                    lineHeight: 1.5,
+                    textAlign: "center"
+                  }}
+                >
+                  Alla fine vedrai il riepilogo completo con il Par del campo e
+                  su quali buche riceverai più colpi in base al tuo HCP di gioco.
+                </p>
+
+                <button onClick={startMapping} style={primaryButtonStyle(true)}>
+                  Inizia
+                </button>
+
+                <button
+                  onClick={goBackToStepTwoFromIntro}
+                  style={secondaryButtonStyle}
+                >
+                  Indietro
+                </button>
+
+                <button onClick={closeDialog} style={subtleButtonStyle}>
+                  Annulla
+                </button>
+              </>
+            )}
+
+            {dialogStep === 4 && (
+              <>
+                <div
+                  style={{
+                    color: "#8f8f8f",
+                    fontSize: "13px",
+                    marginBottom: "10px"
+                  }}
+                >
+                  Buca {currentHoleIndex + 1} di {holesCount}
+                </div>
+
+                <div
+                  style={{
+                    width: "100%",
+                    height: "8px",
+                    backgroundColor: "#1f1f1f",
+                    borderRadius: "999px",
+                    overflow: "hidden",
+                    marginBottom: "20px"
+                  }}
+                >
+                  <div
+                    style={{
+                      width: `${((currentHoleIndex + 1) / holesCount) * 100}%`,
+                      height: "100%",
+                      backgroundColor: "#2ecc71",
+                      transition: "width 0.25s ease"
+                    }}
+                  />
+                </div>
+
+                <h3
+                  style={{
+                    marginTop: 0,
+                    marginBottom: "8px",
+                    fontSize: "24px",
+                    fontWeight: 700
+                  }}
+                >
+                  Buca {currentHole.hole}
+                </h3>
+
+                <p
+                  style={{
+                    color: "#aaa",
+                    fontSize: "14px",
+                    marginTop: 0,
+                    marginBottom: "18px",
+                    lineHeight: 1.5
+                  }}
+                >
+                  Inserisci il Par e lo Stroke Index.
+                </p>
+
+                <div
+                  onClick={() => setSelectedStepper("par")}
+                  style={stepperCardStyle(selectedStepper === "par")}
+                >
+                  <label
+                    style={{
+                      display: "block",
+                      fontSize: "14px",
+                      color: "#c7c7c7",
+                      marginBottom: "8px"
+                    }}
+                  >
+                    Par
+                  </label>
+
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: "10px" }}
+                  >
+                    <button
+                      onClick={() => adjustPar(-1)}
+                      style={stepperButtonStyle}
+                    >
+                      -
+                    </button>
+
+                    <div style={stepperValueStyle}>{currentHole.par}</div>
+
+                    <button
+                      onClick={() => adjustPar(1)}
+                      style={stepperButtonStyle}
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                <div
+                  onClick={() => setSelectedStepper("stroke")}
+                  style={stepperCardStyle(selectedStepper === "stroke")}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      marginBottom: "8px"
+                    }}
+                  >
+                    <label style={{ fontSize: "14px", color: "#c7c7c7" }}>
+                      Stroke Index
+                    </label>
+
+                    {currentHoleIndex === 0 && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowStrokeInfo((prev) => !prev);
+                        }}
+                        style={{
+                          width: "20px",
+                          height: "20px",
+                          borderRadius: "50%",
+                          border: "1px solid #555",
+                          backgroundColor: "#1a1a1a",
+                          color: "#d5d5d5",
+                          fontSize: "12px",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          padding: 0,
+                          fontFamily: appFont
+                        }}
+                      >
+                        i
+                      </button>
+                    )}
+                  </div>
+
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: "10px" }}
+                  >
+                    <button
+                      onClick={() => adjustStrokeIndex(-1)}
+                      style={stepperButtonStyle}
+                    >
+                      -
+                    </button>
+
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={currentHole.strokeIndex}
+                      onChange={(e) => handleStrokeInputChange(e.target.value)}
+                      onBlur={normalizeStrokeInput}
+                      placeholder="0"
+                      style={stepperInputStyle}
+                    />
+
+                    <button
+                      onClick={() => adjustStrokeIndex(1)}
+                      style={stepperButtonStyle}
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                {currentHoleIndex === 0 && showStrokeInfo && (
+                  <div
+                    style={{
+                      marginTop: "12px",
+                      padding: "14px",
+                      backgroundColor: "#171717",
+                      border: "1px solid #2b2b2b",
+                      borderRadius: "12px",
+                      color: "#bcbcbc",
+                      fontSize: "13px",
+                      lineHeight: 1.5
+                    }}
+                  >
+                    Lo Stroke Index serve a determinare su quali buche ricevi più
+                    colpi in base al tuo handicap di gioco. Se non conosci questo
+                    dato chiedilo alla segreteria del campo.
+                  </div>
+                )}
+
+                <button
+                  onClick={nextHole}
+                  disabled={!currentHoleCompleted}
+                  style={primaryButtonStyle(currentHoleCompleted)}
+                >
+                  {currentHoleIndex === holesCount - 1
+                    ? "Vai al riepilogo"
+                    : "Avanti"}
+                </button>
+
+                <button onClick={previousHole} style={secondaryButtonStyle}>
+                  {currentHoleIndex === 0 ? "Indietro" : "Buca precedente"}
+                </button>
+
+                <button onClick={closeDialog} style={subtleButtonStyle}>
+                  Annulla
+                </button>
+              </>
+            )}
+
+            {dialogStep === 5 && (
+              <>
+                <h3
+                  style={{
+                    marginTop: 0,
+                    marginBottom: "8px",
+                    fontSize: "24px",
+                    fontWeight: 700
+                  }}
+                >
+                  Riepilogo campo
+                </h3>
+
+                <p
+                  style={{
+                    color: "#aaa",
+                    fontSize: "14px",
+                    marginTop: 0,
+                    marginBottom: "18px",
+                    lineHeight: 1.5
+                  }}
+                >
+                  Controlla la mappatura completa di {courseName}.
+                </p>
+
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "70px 1fr 1fr",
+                    gap: "10px",
+                    marginBottom: "12px",
+                    fontSize: "13px",
+                    color: "#8f8f8f",
+                    padding: "0 4px"
+                  }}
+                >
+                  <div>Buca</div>
+                  <div>Par</div>
+                  <div>Stroke Index</div>
+                </div>
+
+                {holesData.map((hole) => (
+                  <div
+                    key={hole.hole}
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "70px 1fr 1fr",
+                      gap: "10px",
+                      alignItems: "center",
+                      marginBottom: "10px"
+                    }}
+                  >
+                    <div
+                      style={{
+                        height: "42px",
+                        display: "flex",
+                        alignItems: "center",
+                        paddingLeft: "10px",
+                        borderRadius: "10px",
+                        backgroundColor: "#1a1a1a",
+                        border: "1px solid #333"
+                      }}
+                    >
+                      {hole.hole}
+                    </div>
+
+                    <div
+                      style={{
+                        height: "42px",
+                        display: "flex",
+                        alignItems: "center",
+                        paddingLeft: "12px",
+                        borderRadius: "10px",
+                        backgroundColor: "#1a1a1a",
+                        border: "1px solid #333"
+                      }}
+                    >
+                      {hole.par}
+                    </div>
+
+                    <div
+                      style={{
+                        height: "42px",
+                        display: "flex",
+                        alignItems: "center",
+                        paddingLeft: "12px",
+                        borderRadius: "10px",
+                        backgroundColor: "#1a1a1a",
+                        border: "1px solid #333"
+                      }}
+                    >
+                      {hole.strokeIndex}
+                    </div>
+                  </div>
+                ))}
+
+                <div
+                  style={{
+                    marginTop: "18px",
+                    padding: "14px 16px",
+                    borderRadius: "14px",
+                    backgroundColor: "#151515",
+                    border: "1px solid #292929",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center"
+                  }}
+                >
+                  <span style={{ color: "#cfcfcf", fontSize: "15px" }}>
+                    Par totale campo
+                  </span>
+                  <span
+                    style={{
+                      color: "#2ecc71",
+                      fontWeight: 700,
+                      fontSize: "18px"
+                    }}
+                  >
+                    {totalPar}
+                  </span>
+                </div>
+
+                <div
+                  style={{
+                    marginTop: "12px",
+                    color: "#8e8e8e",
+                    fontSize: "13px",
+                    lineHeight: 1.5
+                  }}
+                >
+                  Una volta salvato, il campo resterà nel sistema e potrà essere
+                  richiamato senza rimappatura.
+                </div>
+
+                <button onClick={saveCourse} style={primaryButtonStyle(true)}>
+                  Salva campo
+                </button>
+
+                <button onClick={goBackFromSummary} style={secondaryButtonStyle}>
+                  Modifica ultima buca
+                </button>
+
+                <button onClick={closeDialog} style={subtleButtonStyle}>
+                  Annulla
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default App;

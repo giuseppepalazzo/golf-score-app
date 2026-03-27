@@ -1,0 +1,1431 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2709
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 Menlo-Regular;}
+{\colortbl;\red255\green255\blue255;\red183\green111\blue179;\red15\green16\blue16;\red173\green176\blue178;
+\red189\green198\blue208;\red150\green204\blue255;\red252\green99\blue95;\red104\green177\blue255;\red202\green202\blue202;
+\red140\green211\blue254;\red167\green197\blue152;\red198\green146\blue255;\red70\green137\blue204;\red253\green149\blue70;
+\red196\green83\blue86;\red109\green109\blue109;\red111\green230\blue116;}
+{\*\expandedcolortbl;;\cssrgb\c77255\c52549\c75294;\cssrgb\c7059\c7451\c7843;\cssrgb\c73333\c74510\c74902;
+\cssrgb\c78824\c81961\c85098;\cssrgb\c64706\c83922\c100000;\cssrgb\c100000\c48235\c44706;\cssrgb\c47451\c75294\c100000;\cssrgb\c83137\c83137\c83137;
+\cssrgb\c61176\c86275\c99608;\cssrgb\c70980\c80784\c65882;\cssrgb\c82353\c65882\c100000;\cssrgb\c33725\c61176\c83922;\cssrgb\c100000\c65098\c34118;
+\cssrgb\c81961\c41176\c41176;\cssrgb\c50196\c50196\c50196;\cssrgb\c49412\c90588\c52941;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\partightenfactor0
+
+\f0\fs24 \cf2 \cb3 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 import\cf4 \strokec4  \cf5 \strokec5 \{ useEffect, useMemo, useState \}\cf4 \strokec4  \cf2 \strokec2 from\cf4 \strokec4  \cf6 \strokec6 "react"\cf4 \strokec4 ;\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf7 \cb3 \strokec7 const\cf4 \strokec4  \cf8 \strokec8 appFont\cf4 \strokec4  \cf9 \strokec9 =\cf4 \cb1 \strokec4 \
+\pard\pardeftab720\partightenfactor0
+\cf4 \cb3   \cf6 \strokec6 "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"\cf4 \strokec4 ;\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf7 \cb3 \strokec7 const\cf4 \strokec4  \cf8 \strokec8 STORAGE_KEY\cf4 \strokec4  \cf9 \strokec9 =\cf4 \strokec4  \cf6 \strokec6 "golf-score-app-courses-v1"\cf4 \strokec4 ;\cb1 \
+\
+\cf7 \cb3 \strokec7 const\cf4 \strokec4  \cf8 \strokec8 stepperButtonStyle\cf4 \strokec4  \cf9 \strokec9 =\cf4 \strokec4  \{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf4 \cb3   \cf10 \strokec10 width:\cf5 \strokec5  \cf6 \strokec6 "44px"\cf4 \strokec4 ,\cb1 \
+\cb3   \cf10 \strokec10 height:\cf5 \strokec5  \cf6 \strokec6 "44px"\cf4 \strokec4 ,\cb1 \
+\cb3   \cf10 \strokec10 borderRadius:\cf5 \strokec5  \cf6 \strokec6 "12px"\cf4 \strokec4 ,\cb1 \
+\cb3   \cf10 \strokec10 border:\cf5 \strokec5  \cf6 \strokec6 "1px solid #333"\cf4 \strokec4 ,\cb1 \
+\cb3   \cf10 \strokec10 backgroundColor:\cf5 \strokec5  \cf6 \strokec6 "#1a1a1a"\cf4 \strokec4 ,\cb1 \
+\cb3   \cf10 \strokec10 color:\cf5 \strokec5  \cf6 \strokec6 "white"\cf4 \strokec4 ,\cb1 \
+\cb3   \cf10 \strokec10 fontSize:\cf5 \strokec5  \cf6 \strokec6 "22px"\cf4 \strokec4 ,\cb1 \
+\cb3   \cf10 \strokec10 cursor:\cf5 \strokec5  \cf6 \strokec6 "pointer"\cf4 \strokec4 ,\cb1 \
+\cb3   \cf10 \strokec10 display:\cf5 \strokec5  \cf6 \strokec6 "flex"\cf4 \strokec4 ,\cb1 \
+\cb3   \cf10 \strokec10 alignItems:\cf5 \strokec5  \cf6 \strokec6 "center"\cf4 \strokec4 ,\cb1 \
+\cb3   \cf10 \strokec10 justifyContent:\cf5 \strokec5  \cf6 \strokec6 "center"\cf4 \strokec4 ,\cb1 \
+\cb3   \cf10 \strokec10 fontFamily:\cf5 \strokec5  appFont\cf4 \cb1 \strokec4 \
+\cb3 \};\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf7 \cb3 \strokec7 const\cf4 \strokec4  \cf8 \strokec8 stepperValueStyle\cf4 \strokec4  \cf9 \strokec9 =\cf4 \strokec4  \{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf4 \cb3   \cf10 \strokec10 flex:\cf5 \strokec5  \cf11 \strokec11 1\cf4 \strokec4 ,\cb1 \
+\cb3   \cf10 \strokec10 height:\cf5 \strokec5  \cf6 \strokec6 "44px"\cf4 \strokec4 ,\cb1 \
+\cb3   \cf10 \strokec10 borderRadius:\cf5 \strokec5  \cf6 \strokec6 "12px"\cf4 \strokec4 ,\cb1 \
+\cb3   \cf10 \strokec10 border:\cf5 \strokec5  \cf6 \strokec6 "1px solid #333"\cf4 \strokec4 ,\cb1 \
+\cb3   \cf10 \strokec10 backgroundColor:\cf5 \strokec5  \cf6 \strokec6 "#1a1a1a"\cf4 \strokec4 ,\cb1 \
+\cb3   \cf10 \strokec10 color:\cf5 \strokec5  \cf6 \strokec6 "white"\cf4 \strokec4 ,\cb1 \
+\cb3   \cf10 \strokec10 display:\cf5 \strokec5  \cf6 \strokec6 "flex"\cf4 \strokec4 ,\cb1 \
+\cb3   \cf10 \strokec10 alignItems:\cf5 \strokec5  \cf6 \strokec6 "center"\cf4 \strokec4 ,\cb1 \
+\cb3   \cf10 \strokec10 justifyContent:\cf5 \strokec5  \cf6 \strokec6 "center"\cf4 \strokec4 ,\cb1 \
+\cb3   \cf10 \strokec10 fontSize:\cf5 \strokec5  \cf6 \strokec6 "18px"\cf4 \strokec4 ,\cb1 \
+\cb3   \cf10 \strokec10 fontWeight:\cf5 \strokec5  \cf11 \strokec11 600\cf4 \strokec4 ,\cb1 \
+\cb3   \cf10 \strokec10 fontFamily:\cf5 \strokec5  appFont\cf4 \cb1 \strokec4 \
+\cb3 \};\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf7 \cb3 \strokec7 const\cf4 \strokec4  \cf8 \strokec8 stepperInputStyle\cf4 \strokec4  \cf9 \strokec9 =\cf4 \strokec4  \{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf4 \cb3   \cf10 \strokec10 flex:\cf5 \strokec5  \cf11 \strokec11 1\cf4 \strokec4 ,\cb1 \
+\cb3   \cf10 \strokec10 height:\cf5 \strokec5  \cf6 \strokec6 "44px"\cf4 \strokec4 ,\cb1 \
+\cb3   \cf10 \strokec10 borderRadius:\cf5 \strokec5  \cf6 \strokec6 "12px"\cf4 \strokec4 ,\cb1 \
+\cb3   \cf10 \strokec10 border:\cf5 \strokec5  \cf6 \strokec6 "1px solid #333"\cf4 \strokec4 ,\cb1 \
+\cb3   \cf10 \strokec10 backgroundColor:\cf5 \strokec5  \cf6 \strokec6 "#1a1a1a"\cf4 \strokec4 ,\cb1 \
+\cb3   \cf10 \strokec10 color:\cf5 \strokec5  \cf6 \strokec6 "white"\cf4 \strokec4 ,\cb1 \
+\cb3   \cf10 \strokec10 display:\cf5 \strokec5  \cf6 \strokec6 "flex"\cf4 \strokec4 ,\cb1 \
+\cb3   \cf10 \strokec10 alignItems:\cf5 \strokec5  \cf6 \strokec6 "center"\cf4 \strokec4 ,\cb1 \
+\cb3   \cf10 \strokec10 justifyContent:\cf5 \strokec5  \cf6 \strokec6 "center"\cf4 \strokec4 ,\cb1 \
+\cb3   \cf10 \strokec10 fontSize:\cf5 \strokec5  \cf6 \strokec6 "18px"\cf4 \strokec4 ,\cb1 \
+\cb3   \cf10 \strokec10 fontWeight:\cf5 \strokec5  \cf11 \strokec11 600\cf4 \strokec4 ,\cb1 \
+\cb3   \cf10 \strokec10 fontFamily:\cf5 \strokec5  appFont\cf4 \strokec4 ,\cb1 \
+\cb3   \cf10 \strokec10 textAlign:\cf5 \strokec5  \cf6 \strokec6 "center"\cf4 \strokec4 ,\cb1 \
+\cb3   \cf10 \strokec10 outline:\cf5 \strokec5  \cf6 \strokec6 "none"\cf4 \strokec4 ,\cb1 \
+\cb3   \cf10 \strokec10 boxSizing:\cf5 \strokec5  \cf6 \strokec6 "border-box"\cf4 \strokec4 ,\cb1 \
+\cb3   \cf10 \strokec10 width:\cf5 \strokec5  \cf6 \strokec6 "100%"\cf4 \cb1 \strokec4 \
+\cb3 \};\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf7 \cb3 \strokec7 function\cf4 \strokec4  \cf12 \strokec12 App\cf4 \strokec4 () \cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\pard\pardeftab720\partightenfactor0
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  [\cf8 \strokec8 showDialog\cf5 \strokec5 , \cf8 \strokec8 setShowDialog\cf5 \strokec5 ] \cf9 \strokec9 =\cf5 \strokec5  \cf12 \strokec12 useState\cf5 \strokec5 (\cf13 \strokec13 false\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  [\cf8 \strokec8 dialogStep\cf5 \strokec5 , \cf8 \strokec8 setDialogStep\cf5 \strokec5 ] \cf9 \strokec9 =\cf5 \strokec5  \cf12 \strokec12 useState\cf5 \strokec5 (\cf11 \strokec11 1\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  [\cf8 \strokec8 courseName\cf5 \strokec5 , \cf8 \strokec8 setCourseName\cf5 \strokec5 ] \cf9 \strokec9 =\cf5 \strokec5  \cf12 \strokec12 useState\cf5 \strokec5 (\cf6 \strokec6 ""\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  [\cf8 \strokec8 holesCount\cf5 \strokec5 , \cf8 \strokec8 setHolesCount\cf5 \strokec5 ] \cf9 \strokec9 =\cf5 \strokec5  \cf12 \strokec12 useState\cf5 \strokec5 (\cf13 \strokec13 null\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  [\cf8 \strokec8 holesData\cf5 \strokec5 , \cf8 \strokec8 setHolesData\cf5 \strokec5 ] \cf9 \strokec9 =\cf5 \strokec5  \cf12 \strokec12 useState\cf5 \strokec5 ([]);\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  [\cf8 \strokec8 currentHoleIndex\cf5 \strokec5 , \cf8 \strokec8 setCurrentHoleIndex\cf5 \strokec5 ] \cf9 \strokec9 =\cf5 \strokec5  \cf12 \strokec12 useState\cf5 \strokec5 (\cf11 \strokec11 0\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  [\cf8 \strokec8 showStrokeInfo\cf5 \strokec5 , \cf8 \strokec8 setShowStrokeInfo\cf5 \strokec5 ] \cf9 \strokec9 =\cf5 \strokec5  \cf12 \strokec12 useState\cf5 \strokec5 (\cf13 \strokec13 false\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  [\cf8 \strokec8 selectedStepper\cf5 \strokec5 , \cf8 \strokec8 setSelectedStepper\cf5 \strokec5 ] \cf9 \strokec9 =\cf5 \strokec5  \cf12 \strokec12 useState\cf5 \strokec5 (\cf6 \strokec6 "par"\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  [\cf8 \strokec8 openedCourse\cf5 \strokec5 , \cf8 \strokec8 setOpenedCourse\cf5 \strokec5 ] \cf9 \strokec9 =\cf5 \strokec5  \cf12 \strokec12 useState\cf5 \strokec5 (\cf13 \strokec13 null\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  [\cf8 \strokec8 searchQuery\cf5 \strokec5 , \cf8 \strokec8 setSearchQuery\cf5 \strokec5 ] \cf9 \strokec9 =\cf5 \strokec5  \cf12 \strokec12 useState\cf5 \strokec5 (\cf6 \strokec6 ""\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  [\cf8 \strokec8 showLatestAdded\cf5 \strokec5 , \cf8 \strokec8 setShowLatestAdded\cf5 \strokec5 ] \cf9 \strokec9 =\cf5 \strokec5  \cf12 \strokec12 useState\cf5 \strokec5 (\cf13 \strokec13 false\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  [\cf8 \strokec8 userProfile\cf5 \strokec5 ] \cf9 \strokec9 =\cf5 \strokec5  \cf12 \strokec12 useState\cf5 \strokec5 (\{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 firstName:\cf5 \strokec5  \cf6 \strokec6 "Giuseppe"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 hcp:\cf5 \strokec5  \cf11 \strokec11 18\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \});\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  [\cf8 \strokec8 savedCourses\cf5 \strokec5 , \cf8 \strokec8 setSavedCourses\cf5 \strokec5 ] \cf9 \strokec9 =\cf5 \strokec5  \cf12 \strokec12 useState\cf5 \strokec5 (() \cf7 \strokec7 =>\cf5 \strokec5  \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf2 \strokec2 try\cf5 \strokec5  \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf7 \strokec7 const\cf5 \strokec5  \cf8 \strokec8 stored\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  localStorage.\cf12 \strokec12 getItem\cf5 \strokec5 (\cf8 \strokec8 STORAGE_KEY\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf2 \strokec2 if\cf5 \strokec5  (\cf9 \strokec9 !\cf5 \strokec5 stored) \cf2 \strokec2 return\cf5 \strokec5  [];\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf7 \strokec7 const\cf5 \strokec5  \cf8 \strokec8 parsed\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  \cf8 \strokec8 JSON\cf5 \strokec5 .\cf12 \strokec12 parse\cf5 \strokec5 (stored);\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf2 \strokec2 return\cf5 \strokec5  Array.\cf12 \strokec12 isArray\cf5 \strokec5 (parsed) \cf9 \strokec9 ?\cf5 \strokec5  parsed \cf9 \strokec9 :\cf5 \strokec5  [];\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \} \cf2 \strokec2 catch\cf5 \strokec5  (error) \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf2 \strokec2 return\cf5 \strokec5  [];\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \});\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf12 \strokec12 useEffect\cf5 \strokec5 (() \cf7 \strokec7 =>\cf5 \strokec5  \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     document.body.style.margin \cf9 \strokec9 =\cf5 \strokec5  \cf6 \strokec6 "0"\cf5 \strokec5 ;\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     document.body.style.backgroundColor \cf9 \strokec9 =\cf5 \strokec5  \cf6 \strokec6 "black"\cf5 \strokec5 ;\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     document.body.style.color \cf9 \strokec9 =\cf5 \strokec5  \cf6 \strokec6 "white"\cf5 \strokec5 ;\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     document.body.style.fontFamily \cf9 \strokec9 =\cf5 \strokec5  appFont;\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5     \cf2 \strokec2 return\cf5 \strokec5  () \cf7 \strokec7 =>\cf5 \strokec5  \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       document.body.style.margin \cf9 \strokec9 =\cf5 \strokec5  \cf6 \strokec6 ""\cf5 \strokec5 ;\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       document.body.style.backgroundColor \cf9 \strokec9 =\cf5 \strokec5  \cf6 \strokec6 ""\cf5 \strokec5 ;\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       document.body.style.color \cf9 \strokec9 =\cf5 \strokec5  \cf6 \strokec6 ""\cf5 \strokec5 ;\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       document.body.style.fontFamily \cf9 \strokec9 =\cf5 \strokec5  \cf6 \strokec6 ""\cf5 \strokec5 ;\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \};\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \}, []);\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf12 \strokec12 useEffect\cf5 \strokec5 (() \cf7 \strokec7 =>\cf5 \strokec5  \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     localStorage.\cf12 \strokec12 setItem\cf5 \strokec5 (\cf8 \strokec8 STORAGE_KEY\cf5 \strokec5 , \cf8 \strokec8 JSON\cf5 \strokec5 .\cf12 \strokec12 stringify\cf5 \strokec5 (savedCourses));\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \}, [savedCourses]);\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  \cf8 \strokec8 favorites\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  savedCourses.\cf12 \strokec12 filter\cf5 \strokec5 ((\cf14 \strokec14 course\cf5 \strokec5 ) \cf7 \strokec7 =>\cf5 \strokec5  course.favorite);\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  \cf8 \strokec8 nearbyCourses\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  savedCourses.\cf12 \strokec12 slice\cf5 \strokec5 (\cf11 \strokec11 0\cf5 \strokec5 , \cf11 \strokec11 5\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  \cf8 \strokec8 latestAddedCourses\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  [\cf9 \strokec9 ...\cf5 \strokec5 savedCourses]\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     .\cf12 \strokec12 sort\cf5 \strokec5 ((\cf14 \strokec14 a\cf5 \strokec5 , \cf14 \strokec14 b\cf5 \strokec5 ) \cf7 \strokec7 =>\cf5 \strokec5  (b.createdAt \cf9 \strokec9 ||\cf5 \strokec5  \cf11 \strokec11 0\cf5 \strokec5 ) \cf9 \strokec9 -\cf5 \strokec5  (a.createdAt \cf9 \strokec9 ||\cf5 \strokec5  \cf11 \strokec11 0\cf5 \strokec5 ))\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     .\cf12 \strokec12 slice\cf5 \strokec5 (\cf11 \strokec11 0\cf5 \strokec5 , \cf11 \strokec11 5\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  \cf8 \strokec8 filteredCourses\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  savedCourses.\cf12 \strokec12 filter\cf5 \strokec5 ((\cf14 \strokec14 course\cf5 \strokec5 ) \cf7 \strokec7 =>\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     course.name.\cf12 \strokec12 toLowerCase\cf5 \strokec5 ().\cf12 \strokec12 includes\cf5 \strokec5 (searchQuery.\cf12 \strokec12 trim\cf5 \strokec5 ().\cf12 \strokec12 toLowerCase\cf5 \strokec5 ())\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   );\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  \cf8 \strokec8 currentHole\cf5 \strokec5  \cf9 \strokec9 =\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     holesData[currentHoleIndex] \cf9 \strokec9 ||\cf5 \strokec5  \{ \cf10 \strokec10 hole:\cf5 \strokec5  \cf11 \strokec11 1\cf5 \strokec5 , \cf10 \strokec10 par:\cf5 \strokec5  \cf11 \strokec11 4\cf5 \strokec5 , \cf10 \strokec10 strokeIndex:\cf5 \strokec5  \cf6 \strokec6 ""\cf5 \strokec5  \};\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  \cf8 \strokec8 totalPar\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  \cf12 \strokec12 useMemo\cf5 \strokec5 (() \cf7 \strokec7 =>\cf5 \strokec5  \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf2 \strokec2 return\cf5 \strokec5  holesData.\cf12 \strokec12 reduce\cf5 \strokec5 ((\cf14 \strokec14 sum\cf5 \strokec5 , \cf14 \strokec14 hole\cf5 \strokec5 ) \cf7 \strokec7 =>\cf5 \strokec5  sum \cf9 \strokec9 +\cf5 \strokec5  \cf12 \strokec12 Number\cf5 \strokec5 (hole.par \cf9 \strokec9 ||\cf5 \strokec5  \cf11 \strokec11 0\cf5 \strokec5 ), \cf11 \strokec11 0\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \}, [holesData]);\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  \cf12 \strokec12 resetDialogState\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  () \cf7 \strokec7 =>\cf5 \strokec5  \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf12 \strokec12 setDialogStep\cf5 \strokec5 (\cf11 \strokec11 1\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf12 \strokec12 setCourseName\cf5 \strokec5 (\cf6 \strokec6 ""\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf12 \strokec12 setHolesCount\cf5 \strokec5 (\cf13 \strokec13 null\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf12 \strokec12 setHolesData\cf5 \strokec5 ([]);\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf12 \strokec12 setCurrentHoleIndex\cf5 \strokec5 (\cf11 \strokec11 0\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf12 \strokec12 setShowStrokeInfo\cf5 \strokec5 (\cf13 \strokec13 false\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf12 \strokec12 setSelectedStepper\cf5 \strokec5 (\cf6 \strokec6 "par"\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \};\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  \cf12 \strokec12 openDialog\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  () \cf7 \strokec7 =>\cf5 \strokec5  \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf12 \strokec12 resetDialogState\cf5 \strokec5 ();\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf12 \strokec12 setShowDialog\cf5 \strokec5 (\cf13 \strokec13 true\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \};\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  \cf12 \strokec12 closeDialog\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  () \cf7 \strokec7 =>\cf5 \strokec5  \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf12 \strokec12 setShowDialog\cf5 \strokec5 (\cf13 \strokec13 false\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf12 \strokec12 resetDialogState\cf5 \strokec5 ();\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \};\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  \cf12 \strokec12 goToStepTwo\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  () \cf7 \strokec7 =>\cf5 \strokec5  \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf2 \strokec2 if\cf5 \strokec5  (courseName.\cf12 \strokec12 trim\cf5 \strokec5 () \cf9 \strokec9 ===\cf5 \strokec5  \cf6 \strokec6 ""\cf5 \strokec5 ) \cf2 \strokec2 return\cf5 \strokec5 ;\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf12 \strokec12 setDialogStep\cf5 \strokec5 (\cf11 \strokec11 2\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \};\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  \cf12 \strokec12 goBackToStepOne\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  () \cf7 \strokec7 =>\cf5 \strokec5  \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf12 \strokec12 setDialogStep\cf5 \strokec5 (\cf11 \strokec11 1\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \};\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  \cf12 \strokec12 goToIntroStep\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  () \cf7 \strokec7 =>\cf5 \strokec5  \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf2 \strokec2 if\cf5 \strokec5  (\cf9 \strokec9 !\cf5 \strokec5 holesCount) \cf2 \strokec2 return\cf5 \strokec5 ;\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5     \cf7 \strokec7 const\cf5 \strokec5  \cf8 \strokec8 generatedHoles\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  Array.\cf12 \strokec12 from\cf5 \strokec5 (\{ \cf10 \strokec10 length:\cf5 \strokec5  holesCount \}, (\cf14 \strokec14 _\cf5 \strokec5 , \cf14 \strokec14 index\cf5 \strokec5 ) \cf7 \strokec7 =>\cf5 \strokec5  (\{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf10 \strokec10 hole:\cf5 \strokec5  index \cf9 \strokec9 +\cf5 \strokec5  \cf11 \strokec11 1\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf10 \strokec10 par:\cf5 \strokec5  \cf11 \strokec11 4\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf10 \strokec10 strokeIndex:\cf5 \strokec5  \cf6 \strokec6 ""\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \}));\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5     \cf12 \strokec12 setHolesData\cf5 \strokec5 (generatedHoles);\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf12 \strokec12 setCurrentHoleIndex\cf5 \strokec5 (\cf11 \strokec11 0\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf12 \strokec12 setSelectedStepper\cf5 \strokec5 (\cf6 \strokec6 "par"\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf12 \strokec12 setDialogStep\cf5 \strokec5 (\cf11 \strokec11 3\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \};\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  \cf12 \strokec12 startMapping\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  () \cf7 \strokec7 =>\cf5 \strokec5  \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf12 \strokec12 setDialogStep\cf5 \strokec5 (\cf11 \strokec11 4\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf12 \strokec12 setSelectedStepper\cf5 \strokec5 (\cf6 \strokec6 "par"\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \};\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  \cf12 \strokec12 goBackToStepTwoFromIntro\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  () \cf7 \strokec7 =>\cf5 \strokec5  \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf12 \strokec12 setDialogStep\cf5 \strokec5 (\cf11 \strokec11 2\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \};\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  \cf12 \strokec12 updateCurrentHoleField\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  (\cf14 \strokec14 field\cf5 \strokec5 , \cf14 \strokec14 value\cf5 \strokec5 ) \cf7 \strokec7 =>\cf5 \strokec5  \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf7 \strokec7 const\cf5 \strokec5  \cf8 \strokec8 updated\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  [\cf9 \strokec9 ...\cf5 \strokec5 holesData];\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     updated[currentHoleIndex] \cf9 \strokec9 =\cf5 \strokec5  \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf9 \strokec9 ...\cf5 \strokec5 updated[currentHoleIndex],\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf10 \strokec10 [\cf5 \strokec5 field\cf10 \strokec10 ]:\cf5 \strokec5  value\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \};\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf12 \strokec12 setHolesData\cf5 \strokec5 (updated);\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \};\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  \cf12 \strokec12 adjustPar\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  (\cf14 \strokec14 delta\cf5 \strokec5 ) \cf7 \strokec7 =>\cf5 \strokec5  \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf7 \strokec7 const\cf5 \strokec5  \cf8 \strokec8 currentValue\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  \cf12 \strokec12 Number\cf5 \strokec5 (currentHole.par \cf9 \strokec9 ||\cf5 \strokec5  \cf11 \strokec11 4\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf7 \strokec7 const\cf5 \strokec5  \cf8 \strokec8 nextValue\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  Math.\cf12 \strokec12 min\cf5 \strokec5 (\cf11 \strokec11 5\cf5 \strokec5 , Math.\cf12 \strokec12 max\cf5 \strokec5 (\cf11 \strokec11 3\cf5 \strokec5 , currentValue \cf9 \strokec9 +\cf5 \strokec5  delta));\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf12 \strokec12 updateCurrentHoleField\cf5 \strokec5 (\cf6 \strokec6 "par"\cf5 \strokec5 , nextValue);\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \};\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  \cf12 \strokec12 adjustStrokeIndex\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  (\cf14 \strokec14 delta\cf5 \strokec5 ) \cf7 \strokec7 =>\cf5 \strokec5  \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf7 \strokec7 const\cf5 \strokec5  \cf8 \strokec8 rawValue\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  currentHole.strokeIndex;\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf7 \strokec7 const\cf5 \strokec5  \cf8 \strokec8 isEmpty\cf5 \strokec5  \cf9 \strokec9 =\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       rawValue \cf9 \strokec9 ===\cf5 \strokec5  \cf6 \strokec6 ""\cf5 \strokec5  \cf9 \strokec9 ||\cf5 \strokec5  rawValue \cf9 \strokec9 ===\cf5 \strokec5  \cf13 \strokec13 null\cf5 \strokec5  \cf9 \strokec9 ||\cf5 \strokec5  \cf13 \strokec13 typeof\cf5 \strokec5  rawValue \cf9 \strokec9 ===\cf5 \strokec5  \cf6 \strokec6 "undefined"\cf5 \strokec5 ;\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf7 \strokec7 const\cf5 \strokec5  \cf8 \strokec8 currentValue\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  isEmpty \cf9 \strokec9 ?\cf5 \strokec5  \cf11 \strokec11 0\cf5 \strokec5  \cf9 \strokec9 :\cf5 \strokec5  \cf12 \strokec12 Number\cf5 \strokec5 (rawValue);\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5     \cf2 \strokec2 if\cf5 \strokec5  (delta \cf9 \strokec9 <\cf5 \strokec5  \cf11 \strokec11 0\cf5 \strokec5 ) \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf2 \strokec2 if\cf5 \strokec5  (isEmpty \cf9 \strokec9 ||\cf5 \strokec5  currentValue \cf9 \strokec9 ===\cf5 \strokec5  \cf11 \strokec11 0\cf5 \strokec5 ) \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf12 \strokec12 updateCurrentHoleField\cf5 \strokec5 (\cf6 \strokec6 "strokeIndex"\cf5 \strokec5 , \cf11 \strokec11 18\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf2 \strokec2 return\cf5 \strokec5 ;\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \}\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5       \cf7 \strokec7 const\cf5 \strokec5  \cf8 \strokec8 nextValue\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  currentValue \cf9 \strokec9 ===\cf5 \strokec5  \cf11 \strokec11 1\cf5 \strokec5  \cf9 \strokec9 ?\cf5 \strokec5  \cf11 \strokec11 18\cf5 \strokec5  \cf9 \strokec9 :\cf5 \strokec5  currentValue \cf9 \strokec9 -\cf5 \strokec5  \cf11 \strokec11 1\cf5 \strokec5 ;\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf12 \strokec12 updateCurrentHoleField\cf5 \strokec5 (\cf6 \strokec6 "strokeIndex"\cf5 \strokec5 , nextValue);\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf2 \strokec2 return\cf5 \strokec5 ;\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \}\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5     \cf2 \strokec2 if\cf5 \strokec5  (delta \cf9 \strokec9 >\cf5 \strokec5  \cf11 \strokec11 0\cf5 \strokec5 ) \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf2 \strokec2 if\cf5 \strokec5  (isEmpty \cf9 \strokec9 ||\cf5 \strokec5  currentValue \cf9 \strokec9 ===\cf5 \strokec5  \cf11 \strokec11 0\cf5 \strokec5 ) \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf12 \strokec12 updateCurrentHoleField\cf5 \strokec5 (\cf6 \strokec6 "strokeIndex"\cf5 \strokec5 , \cf11 \strokec11 1\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf2 \strokec2 return\cf5 \strokec5 ;\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \}\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5       \cf7 \strokec7 const\cf5 \strokec5  \cf8 \strokec8 nextValue\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  currentValue \cf9 \strokec9 ===\cf5 \strokec5  \cf11 \strokec11 18\cf5 \strokec5  \cf9 \strokec9 ?\cf5 \strokec5  \cf11 \strokec11 1\cf5 \strokec5  \cf9 \strokec9 :\cf5 \strokec5  currentValue \cf9 \strokec9 +\cf5 \strokec5  \cf11 \strokec11 1\cf5 \strokec5 ;\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf12 \strokec12 updateCurrentHoleField\cf5 \strokec5 (\cf6 \strokec6 "strokeIndex"\cf5 \strokec5 , nextValue);\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \};\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  \cf12 \strokec12 handleStrokeInputChange\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  (\cf14 \strokec14 value\cf5 \strokec5 ) \cf7 \strokec7 =>\cf5 \strokec5  \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf2 \strokec2 if\cf5 \strokec5  (value \cf9 \strokec9 ===\cf5 \strokec5  \cf6 \strokec6 ""\cf5 \strokec5 ) \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf12 \strokec12 updateCurrentHoleField\cf5 \strokec5 (\cf6 \strokec6 "strokeIndex"\cf5 \strokec5 , \cf6 \strokec6 ""\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf2 \strokec2 return\cf5 \strokec5 ;\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \}\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5     \cf7 \strokec7 const\cf5 \strokec5  \cf8 \strokec8 numericValue\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  value.\cf12 \strokec12 replace\cf5 \strokec5 (\cf6 \strokec6 /\cf15 \strokec15 \\D\cf6 \strokec6 /\cf7 \strokec7 g\cf5 \strokec5 , \cf6 \strokec6 ""\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf12 \strokec12 updateCurrentHoleField\cf5 \strokec5 (\cf6 \strokec6 "strokeIndex"\cf5 \strokec5 , numericValue);\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \};\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  \cf12 \strokec12 normalizeStrokeInput\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  () \cf7 \strokec7 =>\cf5 \strokec5  \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf2 \strokec2 if\cf5 \strokec5  (currentHole.strokeIndex \cf9 \strokec9 ===\cf5 \strokec5  \cf6 \strokec6 ""\cf5 \strokec5 ) \cf2 \strokec2 return\cf5 \strokec5 ;\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5     \cf7 \strokec7 let\cf5 \strokec5  value \cf9 \strokec9 =\cf5 \strokec5  \cf12 \strokec12 Number\cf5 \strokec5 (currentHole.strokeIndex);\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5     \cf2 \strokec2 if\cf5 \strokec5  (Number.\cf12 \strokec12 isNaN\cf5 \strokec5 (value)) \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf12 \strokec12 updateCurrentHoleField\cf5 \strokec5 (\cf6 \strokec6 "strokeIndex"\cf5 \strokec5 , \cf6 \strokec6 ""\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf2 \strokec2 return\cf5 \strokec5 ;\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \}\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5     \cf2 \strokec2 if\cf5 \strokec5  (value \cf9 \strokec9 <\cf5 \strokec5  \cf11 \strokec11 1\cf5 \strokec5 ) value \cf9 \strokec9 =\cf5 \strokec5  \cf11 \strokec11 1\cf5 \strokec5 ;\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf2 \strokec2 if\cf5 \strokec5  (value \cf9 \strokec9 >\cf5 \strokec5  \cf11 \strokec11 18\cf5 \strokec5 ) value \cf9 \strokec9 =\cf5 \strokec5  \cf11 \strokec11 18\cf5 \strokec5 ;\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5     \cf12 \strokec12 updateCurrentHoleField\cf5 \strokec5 (\cf6 \strokec6 "strokeIndex"\cf5 \strokec5 , value);\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \};\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  \cf8 \strokec8 currentHoleCompleted\cf5 \strokec5  \cf9 \strokec9 =\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     currentHole.par \cf9 \strokec9 !==\cf5 \strokec5  \cf6 \strokec6 ""\cf5 \strokec5  \cf9 \strokec9 &&\cf5 \strokec5  currentHole.strokeIndex \cf9 \strokec9 !==\cf5 \strokec5  \cf6 \strokec6 ""\cf5 \strokec5 ;\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  \cf12 \strokec12 nextHole\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  () \cf7 \strokec7 =>\cf5 \strokec5  \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf2 \strokec2 if\cf5 \strokec5  (\cf9 \strokec9 !\cf5 \strokec5 currentHoleCompleted) \cf2 \strokec2 return\cf5 \strokec5 ;\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5     \cf2 \strokec2 if\cf5 \strokec5  (currentHoleIndex \cf9 \strokec9 <\cf5 \strokec5  holesData.\cf8 \strokec8 length\cf5 \strokec5  \cf9 \strokec9 -\cf5 \strokec5  \cf11 \strokec11 1\cf5 \strokec5 ) \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf12 \strokec12 setCurrentHoleIndex\cf5 \strokec5 ((\cf14 \strokec14 prev\cf5 \strokec5 ) \cf7 \strokec7 =>\cf5 \strokec5  prev \cf9 \strokec9 +\cf5 \strokec5  \cf11 \strokec11 1\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf12 \strokec12 setSelectedStepper\cf5 \strokec5 (\cf6 \strokec6 "par"\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \} \cf2 \strokec2 else\cf5 \strokec5  \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf12 \strokec12 setDialogStep\cf5 \strokec5 (\cf11 \strokec11 5\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \};\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  \cf12 \strokec12 previousHole\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  () \cf7 \strokec7 =>\cf5 \strokec5  \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf2 \strokec2 if\cf5 \strokec5  (currentHoleIndex \cf9 \strokec9 >\cf5 \strokec5  \cf11 \strokec11 0\cf5 \strokec5 ) \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf12 \strokec12 setCurrentHoleIndex\cf5 \strokec5 ((\cf14 \strokec14 prev\cf5 \strokec5 ) \cf7 \strokec7 =>\cf5 \strokec5  prev \cf9 \strokec9 -\cf5 \strokec5  \cf11 \strokec11 1\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf12 \strokec12 setSelectedStepper\cf5 \strokec5 (\cf6 \strokec6 "par"\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \} \cf2 \strokec2 else\cf5 \strokec5  \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf12 \strokec12 setDialogStep\cf5 \strokec5 (\cf11 \strokec11 3\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \};\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  \cf12 \strokec12 goBackFromSummary\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  () \cf7 \strokec7 =>\cf5 \strokec5  \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf12 \strokec12 setDialogStep\cf5 \strokec5 (\cf11 \strokec11 4\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf12 \strokec12 setCurrentHoleIndex\cf5 \strokec5 (holesData.\cf8 \strokec8 length\cf5 \strokec5  \cf9 \strokec9 -\cf5 \strokec5  \cf11 \strokec11 1\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf12 \strokec12 setSelectedStepper\cf5 \strokec5 (\cf6 \strokec6 "par"\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \};\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  \cf12 \strokec12 saveCourse\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  () \cf7 \strokec7 =>\cf5 \strokec5  \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf7 \strokec7 const\cf5 \strokec5  \cf8 \strokec8 newCourse\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf10 \strokec10 id:\cf5 \strokec5  Date.\cf12 \strokec12 now\cf5 \strokec5 (),\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf10 \strokec10 name:\cf5 \strokec5  courseName.\cf12 \strokec12 trim\cf5 \strokec5 (),\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf10 \strokec10 favorite:\cf5 \strokec5  \cf13 \strokec13 false\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       totalPar,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       holesCount,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf10 \strokec10 holes:\cf5 \strokec5  holesData,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf10 \strokec10 createdAt:\cf5 \strokec5  Date.\cf12 \strokec12 now\cf5 \strokec5 ()\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \};\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5     \cf12 \strokec12 setSavedCourses\cf5 \strokec5 ((\cf14 \strokec14 prev\cf5 \strokec5 ) \cf7 \strokec7 =>\cf5 \strokec5  [newCourse, \cf9 \strokec9 ...\cf5 \strokec5 prev]);\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf12 \strokec12 closeDialog\cf5 \strokec5 ();\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \};\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  \cf12 \strokec12 toggleFavorite\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  (\cf14 \strokec14 courseId\cf5 \strokec5 ) \cf7 \strokec7 =>\cf5 \strokec5  \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf12 \strokec12 setSavedCourses\cf5 \strokec5 ((\cf14 \strokec14 prev\cf5 \strokec5 ) \cf7 \strokec7 =>\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       prev.\cf12 \strokec12 map\cf5 \strokec5 ((\cf14 \strokec14 course\cf5 \strokec5 ) \cf7 \strokec7 =>\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         course.id \cf9 \strokec9 ===\cf5 \strokec5  courseId\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf9 \strokec9 ?\cf5 \strokec5  \{ \cf9 \strokec9 ...\cf5 \strokec5 course, \cf10 \strokec10 favorite:\cf5 \strokec5  \cf9 \strokec9 !\cf5 \strokec5 course.favorite \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf9 \strokec9 :\cf5 \strokec5  course\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       )\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     );\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5     \cf2 \strokec2 if\cf5 \strokec5  (openedCourse \cf9 \strokec9 &&\cf5 \strokec5  openedCourse.id \cf9 \strokec9 ===\cf5 \strokec5  courseId) \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf12 \strokec12 setOpenedCourse\cf5 \strokec5 ((\cf14 \strokec14 prev\cf5 \strokec5 ) \cf7 \strokec7 =>\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         prev \cf9 \strokec9 ?\cf5 \strokec5  \{ \cf9 \strokec9 ...\cf5 \strokec5 prev, \cf10 \strokec10 favorite:\cf5 \strokec5  \cf9 \strokec9 !\cf5 \strokec5 prev.favorite \} \cf9 \strokec9 :\cf5 \strokec5  prev\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \};\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  \cf12 \strokec12 openCourse\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  (\cf14 \strokec14 course\cf5 \strokec5 ) \cf7 \strokec7 =>\cf5 \strokec5  \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf12 \strokec12 setOpenedCourse\cf5 \strokec5 (course);\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \};\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  \cf12 \strokec12 closeCourse\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  () \cf7 \strokec7 =>\cf5 \strokec5  \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf12 \strokec12 setOpenedCourse\cf5 \strokec5 (\cf13 \strokec13 null\cf5 \strokec5 );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \};\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  \cf8 \strokec8 titleStyle\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 fontSize:\cf5 \strokec5  \cf6 \strokec6 "22px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 fontWeight:\cf5 \strokec5  \cf11 \strokec11 600\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 letterSpacing:\cf5 \strokec5  \cf6 \strokec6 "0.2px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 marginTop:\cf5 \strokec5  \cf6 \strokec6 "28px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 marginBottom:\cf5 \strokec5  \cf6 \strokec6 "14px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 fontFamily:\cf5 \strokec5  appFont\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \};\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  \cf12 \strokec12 primaryButtonStyle\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  (\cf14 \strokec14 enabled\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  \cf13 \strokec13 true\cf5 \strokec5 ) \cf7 \strokec7 =>\cf5 \strokec5  (\{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 marginTop:\cf5 \strokec5  \cf6 \strokec6 "20px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 width:\cf5 \strokec5  \cf6 \strokec6 "100%"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 padding:\cf5 \strokec5  \cf6 \strokec6 "13px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 backgroundColor:\cf5 \strokec5  enabled \cf9 \strokec9 ?\cf5 \strokec5  \cf6 \strokec6 "#2ecc71"\cf5 \strokec5  \cf9 \strokec9 :\cf5 \strokec5  \cf6 \strokec6 "#244233"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 border:\cf5 \strokec5  \cf6 \strokec6 "none"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 color:\cf5 \strokec5  \cf6 \strokec6 "black"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 fontWeight:\cf5 \strokec5  \cf11 \strokec11 700\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 borderRadius:\cf5 \strokec5  \cf6 \strokec6 "12px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 cursor:\cf5 \strokec5  enabled \cf9 \strokec9 ?\cf5 \strokec5  \cf6 \strokec6 "pointer"\cf5 \strokec5  \cf9 \strokec9 :\cf5 \strokec5  \cf6 \strokec6 "not-allowed"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 opacity:\cf5 \strokec5  enabled \cf9 \strokec9 ?\cf5 \strokec5  \cf11 \strokec11 1\cf5 \strokec5  \cf9 \strokec9 :\cf5 \strokec5  \cf11 \strokec11 0.6\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 fontFamily:\cf5 \strokec5  appFont,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 fontSize:\cf5 \strokec5  \cf6 \strokec6 "15px"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \});\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  \cf8 \strokec8 secondaryButtonStyle\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 marginTop:\cf5 \strokec5  \cf6 \strokec6 "10px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 width:\cf5 \strokec5  \cf6 \strokec6 "100%"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 padding:\cf5 \strokec5  \cf6 \strokec6 "13px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 backgroundColor:\cf5 \strokec5  \cf6 \strokec6 "#2a2a2a"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 border:\cf5 \strokec5  \cf6 \strokec6 "none"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 color:\cf5 \strokec5  \cf6 \strokec6 "white"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 borderRadius:\cf5 \strokec5  \cf6 \strokec6 "12px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 cursor:\cf5 \strokec5  \cf6 \strokec6 "pointer"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 fontFamily:\cf5 \strokec5  appFont,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 fontSize:\cf5 \strokec5  \cf6 \strokec6 "15px"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \};\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  \cf8 \strokec8 subtleButtonStyle\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 marginTop:\cf5 \strokec5  \cf6 \strokec6 "10px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 width:\cf5 \strokec5  \cf6 \strokec6 "100%"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 padding:\cf5 \strokec5  \cf6 \strokec6 "13px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 backgroundColor:\cf5 \strokec5  \cf6 \strokec6 "#1b1b1b"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 border:\cf5 \strokec5  \cf6 \strokec6 "1px solid #333"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 color:\cf5 \strokec5  \cf6 \strokec6 "#bbb"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 borderRadius:\cf5 \strokec5  \cf6 \strokec6 "12px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 cursor:\cf5 \strokec5  \cf6 \strokec6 "pointer"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 fontFamily:\cf5 \strokec5  appFont,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 fontSize:\cf5 \strokec5  \cf6 \strokec6 "15px"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \};\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  \cf12 \strokec12 stepperCardStyle\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  (\cf14 \strokec14 active\cf5 \strokec5 ) \cf7 \strokec7 =>\cf5 \strokec5  (\{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 marginBottom:\cf5 \strokec5  \cf6 \strokec6 "16px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 padding:\cf5 \strokec5  \cf6 \strokec6 "14px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 borderRadius:\cf5 \strokec5  \cf6 \strokec6 "14px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 border:\cf5 \strokec5  active \cf9 \strokec9 ?\cf5 \strokec5  \cf6 \strokec6 "1px solid #2ecc71"\cf5 \strokec5  \cf9 \strokec9 :\cf5 \strokec5  \cf6 \strokec6 "1px solid #2b2b2b"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 backgroundColor:\cf5 \strokec5  active \cf9 \strokec9 ?\cf5 \strokec5  \cf6 \strokec6 "#141f18"\cf5 \strokec5  \cf9 \strokec9 :\cf5 \strokec5  \cf6 \strokec6 "#111"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 transition:\cf5 \strokec5  \cf6 \strokec6 "all 0.2s ease"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 cursor:\cf5 \strokec5  \cf6 \strokec6 "pointer"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \});\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  \cf12 \strokec12 favoriteIconStyle\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  (\cf14 \strokec14 active\cf5 \strokec5 ) \cf7 \strokec7 =>\cf5 \strokec5  (\{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 width:\cf5 \strokec5  \cf6 \strokec6 "34px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 height:\cf5 \strokec5  \cf6 \strokec6 "34px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 borderRadius:\cf5 \strokec5  \cf6 \strokec6 "50%"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 border:\cf5 \strokec5  active \cf9 \strokec9 ?\cf5 \strokec5  \cf6 \strokec6 "1px solid #2ecc71"\cf5 \strokec5  \cf9 \strokec9 :\cf5 \strokec5  \cf6 \strokec6 "1px solid #444"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 backgroundColor:\cf5 \strokec5  active \cf9 \strokec9 ?\cf5 \strokec5  \cf6 \strokec6 "#163322"\cf5 \strokec5  \cf9 \strokec9 :\cf5 \strokec5  \cf6 \strokec6 "#151515"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 color:\cf5 \strokec5  active \cf9 \strokec9 ?\cf5 \strokec5  \cf6 \strokec6 "#2ecc71"\cf5 \strokec5  \cf9 \strokec9 :\cf5 \strokec5  \cf6 \strokec6 "#8b8b8b"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 display:\cf5 \strokec5  \cf6 \strokec6 "flex"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 alignItems:\cf5 \strokec5  \cf6 \strokec6 "center"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 justifyContent:\cf5 \strokec5  \cf6 \strokec6 "center"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 cursor:\cf5 \strokec5  \cf6 \strokec6 "pointer"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 fontSize:\cf5 \strokec5  \cf6 \strokec6 "16px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 flexShrink:\cf5 \strokec5  \cf11 \strokec11 0\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \});\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  \cf8 \strokec8 cardStyle\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 backgroundColor:\cf5 \strokec5  \cf6 \strokec6 "#111"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 border:\cf5 \strokec5  \cf6 \strokec6 "1px solid #222"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 borderRadius:\cf5 \strokec5  \cf6 \strokec6 "16px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 padding:\cf5 \strokec5  \cf6 \strokec6 "16px"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \};\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf7 \strokec7 const\cf5 \strokec5  \cf12 \strokec12 renderCourseRow\cf5 \strokec5  \cf9 \strokec9 =\cf5 \strokec5  (\cf14 \strokec14 course\cf5 \strokec5 ) \cf7 \strokec7 =>\cf5 \strokec5  (\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf10 \strokec10 key\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 course.id\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf10 \strokec10 onClick\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 () \cf7 \strokec7 =>\cf5 \strokec5  \cf12 \strokec12 openCourse\cf5 \strokec5 (course)\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf10 \strokec10 padding:\cf5 \strokec5  \cf6 \strokec6 "14px 0"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf10 \strokec10 borderBottom:\cf5 \strokec5  \cf6 \strokec6 "1px solid #222"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf10 \strokec10 display:\cf5 \strokec5  \cf6 \strokec6 "flex"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf10 \strokec10 justifyContent:\cf5 \strokec5  \cf6 \strokec6 "space-between"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf10 \strokec10 alignItems:\cf5 \strokec5  \cf6 \strokec6 "center"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf10 \strokec10 gap:\cf5 \strokec5  \cf6 \strokec6 "12px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf10 \strokec10 fontFamily:\cf5 \strokec5  appFont,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf10 \strokec10 cursor:\cf5 \strokec5  \cf6 \strokec6 "pointer"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf16 \strokec16 <\cf17 \strokec17 div\cf5 \strokec5  \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{ \cf10 \strokec10 flex:\cf5 \strokec5  \cf11 \strokec11 1\cf5 \strokec5  \}\cf7 \strokec7 \}\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf16 \strokec16 <\cf17 \strokec17 div\cf5 \strokec5  \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{ \cf10 \strokec10 fontSize:\cf5 \strokec5  \cf6 \strokec6 "16px"\cf5 \strokec5 , \cf10 \strokec10 fontWeight:\cf5 \strokec5  \cf11 \strokec11 500\cf5 \strokec5  \}\cf7 \strokec7 \}\cf16 \strokec16 >\cf7 \strokec7 \{\cf5 \strokec5 course.name\cf7 \strokec7 \}\cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf10 \strokec10 color:\cf5 \strokec5  \cf6 \strokec6 "#8c8c8c"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf10 \strokec10 fontSize:\cf5 \strokec5  \cf6 \strokec6 "13px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf10 \strokec10 marginTop:\cf5 \strokec5  \cf6 \strokec6 "3px"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf7 \strokec7 \{\cf5 \strokec5 course.holesCount\cf7 \strokec7 \}\cf5 \strokec5  buche \'95 Par \cf7 \strokec7 \{\cf5 \strokec5 course.totalPar\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5       \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf10 \strokec10 onClick\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 (\cf14 \strokec14 e\cf5 \strokec5 ) \cf7 \strokec7 =>\cf5 \strokec5  \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           e.\cf12 \strokec12 stopPropagation\cf5 \strokec5 ();\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf12 \strokec12 toggleFavorite\cf5 \strokec5 (course.id);\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf12 \strokec12 favoriteIconStyle\cf5 \strokec5 (course.favorite)\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf10 \strokec10 title\cf9 \strokec9 =\cf6 \strokec6 "Preferito"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \uc0\u9971 \u65039 \cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   );\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf2 \strokec2 if\cf5 \strokec5  (openedCourse) \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf2 \strokec2 return\cf5 \strokec5  (\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf10 \strokec10 backgroundColor:\cf5 \strokec5  \cf6 \strokec6 "black"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf10 \strokec10 color:\cf5 \strokec5  \cf6 \strokec6 "white"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf10 \strokec10 minHeight:\cf5 \strokec5  \cf6 \strokec6 "100vh"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf10 \strokec10 padding:\cf5 \strokec5  \cf6 \strokec6 "20px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf10 \strokec10 boxSizing:\cf5 \strokec5  \cf6 \strokec6 "border-box"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf10 \strokec10 fontFamily:\cf5 \strokec5  appFont\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf10 \strokec10 display:\cf5 \strokec5  \cf6 \strokec6 "flex"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf10 \strokec10 alignItems:\cf5 \strokec5  \cf6 \strokec6 "center"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf10 \strokec10 justifyContent:\cf5 \strokec5  \cf6 \strokec6 "space-between"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf10 \strokec10 gap:\cf5 \strokec5  \cf6 \strokec6 "12px"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf16 \strokec16 <\cf17 \strokec17 button\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf10 \strokec10 onClick\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 closeCourse\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf10 \strokec10 width:\cf5 \strokec5  \cf6 \strokec6 "46px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf10 \strokec10 height:\cf5 \strokec5  \cf6 \strokec6 "46px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf10 \strokec10 borderRadius:\cf5 \strokec5  \cf6 \strokec6 "23px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf10 \strokec10 border:\cf5 \strokec5  \cf6 \strokec6 "1px solid #444"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf10 \strokec10 backgroundColor:\cf5 \strokec5  \cf6 \strokec6 "#111"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf10 \strokec10 color:\cf5 \strokec5  \cf6 \strokec6 "white"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf10 \strokec10 fontSize:\cf5 \strokec5  \cf6 \strokec6 "22px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf10 \strokec10 cursor:\cf5 \strokec5  \cf6 \strokec6 "pointer"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf10 \strokec10 fontFamily:\cf5 \strokec5  appFont\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \uc0\u8592 \cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf16 \strokec16 </\cf17 \strokec17 button\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5           \cf16 \strokec16 <\cf17 \strokec17 div\cf5 \strokec5  \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{ \cf10 \strokec10 fontSize:\cf5 \strokec5  \cf6 \strokec6 "16px"\cf5 \strokec5 , \cf10 \strokec10 fontWeight:\cf5 \strokec5  \cf11 \strokec11 500\cf5 \strokec5  \}\cf7 \strokec7 \}\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             Dettaglio campo\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5           \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf10 \strokec10 onClick\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 () \cf7 \strokec7 =>\cf5 \strokec5  \cf12 \strokec12 toggleFavorite\cf5 \strokec5 (openedCourse.id)\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf12 \strokec12 favoriteIconStyle\cf5 \strokec5 (openedCourse.favorite)\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf10 \strokec10 title\cf9 \strokec9 =\cf6 \strokec6 "Preferito"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \uc0\u9971 \u65039 \cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5         \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf10 \strokec10 marginTop:\cf5 \strokec5  \cf6 \strokec6 "24px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf10 \strokec10 padding:\cf5 \strokec5  \cf6 \strokec6 "18px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf10 \strokec10 backgroundColor:\cf5 \strokec5  \cf6 \strokec6 "#111"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf10 \strokec10 border:\cf5 \strokec5  \cf6 \strokec6 "1px solid #222"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf10 \strokec10 borderRadius:\cf5 \strokec5  \cf6 \strokec6 "18px"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf16 \strokec16 <\cf17 \strokec17 div\cf5 \strokec5  \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{ \cf10 \strokec10 fontSize:\cf5 \strokec5  \cf6 \strokec6 "24px"\cf5 \strokec5 , \cf10 \strokec10 fontWeight:\cf5 \strokec5  \cf11 \strokec11 700\cf5 \strokec5  \}\cf7 \strokec7 \}\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf7 \strokec7 \{\cf5 \strokec5 openedCourse.name\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5           \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf10 \strokec10 marginTop:\cf5 \strokec5  \cf6 \strokec6 "8px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf10 \strokec10 color:\cf5 \strokec5  \cf6 \strokec6 "#9a9a9a"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf10 \strokec10 fontSize:\cf5 \strokec5  \cf6 \strokec6 "14px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf10 \strokec10 lineHeight:\cf5 \strokec5  \cf11 \strokec11 1.5\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf7 \strokec7 \{\cf5 \strokec5 openedCourse.holesCount\cf7 \strokec7 \}\cf5 \strokec5  buche \'95 Par \cf7 \strokec7 \{\cf5 \strokec5 openedCourse.totalPar\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5         \cf16 \strokec16 <\cf17 \strokec17 h2\cf5 \strokec5  \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 titleStyle\cf7 \strokec7 \}\cf16 \strokec16 >\cf5 \strokec5 Mappatura\cf16 \strokec16 </\cf17 \strokec17 h2\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5         \cf7 \strokec7 \{\cf5 \strokec5 openedCourse.holes \cf9 \strokec9 &&\cf5 \strokec5  openedCourse.holes.\cf8 \strokec8 length\cf5 \strokec5  \cf9 \strokec9 >\cf5 \strokec5  \cf11 \strokec11 0\cf5 \strokec5  \cf9 \strokec9 ?\cf5 \strokec5  (\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf16 \strokec16 <>\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf10 \strokec10 display:\cf5 \strokec5  \cf6 \strokec6 "grid"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf10 \strokec10 gridTemplateColumns:\cf5 \strokec5  \cf6 \strokec6 "70px 1fr 1fr"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf10 \strokec10 gap:\cf5 \strokec5  \cf6 \strokec6 "10px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf10 \strokec10 marginBottom:\cf5 \strokec5  \cf6 \strokec6 "12px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf10 \strokec10 fontSize:\cf5 \strokec5  \cf6 \strokec6 "13px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf10 \strokec10 color:\cf5 \strokec5  \cf6 \strokec6 "#8f8f8f"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf10 \strokec10 padding:\cf5 \strokec5  \cf6 \strokec6 "0 4px"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf16 \strokec16 <\cf17 \strokec17 div\cf16 \strokec16 >\cf5 \strokec5 Buca\cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf16 \strokec16 <\cf17 \strokec17 div\cf16 \strokec16 >\cf5 \strokec5 Par\cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf16 \strokec16 <\cf17 \strokec17 div\cf16 \strokec16 >\cf5 \strokec5 Stroke Index\cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5             \cf7 \strokec7 \{\cf5 \strokec5 openedCourse.holes.\cf12 \strokec12 map\cf5 \strokec5 ((\cf14 \strokec14 hole\cf5 \strokec5 ) \cf7 \strokec7 =>\cf5 \strokec5  (\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf10 \strokec10 key\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 hole.hole\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 display:\cf5 \strokec5  \cf6 \strokec6 "grid"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 gridTemplateColumns:\cf5 \strokec5  \cf6 \strokec6 "70px 1fr 1fr"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 gap:\cf5 \strokec5  \cf6 \strokec6 "10px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 alignItems:\cf5 \strokec5  \cf6 \strokec6 "center"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 marginBottom:\cf5 \strokec5  \cf6 \strokec6 "10px"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 height:\cf5 \strokec5  \cf6 \strokec6 "42px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 display:\cf5 \strokec5  \cf6 \strokec6 "flex"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 alignItems:\cf5 \strokec5  \cf6 \strokec6 "center"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 paddingLeft:\cf5 \strokec5  \cf6 \strokec6 "10px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 borderRadius:\cf5 \strokec5  \cf6 \strokec6 "10px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 backgroundColor:\cf5 \strokec5  \cf6 \strokec6 "#1a1a1a"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 border:\cf5 \strokec5  \cf6 \strokec6 "1px solid #333"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf7 \strokec7 \{\cf5 \strokec5 hole.hole\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 height:\cf5 \strokec5  \cf6 \strokec6 "42px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 display:\cf5 \strokec5  \cf6 \strokec6 "flex"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 alignItems:\cf5 \strokec5  \cf6 \strokec6 "center"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 paddingLeft:\cf5 \strokec5  \cf6 \strokec6 "12px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 borderRadius:\cf5 \strokec5  \cf6 \strokec6 "10px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 backgroundColor:\cf5 \strokec5  \cf6 \strokec6 "#1a1a1a"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 border:\cf5 \strokec5  \cf6 \strokec6 "1px solid #333"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf7 \strokec7 \{\cf5 \strokec5 hole.par\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 height:\cf5 \strokec5  \cf6 \strokec6 "42px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 display:\cf5 \strokec5  \cf6 \strokec6 "flex"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 alignItems:\cf5 \strokec5  \cf6 \strokec6 "center"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 paddingLeft:\cf5 \strokec5  \cf6 \strokec6 "12px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 borderRadius:\cf5 \strokec5  \cf6 \strokec6 "10px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 backgroundColor:\cf5 \strokec5  \cf6 \strokec6 "#1a1a1a"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 border:\cf5 \strokec5  \cf6 \strokec6 "1px solid #333"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf7 \strokec7 \{\cf5 \strokec5 hole.strokeIndex\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             ))\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf16 \strokec16 </>\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         ) \cf9 \strokec9 :\cf5 \strokec5  (\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf10 \strokec10 color:\cf5 \strokec5  \cf6 \strokec6 "#8f8f8f"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf10 \strokec10 backgroundColor:\cf5 \strokec5  \cf6 \strokec6 "#111"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf10 \strokec10 border:\cf5 \strokec5  \cf6 \strokec6 "1px solid #222"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf10 \strokec10 borderRadius:\cf5 \strokec5  \cf6 \strokec6 "14px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf10 \strokec10 padding:\cf5 \strokec5  \cf6 \strokec6 "16px"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             Per questo campo non c\'92\'e8 ancora una mappatura completa.\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         )\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \}\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5   \cf2 \strokec2 return\cf5 \strokec5  (\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf10 \strokec10 backgroundColor:\cf5 \strokec5  \cf6 \strokec6 "black"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf10 \strokec10 color:\cf5 \strokec5  \cf6 \strokec6 "white"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf10 \strokec10 minHeight:\cf5 \strokec5  \cf6 \strokec6 "100vh"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf10 \strokec10 padding:\cf5 \strokec5  \cf6 \strokec6 "20px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf10 \strokec10 boxSizing:\cf5 \strokec5  \cf6 \strokec6 "border-box"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf10 \strokec10 fontFamily:\cf5 \strokec5  appFont\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf10 \strokec10 display:\cf5 \strokec5  \cf6 \strokec6 "flex"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf10 \strokec10 justifyContent:\cf5 \strokec5  \cf6 \strokec6 "space-between"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf10 \strokec10 alignItems:\cf5 \strokec5  \cf6 \strokec6 "center"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf10 \strokec10 gap:\cf5 \strokec5  \cf6 \strokec6 "12px"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf16 \strokec16 <\cf17 \strokec17 button\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf10 \strokec10 onClick\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 openDialog\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf10 \strokec10 width:\cf5 \strokec5  \cf6 \strokec6 "46px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf10 \strokec10 height:\cf5 \strokec5  \cf6 \strokec6 "46px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf10 \strokec10 borderRadius:\cf5 \strokec5  \cf6 \strokec6 "23px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf10 \strokec10 border:\cf5 \strokec5  \cf6 \strokec6 "1px solid #444"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf10 \strokec10 backgroundColor:\cf5 \strokec5  \cf6 \strokec6 "#111"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf10 \strokec10 color:\cf5 \strokec5  \cf6 \strokec6 "white"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf10 \strokec10 fontSize:\cf5 \strokec5  \cf6 \strokec6 "24px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf10 \strokec10 cursor:\cf5 \strokec5  \cf6 \strokec6 "pointer"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf10 \strokec10 fontFamily:\cf5 \strokec5  appFont,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf10 \strokec10 flexShrink:\cf5 \strokec5  \cf11 \strokec11 0\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           +\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf16 \strokec16 </\cf17 \strokec17 button\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5         \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf10 \strokec10 flex:\cf5 \strokec5  \cf11 \strokec11 1\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf10 \strokec10 textAlign:\cf5 \strokec5  \cf6 \strokec6 "right"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf10 \strokec10 lineHeight:\cf5 \strokec5  \cf11 \strokec11 1.2\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf10 \strokec10 fontSize:\cf5 \strokec5  \cf6 \strokec6 "16px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf10 \strokec10 fontWeight:\cf5 \strokec5  \cf11 \strokec11 500\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf10 \strokec10 color:\cf5 \strokec5  \cf6 \strokec6 "white"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf7 \strokec7 \{\cf5 \strokec5 userProfile.firstName\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5           \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf10 \strokec10 fontSize:\cf5 \strokec5  \cf6 \strokec6 "13px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf10 \strokec10 color:\cf5 \strokec5  \cf6 \strokec6 "#8c8c8c"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf10 \strokec10 marginTop:\cf5 \strokec5  \cf6 \strokec6 "3px"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             HCP \cf7 \strokec7 \{\cf5 \strokec5 userProfile.hcp\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5       \cf16 \strokec16 <\cf17 \strokec17 h2\cf5 \strokec5  \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 titleStyle\cf7 \strokec7 \}\cf16 \strokec16 >\cf5 \strokec5 Preferiti\cf16 \strokec16 </\cf17 \strokec17 h2\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf16 \strokec16 <\cf17 \strokec17 div\cf5 \strokec5  \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 cardStyle\cf7 \strokec7 \}\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf7 \strokec7 \{\cf5 \strokec5 favorites.\cf8 \strokec8 length\cf5 \strokec5  \cf9 \strokec9 ===\cf5 \strokec5  \cf11 \strokec11 0\cf5 \strokec5  \cf9 \strokec9 ?\cf5 \strokec5  (\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf16 \strokec16 <\cf17 \strokec17 div\cf5 \strokec5  \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{ \cf10 \strokec10 color:\cf5 \strokec5  \cf6 \strokec6 "#888"\cf5 \strokec5  \}\cf7 \strokec7 \}\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             Usa \uc0\u9971 \u65039  per salvare i campi\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         ) \cf9 \strokec9 :\cf5 \strokec5  (\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           favorites.\cf12 \strokec12 map\cf5 \strokec5 ((\cf14 \strokec14 course\cf5 \strokec5 ) \cf7 \strokec7 =>\cf5 \strokec5  \cf12 \strokec12 renderCourseRow\cf5 \strokec5 (course))\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         )\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5       \cf16 \strokec16 <\cf17 \strokec17 h2\cf5 \strokec5  \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 titleStyle\cf7 \strokec7 \}\cf16 \strokec16 >\cf5 \strokec5 Vicino a te\cf16 \strokec16 </\cf17 \strokec17 h2\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf16 \strokec16 <\cf17 \strokec17 div\cf5 \strokec5  \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 cardStyle\cf7 \strokec7 \}\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf7 \strokec7 \{\cf5 \strokec5 nearbyCourses.\cf8 \strokec8 length\cf5 \strokec5  \cf9 \strokec9 ===\cf5 \strokec5  \cf11 \strokec11 0\cf5 \strokec5  \cf9 \strokec9 ?\cf5 \strokec5  (\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf16 \strokec16 <\cf17 \strokec17 div\cf5 \strokec5  \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{ \cf10 \strokec10 color:\cf5 \strokec5  \cf6 \strokec6 "#888"\cf5 \strokec5 , \cf10 \strokec10 lineHeight:\cf5 \strokec5  \cf11 \strokec11 1.5\cf5 \strokec5  \}\cf7 \strokec7 \}\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             Quando aggiungerai i primi campi, li vedrai qui. Pi\'f9 avanti collegheremo\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             anche la geolocalizzazione.\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         ) \cf9 \strokec9 :\cf5 \strokec5  (\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           nearbyCourses.\cf12 \strokec12 map\cf5 \strokec5 ((\cf14 \strokec14 course\cf5 \strokec5 ) \cf7 \strokec7 =>\cf5 \strokec5  \cf12 \strokec12 renderCourseRow\cf5 \strokec5 (course))\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         )\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5       \cf16 \strokec16 <\cf17 \strokec17 h2\cf5 \strokec5  \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 titleStyle\cf7 \strokec7 \}\cf16 \strokec16 >\cf5 \strokec5 Cerca un campo\cf16 \strokec16 </\cf17 \strokec17 h2\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf16 \strokec16 <\cf17 \strokec17 div\cf5 \strokec5  \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 cardStyle\cf7 \strokec7 \}\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             display\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "flex"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             alignItems\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "center"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             gap\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "10px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             backgroundColor\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "#1a1a1a"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             border\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "1px solid #333"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             borderRadius\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "14px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             padding\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "12px 14px"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf16 \strokec16 <\cf17 \strokec17 div\cf5 \strokec5  \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{ color\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "#7d7d7d"\cf5 \strokec5 , fontSize\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "16px"\cf5 \strokec5  \}\cf7 \strokec7 \}\cf16 \strokec16 >\cf5 \strokec5 \uc0\u8981 \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf16 \strokec16 <\cf17 \strokec17 input\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf10 \strokec10 type\cf9 \strokec9 =\cf6 \strokec6 "text"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf10 \strokec10 value\cf9 \strokec9 =\cf7 \strokec7 \{\cf8 \strokec8 searchQuery\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf10 \strokec10 onChange\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 (\cf14 \strokec14 e\cf5 \strokec5 ) \cf7 \strokec7 =>\cf5 \strokec5  \cf12 \strokec12 setSearchQuery\cf5 \strokec5 (\cf14 \strokec14 e\cf5 \strokec5 .target.\cf8 \strokec8 value\cf5 \strokec5 )\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf10 \strokec10 placeholder\cf9 \strokec9 =\cf6 \strokec6 "Cerca un campo"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               flex\cf10 \strokec10 :\cf5 \strokec5  \cf11 \strokec11 1\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               background\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "transparent"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               border\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "none"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               outline\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "none"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               color\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "white"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               fontSize\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "15px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               fontFamily\cf10 \strokec10 :\cf5 \strokec5  \cf8 \strokec8 appFont\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf16 \strokec16 />\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5         \cf7 \strokec7 \{\cf8 \strokec8 searchQuery\cf5 \strokec5 .\cf12 \strokec12 trim\cf5 \strokec5 () \cf9 \strokec9 !==\cf5 \strokec5  \cf6 \strokec6 ""\cf5 \strokec5  \cf9 \strokec9 &&\cf5 \strokec5  (\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf16 \strokec16 <\cf17 \strokec17 div\cf5 \strokec5  \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{ marginTop\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "12px"\cf5 \strokec5  \}\cf7 \strokec7 \}\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf7 \strokec7 \{\cf8 \strokec8 filteredCourses\cf5 \strokec5 .\cf8 \strokec8 length\cf5 \strokec5  \cf9 \strokec9 >\cf5 \strokec5  \cf11 \strokec11 0\cf5 \strokec5  \cf9 \strokec9 ?\cf5 \strokec5  (\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf8 \strokec8 filteredCourses\cf5 \strokec5 .\cf12 \strokec12 map\cf5 \strokec5 ((\cf14 \strokec14 course\cf5 \strokec5 ) \cf7 \strokec7 =>\cf5 \strokec5  \cf12 \strokec12 renderCourseRow\cf5 \strokec5 (\cf14 \strokec14 course\cf5 \strokec5 ))\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             ) \cf9 \strokec9 :\cf5 \strokec5  (\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   color\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "#9a9a9a"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   lineHeight\cf10 \strokec10 :\cf5 \strokec5  \cf11 \strokec11 1.5\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   paddingTop\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "8px"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 Campo non trovato. Usa il pulsante + per aggiungerlo.\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             )\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         )\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\pard\pardeftab720\partightenfactor0
+\cf16 \cb3 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\pard\pardeftab720\partightenfactor0
+\cf5 \cb3 \strokec5   \cf10 \strokec10 onClick\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 () \cf7 \strokec7 =>\cf5 \strokec5  \cf12 \strokec12 setShowLatestAdded\cf5 \strokec5 ((\cf14 \strokec14 prev\cf5 \strokec5 ) \cf7 \strokec7 =>\cf5 \strokec5  \cf9 \strokec9 !\cf14 \strokec14 prev\cf5 \strokec5 )\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf9 \strokec9 ...\cf8 \strokec8 titleStyle\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     display\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "inline-flex"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     alignItems\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "center"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     gap\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "8px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     cursor\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "pointer"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     marginBottom\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "14px"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\pard\pardeftab720\partightenfactor0
+\cf16 \cb3 \strokec16 >\cf4 \cb1 \strokec4 \
+\pard\pardeftab720\partightenfactor0
+\cf5 \cb3 \strokec5   \cf16 \strokec16 <\cf17 \strokec17 span\cf16 \strokec16 >\cf5 \strokec5 Ultimi aggiunti\cf16 \strokec16 </\cf17 \strokec17 span\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \cf16 \strokec16 <\cf17 \strokec17 span\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       color\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "#b5b5b5"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       fontSize\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "18px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       lineHeight\cf10 \strokec10 :\cf5 \strokec5  \cf11 \strokec11 1\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       transform\cf10 \strokec10 :\cf5 \strokec5  \cf8 \strokec8 showLatestAdded\cf5 \strokec5  \cf9 \strokec9 ?\cf5 \strokec5  \cf6 \strokec6 "rotate(180deg)"\cf5 \strokec5  \cf9 \strokec9 :\cf5 \strokec5  \cf6 \strokec6 "rotate(0deg)"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       transition\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "transform 0.2s ease"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \uc0\u9662 \cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   \cf16 \strokec16 </\cf17 \strokec17 span\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\pard\pardeftab720\partightenfactor0
+\cf16 \cb3 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\pard\pardeftab720\partightenfactor0
+\cf5 \cb3 \strokec5       \cf7 \strokec7 \{\cf8 \strokec8 showLatestAdded\cf5 \strokec5  \cf9 \strokec9 &&\cf5 \strokec5  (\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf16 \strokec16 <\cf17 \strokec17 div\cf5 \strokec5  \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf8 \strokec8 cardStyle\cf7 \strokec7 \}\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf7 \strokec7 \{\cf8 \strokec8 latestAddedCourses\cf5 \strokec5 .\cf8 \strokec8 length\cf5 \strokec5  \cf9 \strokec9 ===\cf5 \strokec5  \cf11 \strokec11 0\cf5 \strokec5  \cf9 \strokec9 ?\cf5 \strokec5  (\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf16 \strokec16 <\cf17 \strokec17 div\cf5 \strokec5  \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{ color\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "#888"\cf5 \strokec5  \}\cf7 \strokec7 \}\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               Nessun campo aggiunto di recente.\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           ) \cf9 \strokec9 :\cf5 \strokec5  (\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf8 \strokec8 latestAddedCourses\cf5 \strokec5 .\cf12 \strokec12 map\cf5 \strokec5 ((\cf14 \strokec14 course\cf5 \strokec5 ) \cf7 \strokec7 =>\cf5 \strokec5  \cf12 \strokec12 renderCourseRow\cf5 \strokec5 (\cf14 \strokec14 course\cf5 \strokec5 ))\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           )\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       )\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5       \cf7 \strokec7 \{\cf8 \strokec8 showDialog\cf5 \strokec5  \cf9 \strokec9 &&\cf5 \strokec5  (\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             position\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "fixed"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             inset\cf10 \strokec10 :\cf5 \strokec5  \cf11 \strokec11 0\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             backgroundColor\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "rgba(0,0,0,0.86)"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             display\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "flex"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             justifyContent\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "center"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             alignItems\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "center"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             padding\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "20px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             boxSizing\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "border-box"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               backgroundColor\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "#111"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               padding\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "24px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               borderRadius\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "18px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               width\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "100%"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               maxWidth\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "390px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               maxHeight\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "90vh"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               overflowY\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "auto"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               border\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "1px solid #222"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               boxSizing\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "border-box"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               fontFamily\cf10 \strokec10 :\cf5 \strokec5  \cf8 \strokec8 appFont\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             \cf7 \strokec7 \{\cf8 \strokec8 dialogStep\cf5 \strokec5  \cf9 \strokec9 ===\cf5 \strokec5  \cf11 \strokec11 1\cf5 \strokec5  \cf9 \strokec9 &&\cf5 \strokec5  (\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf16 \strokec16 <>\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 <\cf17 \strokec17 h3\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     marginTop\cf10 \strokec10 :\cf5 \strokec5  \cf11 \strokec11 0\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     marginBottom\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "8px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     fontSize\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "24px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 fontWeight:\cf5 \strokec5  \cf11 \strokec11 700\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   Aggiungi campo\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 </\cf17 \strokec17 h3\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 <\cf17 \strokec17 p\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 color:\cf5 \strokec5  \cf6 \strokec6 "#aaa"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 fontSize:\cf5 \strokec5  \cf6 \strokec6 "14px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 marginTop:\cf5 \strokec5  \cf11 \strokec11 0\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 marginBottom:\cf5 \strokec5  \cf6 \strokec6 "16px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 lineHeight:\cf5 \strokec5  \cf11 \strokec11 1.4\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   Inserisci il nome del campo.\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 </\cf17 \strokec17 p\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 <\cf17 \strokec17 input\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 type\cf9 \strokec9 =\cf6 \strokec6 "text"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 placeholder\cf9 \strokec9 =\cf6 \strokec6 "Nome campo"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 value\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 courseName\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 onChange\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 (\cf14 \strokec14 e\cf5 \strokec5 ) \cf7 \strokec7 =>\cf5 \strokec5  \cf12 \strokec12 setCourseName\cf5 \strokec5 (e.target.value)\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 width:\cf5 \strokec5  \cf6 \strokec6 "100%"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 padding:\cf5 \strokec5  \cf6 \strokec6 "13px 14px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 backgroundColor:\cf5 \strokec5  \cf6 \strokec6 "#1a1a1a"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 border:\cf5 \strokec5  \cf6 \strokec6 "1px solid #333"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 borderRadius:\cf5 \strokec5  \cf6 \strokec6 "12px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 color:\cf5 \strokec5  \cf6 \strokec6 "white"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 boxSizing:\cf5 \strokec5  \cf6 \strokec6 "border-box"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 outline:\cf5 \strokec5  \cf6 \strokec6 "none"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 fontSize:\cf5 \strokec5  \cf6 \strokec6 "15px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 fontFamily:\cf5 \strokec5  appFont\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 />\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 <\cf17 \strokec17 button\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 onClick\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 goToStepTwo\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 disabled\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 courseName.\cf12 \strokec12 trim\cf5 \strokec5 () \cf9 \strokec9 ===\cf5 \strokec5  \cf6 \strokec6 ""\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf12 \strokec12 primaryButtonStyle\cf5 \strokec5 (courseName.\cf12 \strokec12 trim\cf5 \strokec5 () \cf9 \strokec9 !==\cf5 \strokec5  \cf6 \strokec6 ""\cf5 \strokec5 )\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   Continua\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 </\cf17 \strokec17 button\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 <\cf17 \strokec17 button\cf5 \strokec5  \cf10 \strokec10 onClick\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 closeDialog\cf7 \strokec7 \}\cf5 \strokec5  \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 secondaryButtonStyle\cf7 \strokec7 \}\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   Annulla\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 </\cf17 \strokec17 button\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf16 \strokec16 </>\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             )\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5             \cf7 \strokec7 \{\cf5 \strokec5 dialogStep \cf9 \strokec9 ===\cf5 \strokec5  \cf11 \strokec11 2\cf5 \strokec5  \cf9 \strokec9 &&\cf5 \strokec5  (\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf16 \strokec16 <>\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 <\cf17 \strokec17 h3\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 marginTop:\cf5 \strokec5  \cf11 \strokec11 0\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 marginBottom:\cf5 \strokec5  \cf6 \strokec6 "8px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 fontSize:\cf5 \strokec5  \cf6 \strokec6 "24px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 fontWeight:\cf5 \strokec5  \cf11 \strokec11 700\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   Numero buche\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 </\cf17 \strokec17 h3\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 <\cf17 \strokec17 p\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 color:\cf5 \strokec5  \cf6 \strokec6 "#aaa"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 fontSize:\cf5 \strokec5  \cf6 \strokec6 "14px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 marginTop:\cf5 \strokec5  \cf11 \strokec11 0\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 marginBottom:\cf5 \strokec5  \cf6 \strokec6 "20px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 lineHeight:\cf5 \strokec5  \cf11 \strokec11 1.4\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   Seleziona il numero di buche\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 </\cf17 \strokec17 p\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 <\cf17 \strokec17 div\cf5 \strokec5  \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{ \cf10 \strokec10 display:\cf5 \strokec5  \cf6 \strokec6 "flex"\cf5 \strokec5 , \cf10 \strokec10 gap:\cf5 \strokec5  \cf6 \strokec6 "12px"\cf5 \strokec5  \}\cf7 \strokec7 \}\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 onClick\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 () \cf7 \strokec7 =>\cf5 \strokec5  \cf12 \strokec12 setHolesCount\cf5 \strokec5 (\cf11 \strokec11 9\cf5 \strokec5 )\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 flex:\cf5 \strokec5  \cf11 \strokec11 1\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 padding:\cf5 \strokec5  \cf6 \strokec6 "16px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 backgroundColor:\cf5 \strokec5  \cf6 \strokec6 "#1a1a1a"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 border:\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                         holesCount \cf9 \strokec9 ===\cf5 \strokec5  \cf11 \strokec11 9\cf5 \strokec5  \cf9 \strokec9 ?\cf5 \strokec5  \cf6 \strokec6 "1px solid #2ecc71"\cf5 \strokec5  \cf9 \strokec9 :\cf5 \strokec5  \cf6 \strokec6 "1px solid #333"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 borderRadius:\cf5 \strokec5  \cf6 \strokec6 "14px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 display:\cf5 \strokec5  \cf6 \strokec6 "flex"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 alignItems:\cf5 \strokec5  \cf6 \strokec6 "center"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 justifyContent:\cf5 \strokec5  \cf6 \strokec6 "space-between"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 cursor:\cf5 \strokec5  \cf6 \strokec6 "pointer"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf16 \strokec16 <\cf17 \strokec17 span\cf5 \strokec5  \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{ \cf10 \strokec10 fontWeight:\cf5 \strokec5  \cf11 \strokec11 600\cf5 \strokec5 , \cf10 \strokec10 fontSize:\cf5 \strokec5  \cf6 \strokec6 "16px"\cf5 \strokec5  \}\cf7 \strokec7 \}\cf16 \strokec16 >\cf5 \strokec5 9\cf16 \strokec16 </\cf17 \strokec17 span\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                         \cf10 \strokec10 width:\cf5 \strokec5  \cf6 \strokec6 "22px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                         \cf10 \strokec10 height:\cf5 \strokec5  \cf6 \strokec6 "22px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                         \cf10 \strokec10 borderRadius:\cf5 \strokec5  \cf6 \strokec6 "50%"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                         \cf10 \strokec10 border:\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                           holesCount \cf9 \strokec9 ===\cf5 \strokec5  \cf11 \strokec11 9\cf5 \strokec5  \cf9 \strokec9 ?\cf5 \strokec5  \cf6 \strokec6 "2px solid #2ecc71"\cf5 \strokec5  \cf9 \strokec9 :\cf5 \strokec5  \cf6 \strokec6 "2px solid #666"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                         \cf10 \strokec10 backgroundColor:\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                           holesCount \cf9 \strokec9 ===\cf5 \strokec5  \cf11 \strokec11 9\cf5 \strokec5  \cf9 \strokec9 ?\cf5 \strokec5  \cf6 \strokec6 "#2ecc71"\cf5 \strokec5  \cf9 \strokec9 :\cf5 \strokec5  \cf6 \strokec6 "transparent"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf16 \strokec16 />\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                   \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 onClick\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 () \cf7 \strokec7 =>\cf5 \strokec5  \cf12 \strokec12 setHolesCount\cf5 \strokec5 (\cf11 \strokec11 18\cf5 \strokec5 )\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 flex:\cf5 \strokec5  \cf11 \strokec11 1\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 padding:\cf5 \strokec5  \cf6 \strokec6 "16px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 backgroundColor:\cf5 \strokec5  \cf6 \strokec6 "#1a1a1a"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 border:\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                         holesCount \cf9 \strokec9 ===\cf5 \strokec5  \cf11 \strokec11 18\cf5 \strokec5  \cf9 \strokec9 ?\cf5 \strokec5  \cf6 \strokec6 "1px solid #2ecc71"\cf5 \strokec5  \cf9 \strokec9 :\cf5 \strokec5  \cf6 \strokec6 "1px solid #333"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 borderRadius:\cf5 \strokec5  \cf6 \strokec6 "14px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 display:\cf5 \strokec5  \cf6 \strokec6 "flex"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 alignItems:\cf5 \strokec5  \cf6 \strokec6 "center"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 justifyContent:\cf5 \strokec5  \cf6 \strokec6 "space-between"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 cursor:\cf5 \strokec5  \cf6 \strokec6 "pointer"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf16 \strokec16 <\cf17 \strokec17 span\cf5 \strokec5  \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{ \cf10 \strokec10 fontWeight:\cf5 \strokec5  \cf11 \strokec11 600\cf5 \strokec5 , \cf10 \strokec10 fontSize:\cf5 \strokec5  \cf6 \strokec6 "16px"\cf5 \strokec5  \}\cf7 \strokec7 \}\cf16 \strokec16 >\cf5 \strokec5 18\cf16 \strokec16 </\cf17 \strokec17 span\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                         \cf10 \strokec10 width:\cf5 \strokec5  \cf6 \strokec6 "22px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                         \cf10 \strokec10 height:\cf5 \strokec5  \cf6 \strokec6 "22px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                         \cf10 \strokec10 borderRadius:\cf5 \strokec5  \cf6 \strokec6 "50%"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                         \cf10 \strokec10 border:\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                           holesCount \cf9 \strokec9 ===\cf5 \strokec5  \cf11 \strokec11 18\cf5 \strokec5  \cf9 \strokec9 ?\cf5 \strokec5  \cf6 \strokec6 "2px solid #2ecc71"\cf5 \strokec5  \cf9 \strokec9 :\cf5 \strokec5  \cf6 \strokec6 "2px solid #666"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                         \cf10 \strokec10 backgroundColor:\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                           holesCount \cf9 \strokec9 ===\cf5 \strokec5  \cf11 \strokec11 18\cf5 \strokec5  \cf9 \strokec9 ?\cf5 \strokec5  \cf6 \strokec6 "#2ecc71"\cf5 \strokec5  \cf9 \strokec9 :\cf5 \strokec5  \cf6 \strokec6 "transparent"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf16 \strokec16 />\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 <\cf17 \strokec17 button\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 onClick\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 goToIntroStep\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 disabled\cf9 \strokec9 =\cf7 \strokec7 \{\cf9 \strokec9 !\cf5 \strokec5 holesCount\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf12 \strokec12 primaryButtonStyle\cf5 \strokec5 (\cf12 \strokec12 Boolean\cf5 \strokec5 (holesCount))\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   Continua\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 </\cf17 \strokec17 button\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 <\cf17 \strokec17 button\cf5 \strokec5  \cf10 \strokec10 onClick\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 goBackToStepOne\cf7 \strokec7 \}\cf5 \strokec5  \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 secondaryButtonStyle\cf7 \strokec7 \}\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   Indietro\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 </\cf17 \strokec17 button\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 <\cf17 \strokec17 button\cf5 \strokec5  \cf10 \strokec10 onClick\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 closeDialog\cf7 \strokec7 \}\cf5 \strokec5  \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 subtleButtonStyle\cf7 \strokec7 \}\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   Annulla\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 </\cf17 \strokec17 button\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf16 \strokec16 </>\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             )\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5             \cf7 \strokec7 \{\cf5 \strokec5 dialogStep \cf9 \strokec9 ===\cf5 \strokec5  \cf11 \strokec11 3\cf5 \strokec5  \cf9 \strokec9 &&\cf5 \strokec5  (\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf16 \strokec16 <>\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 width:\cf5 \strokec5  \cf6 \strokec6 "70px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 height:\cf5 \strokec5  \cf6 \strokec6 "70px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 borderRadius:\cf5 \strokec5  \cf6 \strokec6 "35px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 backgroundColor:\cf5 \strokec5  \cf6 \strokec6 "#16261c"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 border:\cf5 \strokec5  \cf6 \strokec6 "1px solid #244233"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 display:\cf5 \strokec5  \cf6 \strokec6 "flex"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 alignItems:\cf5 \strokec5  \cf6 \strokec6 "center"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 justifyContent:\cf5 \strokec5  \cf6 \strokec6 "center"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 fontSize:\cf5 \strokec5  \cf6 \strokec6 "28px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 margin:\cf5 \strokec5  \cf6 \strokec6 "0 auto 18px auto"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \uc0\u9971 \u65039 \cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 <\cf17 \strokec17 h3\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 marginTop:\cf5 \strokec5  \cf11 \strokec11 0\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 marginBottom:\cf5 \strokec5  \cf6 \strokec6 "10px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 fontSize:\cf5 \strokec5  \cf6 \strokec6 "24px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 fontWeight:\cf5 \strokec5  \cf11 \strokec11 700\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 textAlign:\cf5 \strokec5  \cf6 \strokec6 "center"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   Bene!\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 </\cf17 \strokec17 h3\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 <\cf17 \strokec17 p\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 color:\cf5 \strokec5  \cf6 \strokec6 "#b5b5b5"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 fontSize:\cf5 \strokec5  \cf6 \strokec6 "15px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 marginTop:\cf5 \strokec5  \cf11 \strokec11 0\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 marginBottom:\cf5 \strokec5  \cf6 \strokec6 "10px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 lineHeight:\cf5 \strokec5  \cf11 \strokec11 1.5\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 textAlign:\cf5 \strokec5  \cf6 \strokec6 "center"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   Ora mappiamo il campo buca per buca.\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 </\cf17 \strokec17 p\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 <\cf17 \strokec17 p\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 color:\cf5 \strokec5  \cf6 \strokec6 "#8e8e8e"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 fontSize:\cf5 \strokec5  \cf6 \strokec6 "14px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 marginTop:\cf5 \strokec5  \cf11 \strokec11 0\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 marginBottom:\cf5 \strokec5  \cf6 \strokec6 "18px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 lineHeight:\cf5 \strokec5  \cf11 \strokec11 1.5\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 textAlign:\cf5 \strokec5  \cf6 \strokec6 "center"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   Alla fine vedrai il riepilogo completo con il Par del campo e\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   su quali buche riceverai pi\'f9 colpi in base al tuo HCP di gioco.\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 </\cf17 \strokec17 p\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 <\cf17 \strokec17 button\cf5 \strokec5  \cf10 \strokec10 onClick\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 startMapping\cf7 \strokec7 \}\cf5 \strokec5  \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf12 \strokec12 primaryButtonStyle\cf5 \strokec5 (\cf13 \strokec13 true\cf5 \strokec5 )\cf7 \strokec7 \}\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   Inizia\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 </\cf17 \strokec17 button\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 <\cf17 \strokec17 button\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 onClick\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 goBackToStepTwoFromIntro\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 secondaryButtonStyle\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   Indietro\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 </\cf17 \strokec17 button\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 <\cf17 \strokec17 button\cf5 \strokec5  \cf10 \strokec10 onClick\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 closeDialog\cf7 \strokec7 \}\cf5 \strokec5  \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 subtleButtonStyle\cf7 \strokec7 \}\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   Annulla\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 </\cf17 \strokec17 button\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf16 \strokec16 </>\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             )\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5             \cf7 \strokec7 \{\cf5 \strokec5 dialogStep \cf9 \strokec9 ===\cf5 \strokec5  \cf11 \strokec11 4\cf5 \strokec5  \cf9 \strokec9 &&\cf5 \strokec5  (\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf16 \strokec16 <>\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 color:\cf5 \strokec5  \cf6 \strokec6 "#8f8f8f"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 fontSize:\cf5 \strokec5  \cf6 \strokec6 "13px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 marginBottom:\cf5 \strokec5  \cf6 \strokec6 "10px"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   Buca \cf7 \strokec7 \{\cf5 \strokec5 currentHoleIndex \cf9 \strokec9 +\cf5 \strokec5  \cf11 \strokec11 1\cf7 \strokec7 \}\cf5 \strokec5  di \cf7 \strokec7 \{\cf5 \strokec5 holesCount\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 width:\cf5 \strokec5  \cf6 \strokec6 "100%"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 height:\cf5 \strokec5  \cf6 \strokec6 "8px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 backgroundColor:\cf5 \strokec5  \cf6 \strokec6 "#1f1f1f"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 borderRadius:\cf5 \strokec5  \cf6 \strokec6 "999px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 overflow:\cf5 \strokec5  \cf6 \strokec6 "hidden"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 marginBottom:\cf5 \strokec5  \cf6 \strokec6 "20px"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 width:\cf5 \strokec5  \cf6 \strokec6 `\cf13 \strokec13 $\{\cf9 \strokec9 ((\cf5 \strokec5 currentHoleIndex\cf9 \strokec9  + \cf11 \strokec11 1\cf9 \strokec9 ) / \cf5 \strokec5 holesCount\cf9 \strokec9 ) * \cf11 \strokec11 100\cf13 \strokec13 \}\cf6 \strokec6 %`\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 height:\cf5 \strokec5  \cf6 \strokec6 "100%"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 backgroundColor:\cf5 \strokec5  \cf6 \strokec6 "#2ecc71"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 transition:\cf5 \strokec5  \cf6 \strokec6 "width 0.25s ease"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf16 \strokec16 />\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 <\cf17 \strokec17 h3\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 marginTop:\cf5 \strokec5  \cf11 \strokec11 0\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 marginBottom:\cf5 \strokec5  \cf6 \strokec6 "8px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 fontSize:\cf5 \strokec5  \cf6 \strokec6 "24px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 fontWeight:\cf5 \strokec5  \cf11 \strokec11 700\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   Buca \cf7 \strokec7 \{\cf5 \strokec5 currentHole.hole\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 </\cf17 \strokec17 h3\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 <\cf17 \strokec17 p\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 color:\cf5 \strokec5  \cf6 \strokec6 "#aaa"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 fontSize:\cf5 \strokec5  \cf6 \strokec6 "14px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 marginTop:\cf5 \strokec5  \cf11 \strokec11 0\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 marginBottom:\cf5 \strokec5  \cf6 \strokec6 "18px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 lineHeight:\cf5 \strokec5  \cf11 \strokec11 1.5\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   Inserisci il Par e lo Stroke Index.\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 </\cf17 \strokec17 p\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 onClick\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 () \cf7 \strokec7 =>\cf5 \strokec5  \cf12 \strokec12 setSelectedStepper\cf5 \strokec5 (\cf6 \strokec6 "par"\cf5 \strokec5 )\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf12 \strokec12 stepperCardStyle\cf5 \strokec5 (selectedStepper \cf9 \strokec9 ===\cf5 \strokec5  \cf6 \strokec6 "par"\cf5 \strokec5 )\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf16 \strokec16 <\cf17 \strokec17 label\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 display:\cf5 \strokec5  \cf6 \strokec6 "block"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 fontSize:\cf5 \strokec5  \cf6 \strokec6 "14px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 color:\cf5 \strokec5  \cf6 \strokec6 "#c7c7c7"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 marginBottom:\cf5 \strokec5  \cf6 \strokec6 "8px"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     Par\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf16 \strokec16 </\cf17 \strokec17 label\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                   \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{ \cf10 \strokec10 display:\cf5 \strokec5  \cf6 \strokec6 "flex"\cf5 \strokec5 , \cf10 \strokec10 alignItems:\cf5 \strokec5  \cf6 \strokec6 "center"\cf5 \strokec5 , \cf10 \strokec10 gap:\cf5 \strokec5  \cf6 \strokec6 "10px"\cf5 \strokec5  \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf16 \strokec16 <\cf17 \strokec17 button\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 onClick\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 () \cf7 \strokec7 =>\cf5 \strokec5  \cf12 \strokec12 adjustPar\cf5 \strokec5 (\cf9 \strokec9 -\cf11 \strokec11 1\cf5 \strokec5 )\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 stepperButtonStyle\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       -\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf16 \strokec16 </\cf17 \strokec17 button\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                     \cf16 \strokec16 <\cf17 \strokec17 div\cf5 \strokec5  \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 stepperValueStyle\cf7 \strokec7 \}\cf16 \strokec16 >\cf7 \strokec7 \{\cf5 \strokec5 currentHole.par\cf7 \strokec7 \}\cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                     \cf16 \strokec16 <\cf17 \strokec17 button\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 onClick\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 () \cf7 \strokec7 =>\cf5 \strokec5  \cf12 \strokec12 adjustPar\cf5 \strokec5 (\cf11 \strokec11 1\cf5 \strokec5 )\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 stepperButtonStyle\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       +\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf16 \strokec16 </\cf17 \strokec17 button\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 onClick\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 () \cf7 \strokec7 =>\cf5 \strokec5  \cf12 \strokec12 setSelectedStepper\cf5 \strokec5 (\cf6 \strokec6 "stroke"\cf5 \strokec5 )\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf12 \strokec12 stepperCardStyle\cf5 \strokec5 (selectedStepper \cf9 \strokec9 ===\cf5 \strokec5  \cf6 \strokec6 "stroke"\cf5 \strokec5 )\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 display:\cf5 \strokec5  \cf6 \strokec6 "flex"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 alignItems:\cf5 \strokec5  \cf6 \strokec6 "center"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 gap:\cf5 \strokec5  \cf6 \strokec6 "8px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 marginBottom:\cf5 \strokec5  \cf6 \strokec6 "8px"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf16 \strokec16 <\cf17 \strokec17 label\cf5 \strokec5  \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{ \cf10 \strokec10 fontSize:\cf5 \strokec5  \cf6 \strokec6 "14px"\cf5 \strokec5 , \cf10 \strokec10 color:\cf5 \strokec5  \cf6 \strokec6 "#c7c7c7"\cf5 \strokec5  \}\cf7 \strokec7 \}\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       Stroke Index\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf16 \strokec16 </\cf17 \strokec17 label\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                     \cf7 \strokec7 \{\cf5 \strokec5 currentHoleIndex \cf9 \strokec9 ===\cf5 \strokec5  \cf11 \strokec11 0\cf5 \strokec5  \cf9 \strokec9 &&\cf5 \strokec5  (\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf16 \strokec16 <\cf17 \strokec17 button\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                         \cf10 \strokec10 onClick\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 (\cf14 \strokec14 e\cf5 \strokec5 ) \cf7 \strokec7 =>\cf5 \strokec5  \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                           e.\cf12 \strokec12 stopPropagation\cf5 \strokec5 ();\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                           \cf12 \strokec12 setShowStrokeInfo\cf5 \strokec5 ((\cf14 \strokec14 prev\cf5 \strokec5 ) \cf7 \strokec7 =>\cf5 \strokec5  \cf9 \strokec9 !\cf5 \strokec5 prev);\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                         \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                         \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                           \cf10 \strokec10 width:\cf5 \strokec5  \cf6 \strokec6 "20px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                           \cf10 \strokec10 height:\cf5 \strokec5  \cf6 \strokec6 "20px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                           \cf10 \strokec10 borderRadius:\cf5 \strokec5  \cf6 \strokec6 "50%"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                           \cf10 \strokec10 border:\cf5 \strokec5  \cf6 \strokec6 "1px solid #555"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                           \cf10 \strokec10 backgroundColor:\cf5 \strokec5  \cf6 \strokec6 "#1a1a1a"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                           \cf10 \strokec10 color:\cf5 \strokec5  \cf6 \strokec6 "#d5d5d5"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                           \cf10 \strokec10 fontSize:\cf5 \strokec5  \cf6 \strokec6 "12px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                           \cf10 \strokec10 cursor:\cf5 \strokec5  \cf6 \strokec6 "pointer"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                           \cf10 \strokec10 display:\cf5 \strokec5  \cf6 \strokec6 "flex"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                           \cf10 \strokec10 alignItems:\cf5 \strokec5  \cf6 \strokec6 "center"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                           \cf10 \strokec10 justifyContent:\cf5 \strokec5  \cf6 \strokec6 "center"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                           \cf10 \strokec10 padding:\cf5 \strokec5  \cf11 \strokec11 0\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                           \cf10 \strokec10 fontFamily:\cf5 \strokec5  appFont\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                         \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                         i\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf16 \strokec16 </\cf17 \strokec17 button\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     )\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                   \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{ \cf10 \strokec10 display:\cf5 \strokec5  \cf6 \strokec6 "flex"\cf5 \strokec5 , \cf10 \strokec10 alignItems:\cf5 \strokec5  \cf6 \strokec6 "center"\cf5 \strokec5 , \cf10 \strokec10 gap:\cf5 \strokec5  \cf6 \strokec6 "10px"\cf5 \strokec5  \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf16 \strokec16 <\cf17 \strokec17 button\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 onClick\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 () \cf7 \strokec7 =>\cf5 \strokec5  \cf12 \strokec12 adjustStrokeIndex\cf5 \strokec5 (\cf9 \strokec9 -\cf11 \strokec11 1\cf5 \strokec5 )\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 stepperButtonStyle\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       -\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf16 \strokec16 </\cf17 \strokec17 button\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                     \cf16 \strokec16 <\cf17 \strokec17 input\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 type\cf9 \strokec9 =\cf6 \strokec6 "text"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 inputMode\cf9 \strokec9 =\cf6 \strokec6 "numeric"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 value\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 currentHole.strokeIndex\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 onChange\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 (\cf14 \strokec14 e\cf5 \strokec5 ) \cf7 \strokec7 =>\cf5 \strokec5  \cf12 \strokec12 handleStrokeInputChange\cf5 \strokec5 (e.target.value)\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 onBlur\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 normalizeStrokeInput\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 placeholder\cf9 \strokec9 =\cf6 \strokec6 "0"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 stepperInputStyle\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf16 \strokec16 />\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                     \cf16 \strokec16 <\cf17 \strokec17 button\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 onClick\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 () \cf7 \strokec7 =>\cf5 \strokec5  \cf12 \strokec12 adjustStrokeIndex\cf5 \strokec5 (\cf11 \strokec11 1\cf5 \strokec5 )\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 stepperButtonStyle\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       +\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf16 \strokec16 </\cf17 \strokec17 button\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                 \cf7 \strokec7 \{\cf5 \strokec5 currentHoleIndex \cf9 \strokec9 ===\cf5 \strokec5  \cf11 \strokec11 0\cf5 \strokec5  \cf9 \strokec9 &&\cf5 \strokec5  showStrokeInfo \cf9 \strokec9 &&\cf5 \strokec5  (\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 marginTop:\cf5 \strokec5  \cf6 \strokec6 "12px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 padding:\cf5 \strokec5  \cf6 \strokec6 "14px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 backgroundColor:\cf5 \strokec5  \cf6 \strokec6 "#171717"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 border:\cf5 \strokec5  \cf6 \strokec6 "1px solid #2b2b2b"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 borderRadius:\cf5 \strokec5  \cf6 \strokec6 "12px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 color:\cf5 \strokec5  \cf6 \strokec6 "#bcbcbc"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 fontSize:\cf5 \strokec5  \cf6 \strokec6 "13px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 lineHeight:\cf5 \strokec5  \cf11 \strokec11 1.5\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     Lo Stroke Index serve a determinare su quali buche ricevi pi\'f9\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     colpi in base al tuo handicap di gioco. Se non conosci questo\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     dato chiedilo alla segreteria del campo.\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 )\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 <\cf17 \strokec17 button\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 onClick\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 nextHole\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 disabled\cf9 \strokec9 =\cf7 \strokec7 \{\cf9 \strokec9 !\cf5 \strokec5 currentHoleCompleted\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf12 \strokec12 primaryButtonStyle\cf5 \strokec5 (currentHoleCompleted)\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf7 \strokec7 \{\cf5 \strokec5 currentHoleIndex \cf9 \strokec9 ===\cf5 \strokec5  holesCount \cf9 \strokec9 -\cf5 \strokec5  \cf11 \strokec11 1\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf9 \strokec9 ?\cf5 \strokec5  \cf6 \strokec6 "Vai al riepilogo"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf9 \strokec9 :\cf5 \strokec5  \cf6 \strokec6 "Avanti"\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 </\cf17 \strokec17 button\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 <\cf17 \strokec17 button\cf5 \strokec5  \cf10 \strokec10 onClick\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 previousHole\cf7 \strokec7 \}\cf5 \strokec5  \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 secondaryButtonStyle\cf7 \strokec7 \}\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf7 \strokec7 \{\cf5 \strokec5 currentHoleIndex \cf9 \strokec9 ===\cf5 \strokec5  \cf11 \strokec11 0\cf5 \strokec5  \cf9 \strokec9 ?\cf5 \strokec5  \cf6 \strokec6 "Indietro"\cf5 \strokec5  \cf9 \strokec9 :\cf5 \strokec5  \cf6 \strokec6 "Buca precedente"\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 </\cf17 \strokec17 button\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 <\cf17 \strokec17 button\cf5 \strokec5  \cf10 \strokec10 onClick\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 closeDialog\cf7 \strokec7 \}\cf5 \strokec5  \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 subtleButtonStyle\cf7 \strokec7 \}\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   Annulla\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 </\cf17 \strokec17 button\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf16 \strokec16 </>\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             )\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5             \cf7 \strokec7 \{\cf5 \strokec5 dialogStep \cf9 \strokec9 ===\cf5 \strokec5  \cf11 \strokec11 5\cf5 \strokec5  \cf9 \strokec9 &&\cf5 \strokec5  (\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf16 \strokec16 <>\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 <\cf17 \strokec17 h3\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 marginTop:\cf5 \strokec5  \cf11 \strokec11 0\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 marginBottom:\cf5 \strokec5  \cf6 \strokec6 "8px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 fontSize:\cf5 \strokec5  \cf6 \strokec6 "24px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 fontWeight:\cf5 \strokec5  \cf11 \strokec11 700\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   Riepilogo campo\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 </\cf17 \strokec17 h3\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 <\cf17 \strokec17 p\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 color:\cf5 \strokec5  \cf6 \strokec6 "#aaa"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 fontSize:\cf5 \strokec5  \cf6 \strokec6 "14px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 marginTop:\cf5 \strokec5  \cf11 \strokec11 0\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 marginBottom:\cf5 \strokec5  \cf6 \strokec6 "18px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 lineHeight:\cf5 \strokec5  \cf11 \strokec11 1.5\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   Controlla la mappatura completa di \cf7 \strokec7 \{\cf5 \strokec5 courseName\cf7 \strokec7 \}\cf5 \strokec5 .\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 </\cf17 \strokec17 p\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 display:\cf5 \strokec5  \cf6 \strokec6 "grid"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 gridTemplateColumns:\cf5 \strokec5  \cf6 \strokec6 "70px 1fr 1fr"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 gap:\cf5 \strokec5  \cf6 \strokec6 "10px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 marginBottom:\cf5 \strokec5  \cf6 \strokec6 "12px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 fontSize:\cf5 \strokec5  \cf6 \strokec6 "13px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 color:\cf5 \strokec5  \cf6 \strokec6 "#8f8f8f"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 padding:\cf5 \strokec5  \cf6 \strokec6 "0 4px"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf16 \strokec16 <\cf17 \strokec17 div\cf16 \strokec16 >\cf5 \strokec5 Buca\cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf16 \strokec16 <\cf17 \strokec17 div\cf16 \strokec16 >\cf5 \strokec5 Par\cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf16 \strokec16 <\cf17 \strokec17 div\cf16 \strokec16 >\cf5 \strokec5 Stroke Index\cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                 \cf7 \strokec7 \{\cf5 \strokec5 holesData.\cf12 \strokec12 map\cf5 \strokec5 ((\cf14 \strokec14 hole\cf5 \strokec5 ) \cf7 \strokec7 =>\cf5 \strokec5  (\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 key\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 hole.hole\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 display:\cf5 \strokec5  \cf6 \strokec6 "grid"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 gridTemplateColumns:\cf5 \strokec5  \cf6 \strokec6 "70px 1fr 1fr"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 gap:\cf5 \strokec5  \cf6 \strokec6 "10px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 alignItems:\cf5 \strokec5  \cf6 \strokec6 "center"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 marginBottom:\cf5 \strokec5  \cf6 \strokec6 "10px"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                         \cf10 \strokec10 height:\cf5 \strokec5  \cf6 \strokec6 "42px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                         \cf10 \strokec10 display:\cf5 \strokec5  \cf6 \strokec6 "flex"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                         \cf10 \strokec10 alignItems:\cf5 \strokec5  \cf6 \strokec6 "center"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                         \cf10 \strokec10 paddingLeft:\cf5 \strokec5  \cf6 \strokec6 "10px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                         \cf10 \strokec10 borderRadius:\cf5 \strokec5  \cf6 \strokec6 "10px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                         \cf10 \strokec10 backgroundColor:\cf5 \strokec5  \cf6 \strokec6 "#1a1a1a"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                         \cf10 \strokec10 border:\cf5 \strokec5  \cf6 \strokec6 "1px solid #333"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf7 \strokec7 \{\cf5 \strokec5 hole.hole\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                     \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                         \cf10 \strokec10 height:\cf5 \strokec5  \cf6 \strokec6 "42px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                         \cf10 \strokec10 display:\cf5 \strokec5  \cf6 \strokec6 "flex"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                         \cf10 \strokec10 alignItems:\cf5 \strokec5  \cf6 \strokec6 "center"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                         \cf10 \strokec10 paddingLeft:\cf5 \strokec5  \cf6 \strokec6 "12px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                         \cf10 \strokec10 borderRadius:\cf5 \strokec5  \cf6 \strokec6 "10px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                         \cf10 \strokec10 backgroundColor:\cf5 \strokec5  \cf6 \strokec6 "#1a1a1a"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                         \cf10 \strokec10 border:\cf5 \strokec5  \cf6 \strokec6 "1px solid #333"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf7 \strokec7 \{\cf5 \strokec5 hole.par\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                     \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                         \cf10 \strokec10 height:\cf5 \strokec5  \cf6 \strokec6 "42px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                         \cf10 \strokec10 display:\cf5 \strokec5  \cf6 \strokec6 "flex"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                         alignItems\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "center"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                         paddingLeft\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "12px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                         borderRadius\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "10px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                         backgroundColor\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "#1a1a1a"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                         border\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "1px solid #333"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       \cf7 \strokec7 \{\cf14 \strokec14 hole\cf5 \strokec5 .strokeIndex\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 ))\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     marginTop\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "18px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     padding\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "14px 16px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     borderRadius\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "14px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     backgroundColor\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "#151515"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     border\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "1px solid #292929"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     display\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "flex"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     justifyContent\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "space-between"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     alignItems\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "center"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf16 \strokec16 <\cf17 \strokec17 span\cf5 \strokec5  \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{ color\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "#cfcfcf"\cf5 \strokec5 , fontSize\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "15px"\cf5 \strokec5  \}\cf7 \strokec7 \}\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     Par totale campo\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf16 \strokec16 </\cf17 \strokec17 span\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf16 \strokec16 <\cf17 \strokec17 span\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       color\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "#2ecc71"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       fontWeight\cf10 \strokec10 :\cf5 \strokec5  \cf11 \strokec11 700\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                       fontSize\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "18px"\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     \cf7 \strokec7 \{\cf8 \strokec8 totalPar\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf16 \strokec16 </\cf17 \strokec17 span\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 <\cf17 \strokec17 div\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf5 \strokec5 \{\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     marginTop\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "12px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     color\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "#8e8e8e"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     fontSize\cf10 \strokec10 :\cf5 \strokec5  \cf6 \strokec6 "13px"\cf5 \strokec5 ,\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                     lineHeight\cf10 \strokec10 :\cf5 \strokec5  \cf11 \strokec11 1.5\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   \}\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   Una volta salvato, il campo rester\'e0 nel sistema e potr\'e0 essere\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   richiamato senza rimappatura.\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 <\cf17 \strokec17 button\cf5 \strokec5  \cf10 \strokec10 onClick\cf9 \strokec9 =\cf7 \strokec7 \{\cf12 \strokec12 saveCourse\cf7 \strokec7 \}\cf5 \strokec5  \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf12 \strokec12 primaryButtonStyle\cf5 \strokec5 (\cf13 \strokec13 true\cf5 \strokec5 )\cf7 \strokec7 \}\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   Salva campo\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 </\cf17 \strokec17 button\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 <\cf17 \strokec17 button\cf5 \strokec5  \cf10 \strokec10 onClick\cf9 \strokec9 =\cf7 \strokec7 \{\cf12 \strokec12 goBackFromSummary\cf7 \strokec7 \}\cf5 \strokec5  \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf8 \strokec8 secondaryButtonStyle\cf7 \strokec7 \}\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   Modifica ultima buca\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 </\cf17 \strokec17 button\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 <\cf17 \strokec17 button\cf5 \strokec5  \cf10 \strokec10 onClick\cf9 \strokec9 =\cf7 \strokec7 \{\cf12 \strokec12 closeDialog\cf7 \strokec7 \}\cf5 \strokec5  \cf10 \strokec10 style\cf9 \strokec9 =\cf7 \strokec7 \{\cf8 \strokec8 subtleButtonStyle\cf7 \strokec7 \}\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                   Annulla\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5                 \cf16 \strokec16 </\cf17 \strokec17 button\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5               \cf16 \strokec16 </>\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5             )\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5           \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5         \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5       )\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5     \cf16 \strokec16 </\cf17 \strokec17 div\cf16 \strokec16 >\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5   );\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5 \}\cf4 \cb1 \strokec4 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb3 \strokec2 export\cf14 \strokec14  \cf2 \strokec2 default\cf14 \strokec14  \cf12 \strokec12 App\cf4 \strokec4 ;\cb1 \
+}
