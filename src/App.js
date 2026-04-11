@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 const appFont =
   "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
@@ -68,6 +68,14 @@ function sanitizeRoundName(name) {
   return name.trim().replace(/\s+/g, " ");
 }
 
+function receivedShotsToSymbols(value) {
+  if (value === 0) return "—";
+  if (value === 1) return "*";
+  if (value === 2) return "**";
+  if (value === 3) return "***";
+  return "—";
+}
+
 function App() {
   const [showDialog, setShowDialog] = useState(false);
   const [dialogStep, setDialogStep] = useState(1);
@@ -110,9 +118,6 @@ function App() {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [showLatestAdded, setShowLatestAdded] = useState(false);
-
-  const longPressTimerRef = useRef(null);
-  const longPressTriggeredRef = useRef(false);
 
   const [userProfile, setUserProfile] = useState(() => {
     try {
@@ -176,14 +181,6 @@ function App() {
   useEffect(() => {
     localStorage.setItem(USER_PROFILE_STORAGE_KEY, JSON.stringify(userProfile));
   }, [userProfile]);
-
-  useEffect(() => {
-    return () => {
-      if (longPressTimerRef.current) {
-        clearTimeout(longPressTimerRef.current);
-      }
-    };
-  }, []);
 
   const favorites = savedCourses.filter((course) => course.favorite);
   const nearbyCourses = savedCourses.slice(0, 5);
@@ -497,83 +494,50 @@ function App() {
     return Math.max(0, 2 + parValue + shots - strokes);
   }, []);
 
-  const nextReceivedValue = (value) => {
-    return value === 3 ? 0 : value + 1;
-  };
-
-  const receivedShotsToSymbols = (value) => {
-    if (value === 0) return "—";
-    if (value === 1) return "*";
-    if (value === 2) return "**";
-    if (value === 3) return "***";
-    return "—";
+  const getManualCycleValues = (autoValue) => {
+    if (autoValue === 0) return [1, 2, 3];
+    if (autoValue === 1) return [2, 3, 0];
+    if (autoValue === 2) return [3, 0, 1];
+    return [0, 1, 2];
   };
 
   const cycleReceivedShotsValue = (index, autoValue) => {
     const manualValue = manualReceivedShots[index];
+    const cycleValues = getManualCycleValues(autoValue);
 
     if (manualValue === undefined) {
       setManualReceivedShots((prev) => ({
         ...prev,
-        [index]: nextReceivedValue(autoValue)
+        [index]: cycleValues[0]
       }));
       setRoundAlreadySaved(false);
       return;
     }
 
-    if (manualValue === autoValue) {
-      setManualReceivedShots((prev) => {
-        const updated = { ...prev };
-        delete updated[index];
-        return updated;
-      });
+    if (manualValue === cycleValues[0]) {
+      setManualReceivedShots((prev) => ({
+        ...prev,
+        [index]: cycleValues[1]
+      }));
       setRoundAlreadySaved(false);
       return;
     }
 
-    setManualReceivedShots((prev) => ({
-      ...prev,
-      [index]: nextReceivedValue(manualValue)
-    }));
-    setRoundAlreadySaved(false);
-  };
+    if (manualValue === cycleValues[1]) {
+      setManualReceivedShots((prev) => ({
+        ...prev,
+        [index]: cycleValues[2]
+      }));
+      setRoundAlreadySaved(false);
+      return;
+    }
 
-  const resetReceivedShotsToAuto = (index) => {
     setManualReceivedShots((prev) => {
       const updated = { ...prev };
       delete updated[index];
       return updated;
     });
     setRoundAlreadySaved(false);
-  };
-
-  const startReceivedLongPress = (index) => {
-    longPressTriggeredRef.current = false;
-
-    if (longPressTimerRef.current) {
-      clearTimeout(longPressTimerRef.current);
-    }
-
-    longPressTimerRef.current = setTimeout(() => {
-      resetReceivedShotsToAuto(index);
-      longPressTriggeredRef.current = true;
-    }, 450);
-  };
-
-  const stopReceivedLongPress = () => {
-    if (longPressTimerRef.current) {
-      clearTimeout(longPressTimerRef.current);
-      longPressTimerRef.current = null;
-    }
-  };
-
-  const handleReceivedPillClick = (index, autoValue) => {
-    if (longPressTriggeredRef.current) {
-      longPressTriggeredRef.current = false;
-      return;
-    }
-
-    cycleReceivedShotsValue(index, autoValue);
   };
 
   const stablefordTotal = useMemo(() => {
@@ -1346,14 +1310,8 @@ function App() {
 
                   <button
                     onClick={() =>
-                      handleReceivedPillClick(index, automaticReceivedShots)
+                      cycleReceivedShotsValue(index, automaticReceivedShots)
                     }
-                    onMouseDown={() => startReceivedLongPress(index)}
-                    onMouseUp={stopReceivedLongPress}
-                    onMouseLeave={stopReceivedLongPress}
-                    onTouchStart={() => startReceivedLongPress(index)}
-                    onTouchEnd={stopReceivedLongPress}
-                    onTouchCancel={stopReceivedLongPress}
                     style={{
                       minWidth: "56px",
                       padding: "8px 12px",
