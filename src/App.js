@@ -105,6 +105,7 @@ function App() {
 
   const [manualReceivedShots, setManualReceivedShots] = useState({});
   const [editingReceivedIndex, setEditingReceivedIndex] = useState(null);
+  const [receivedShotsDraft, setReceivedShotsDraft] = useState("");
 
   const [showHcpEditor, setShowHcpEditor] = useState(false);
   const [hcpDraft, setHcpDraft] = useState("");
@@ -385,6 +386,7 @@ function App() {
     setRoundAlreadySaved(false);
     setManualReceivedShots({});
     setEditingReceivedIndex(null);
+    setReceivedShotsDraft("");
     setRoundSetup({
       competitionName: "",
       totalCompetitionHoles: course.holesCount === 18 ? 18 : 18,
@@ -433,6 +435,7 @@ function App() {
     setRoundAlreadySaved(false);
     setManualReceivedShots({});
     setEditingReceivedIndex(null);
+    setReceivedShotsDraft("");
     setShowRoundSetup(false);
   };
 
@@ -444,6 +447,7 @@ function App() {
     setRoundAlreadySaved(false);
     setManualReceivedShots({});
     setEditingReceivedIndex(null);
+    setReceivedShotsDraft("");
     setRoundSetup({
       competitionName: "",
       totalCompetitionHoles: 18,
@@ -470,24 +474,34 @@ function App() {
     return getReceivedShots(playerHcp, strokeIndex);
   };
 
-  const setManualReceivedShotValue = (index, value) => {
-    const cleanValue = String(value).replace(/\D/g, "");
+  const openReceivedShotsEditor = (index, currentValue) => {
+    setEditingReceivedIndex(index);
+    setReceivedShotsDraft(String(currentValue));
+  };
 
-    if (cleanValue === "") {
+  const setManualReceivedShotValue = (value) => {
+    const cleanValue = String(value).replace(/\D/g, "");
+    setReceivedShotsDraft(cleanValue);
+  };
+
+  const confirmManualReceivedShotValue = (index) => {
+    if (receivedShotsDraft === "") {
       setManualReceivedShots((prev) => {
         const updated = { ...prev };
         delete updated[index];
         return updated;
       });
-      return;
+    } else {
+      const numericValue = Math.max(0, Math.min(5, Number(receivedShotsDraft)));
+
+      setManualReceivedShots((prev) => ({
+        ...prev,
+        [index]: numericValue
+      }));
     }
 
-    const numericValue = Math.max(0, Math.min(5, Number(cleanValue)));
-
-    setManualReceivedShots((prev) => ({
-      ...prev,
-      [index]: numericValue
-    }));
+    setEditingReceivedIndex(null);
+    setReceivedShotsDraft("");
     setRoundAlreadySaved(false);
   };
 
@@ -498,6 +512,7 @@ function App() {
       return updated;
     });
     setEditingReceivedIndex(null);
+    setReceivedShotsDraft("");
     setRoundAlreadySaved(false);
   };
 
@@ -1280,14 +1295,12 @@ function App() {
                       <input
                         type="text"
                         inputMode="numeric"
-                        value={
-                          manualReceivedShots[index] !== undefined
-                            ? manualReceivedShots[index]
-                            : receivedShots
-                        }
-                        onChange={(e) =>
-                          setManualReceivedShotValue(index, e.target.value)
-                        }
+                        value={receivedShotsDraft}
+                        onChange={(e) => setManualReceivedShotValue(e.target.value)}
+                        onFocus={(e) => {
+                          setTimeout(() => e.target.select(), 0);
+                        }}
+                        autoFocus
                         style={{
                           width: "56px",
                           height: "36px",
@@ -1303,7 +1316,7 @@ function App() {
                       />
 
                       <button
-                        onClick={() => setEditingReceivedIndex(null)}
+                        onClick={() => confirmManualReceivedShotValue(index)}
                         style={{
                           backgroundColor: "#1a1a1a",
                           border: "1px solid #333",
@@ -1336,7 +1349,7 @@ function App() {
                     </div>
                   ) : (
                     <button
-                      onClick={() => setEditingReceivedIndex(index)}
+                      onClick={() => openReceivedShotsEditor(index, receivedShots)}
                       style={{
                         padding: "8px 12px",
                         borderRadius: "999px",
