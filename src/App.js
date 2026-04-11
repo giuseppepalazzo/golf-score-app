@@ -1100,7 +1100,8 @@ function App() {
               lineHeight: 1.5
             }}
           >
-            Stima provvisoria basata sul punteggio Stableford del round.
+              Stima indicativa. L’HCP ufficiale viene calcolato con un algoritmo più complesso:
+  attendi dopo le 00:00 del giorno successivo alla gara e verifica nell’app FIG.
           </div>
         </div>
 
