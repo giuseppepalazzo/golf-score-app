@@ -5,6 +5,7 @@ const appFont =
 
 const STORAGE_KEY = "golf-score-app-courses-v1";
 const ROUNDS_STORAGE_KEY = "golf-score-app-rounds-v1";
+const USER_PROFILE_STORAGE_KEY = "golf-score-app-user-profile-v1";
 
 const stepperButtonStyle = {
   width: "44px",
@@ -55,6 +56,18 @@ const stepperInputStyle = {
   width: "100%"
 };
 
+function formatDateItalian(dateLike) {
+  const date = new Date(dateLike);
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+
+function sanitizeRoundName(name) {
+  return name.trim().replace(/\s+/g, " ");
+}
+
 function App() {
   const [showDialog, setShowDialog] = useState(false);
   const [dialogStep, setDialogStep] = useState(1);
@@ -71,6 +84,7 @@ function App() {
   const [openedCourse, setOpenedCourse] = useState(null);
   const [showRoundSetup, setShowRoundSetup] = useState(false);
   const [roundSetup, setRoundSetup] = useState({
+    competitionName: "",
     totalCompetitionHoles: 18,
     startHole: 1
   });
@@ -86,13 +100,38 @@ function App() {
     }
   });
   const [showRoundsHistory, setShowRoundsHistory] = useState(false);
+  const [roundAlreadySaved, setRoundAlreadySaved] = useState(false);
+
+  const [showHcpEditor, setShowHcpEditor] = useState(false);
+  const [hcpDraft, setHcpDraft] = useState("");
 
   const [searchQuery, setSearchQuery] = useState("");
   const [showLatestAdded, setShowLatestAdded] = useState(false);
 
-  const [userProfile] = useState({
-    firstName: "Giuseppe",
-    hcp: 37.4
+  const [userProfile, setUserProfile] = useState(() => {
+    try {
+      const stored = localStorage.getItem(USER_PROFILE_STORAGE_KEY);
+      if (!stored) {
+        return {
+          firstName: "Giuseppe",
+          hcp: 36
+        };
+      }
+
+      const parsed = JSON.parse(stored);
+      return {
+        firstName: parsed.firstName || "Giuseppe",
+        hcp:
+          typeof parsed.hcp === "number" || typeof parsed.hcp === "string"
+            ? parsed.hcp
+            : 36
+      };
+    } catch (error) {
+      return {
+        firstName: "Giuseppe",
+        hcp: 36
+      };
+    }
   });
 
   const [savedCourses, setSavedCourses] = useState(() => {
@@ -127,6 +166,10 @@ function App() {
   useEffect(() => {
     localStorage.setItem(ROUNDS_STORAGE_KEY, JSON.stringify(savedRounds));
   }, [savedRounds]);
+
+  useEffect(() => {
+    localStorage.setItem(USER_PROFILE_STORAGE_KEY, JSON.stringify(userProfile));
+  }, [userProfile]);
 
   const favorites = savedCourses.filter((course) => course.favorite);
   const nearbyCourses = savedCourses.slice(0, 5);
@@ -335,7 +378,9 @@ function App() {
     setOpenedCourse(course);
     setShowRoundSetup(true);
     setShowRoundsHistory(false);
+    setRoundAlreadySaved(false);
     setRoundSetup({
+      competitionName: "",
       totalCompetitionHoles: course.holesCount === 18 ? 18 : 18,
       startHole: 1
     });
@@ -367,10 +412,6 @@ function App() {
   };
 
   const competitionHoles = useMemo(() => {
-    if (!openedCourse || !openedCourse.holes || !showRoundSetup && roundScores.length === 0) {
-      if (!openedCourse) return [];
-    }
-
     if (!openedCourse) return [];
 
     return getCompetitionSequence(
@@ -378,11 +419,12 @@ function App() {
       Number(roundSetup.totalCompetitionHoles),
       Number(roundSetup.startHole)
     );
-  }, [openedCourse, roundSetup, showRoundSetup, roundScores.length]);
+  }, [openedCourse, roundSetup]);
 
   const startRound = () => {
     const startingScores = competitionHoles.map((hole) => Number(hole.par));
     setRoundScores(startingScores);
+    setRoundAlreadySaved(false);
     setShowRoundSetup(false);
   };
 
@@ -391,7 +433,9 @@ function App() {
     setShowRoundSetup(false);
     setRoundScores([]);
     setShowRoundsHistory(false);
+    setRoundAlreadySaved(false);
     setRoundSetup({
+      competitionName: "",
       totalCompetitionHoles: 18,
       startHole: 1
     });
@@ -460,6 +504,7 @@ function App() {
     const updated = [...roundScores];
     updated[index] = value;
     setRoundScores(updated);
+    setRoundAlreadySaved(false);
   };
 
   const handleScoreInputChange = (index, value) => {
@@ -516,13 +561,23 @@ function App() {
   };
 
   const saveRound = () => {
-    if (!openedCourse || !competitionHoles.length) return;
+    if (!openedCourse || !competitionHoles.length || roundAlreadySaved) return;
+
+    const formattedDate = formatDateItalian(Date.now());
+    const cleanCompetitionName = sanitizeRoundName(roundSetup.competitionName);
+    const savedName =
+      cleanCompetitionName !== ""
+        ? `${cleanCompetitionName}_${formattedDate}`
+        : `Giro_${formattedDate}`;
 
     const newRound = {
       id: Date.now(),
+      savedName,
+      competitionName: cleanCompetitionName || "Giro",
       courseId: openedCourse.id,
       courseName: openedCourse.name,
       createdAt: Date.now(),
+      formattedDate,
       playerHcp: userProfile.hcp,
       totalCompetitionHoles: roundSetup.totalCompetitionHoles,
       startHole: roundSetup.startHole,
@@ -534,12 +589,36 @@ function App() {
     };
 
     setSavedRounds((prev) => [newRound, ...prev]);
+    setRoundAlreadySaved(true);
     setShowRoundsHistory(true);
   };
 
   const roundsForOpenedCourse = openedCourse
     ? savedRounds.filter((round) => round.courseId === openedCourse.id)
     : [];
+
+  const openHcpEditor = () => {
+    setHcpDraft(String(userProfile.hcp));
+    setShowHcpEditor(true);
+  };
+
+  const closeHcpEditor = () => {
+    setShowHcpEditor(false);
+    setHcpDraft("");
+  };
+
+  const saveHcp = () => {
+    const cleanValue = String(hcpDraft).replace(",", ".").trim();
+    const numeric = Number(cleanValue);
+
+    if (Number.isNaN(numeric) || numeric < 0) return;
+
+    setUserProfile((prev) => ({
+      ...prev,
+      hcp: Number(numeric.toFixed(1))
+    }));
+    closeHcpEditor();
+  };
 
   const titleStyle = {
     fontSize: "22px",
@@ -675,9 +754,8 @@ function App() {
   );
 
   if (openedCourse && showRoundSetup) {
-    const allowedCompetitionOptions = openedCourse.holesCount === 18
-      ? [18, 36, 54]
-      : [9, 18, 27, 36, 45, 54];
+    const allowedCompetitionOptions =
+      openedCourse.holesCount === 18 ? [18, 36, 54] : [9, 18, 27, 36, 45, 54];
 
     const allowedStartHoles = Array.from(
       { length: openedCourse.holesCount },
@@ -750,6 +828,33 @@ function App() {
           >
             Campo da {openedCourse.holesCount} buche
           </div>
+        </div>
+
+        <h2 style={titleStyle}>Nome gara</h2>
+        <div style={cardStyle}>
+          <input
+            type="text"
+            value={roundSetup.competitionName}
+            onChange={(e) =>
+              setRoundSetup((prev) => ({
+                ...prev,
+                competitionName: e.target.value
+              }))
+            }
+            placeholder="Es. Stableford sabato, Gara sociale, Allenamento"
+            style={{
+              width: "100%",
+              padding: "13px 14px",
+              backgroundColor: "#1a1a1a",
+              border: "1px solid #333",
+              borderRadius: "12px",
+              color: "white",
+              boxSizing: "border-box",
+              outline: "none",
+              fontSize: "15px",
+              fontFamily: appFont
+            }}
+          />
         </div>
 
         <h2 style={titleStyle}>Buche di gara</h2>
@@ -999,8 +1104,6 @@ function App() {
           </div>
         </div>
 
-        <h2 style={titleStyle}>Giro</h2>
-
         {competitionHoles.length > 0 ? (
           competitionHoles.map((hole, index) => {
             const receivedShots = getReceivedShots(
@@ -1021,7 +1124,7 @@ function App() {
                   border: "1px solid #222",
                   borderRadius: "16px",
                   padding: "16px",
-                  marginBottom: "12px"
+                  marginTop: "12px"
                 }}
               >
                 <div
@@ -1165,15 +1268,20 @@ function App() {
               backgroundColor: "#111",
               border: "1px solid #222",
               borderRadius: "14px",
-              padding: "16px"
+              padding: "16px",
+              marginTop: "14px"
             }}
           >
             Per questo campo non c’è ancora una mappatura completa.
           </div>
         )}
 
-        <button onClick={saveRound} style={primaryButtonStyle(true)}>
-          Salva giro
+        <button
+          onClick={saveRound}
+          disabled={roundAlreadySaved}
+          style={primaryButtonStyle(!roundAlreadySaved)}
+        >
+          {roundAlreadySaved ? "Giro salvato" : "Salva giro"}
         </button>
 
         <button
@@ -1213,28 +1321,21 @@ function App() {
                 >
                   <div
                     style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      gap: "12px",
-                      alignItems: "center"
+                      fontSize: "14px",
+                      fontWeight: 700,
+                      marginBottom: "6px"
                     }}
                   >
-                    <div style={{ fontSize: "14px", fontWeight: 600 }}>
-                      {new Date(round.createdAt).toLocaleDateString()}
-                    </div>
-                    <div style={{ color: "#8e8e8e", fontSize: "12px" }}>
-                      HCP stimato {round.estimatedHcpAfterRound}
-                    </div>
+                    {round.savedName}
                   </div>
 
                   <div
                     style={{
-                      marginTop: "8px",
                       color: "#8e8e8e",
                       fontSize: "12px"
                     }}
                   >
-                    {round.totalCompetitionHoles} buche • partenza dalla {round.startHole}
+                    {round.formattedDate}
                   </div>
 
                   <div
@@ -1281,6 +1382,16 @@ function App() {
                     >
                       Stableford {round.stablefordTotal}
                     </div>
+                  </div>
+
+                  <div
+                    style={{
+                      marginTop: "10px",
+                      color: "#8e8e8e",
+                      fontSize: "12px"
+                    }}
+                  >
+                    HCP stimato {round.estimatedHcpAfterRound}
                   </div>
                 </div>
               ))
@@ -1347,12 +1458,36 @@ function App() {
 
           <div
             style={{
-              fontSize: "13px",
-              color: "#8c8c8c",
-              marginTop: "3px"
+              marginTop: "3px",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-end",
+              gap: "4px"
             }}
           >
-            HCP {userProfile.hcp}
+            <div
+              style={{
+                fontSize: "13px",
+                color: "#8c8c8c"
+              }}
+            >
+              HCP {userProfile.hcp}
+            </div>
+
+            <button
+              onClick={openHcpEditor}
+              style={{
+                background: "transparent",
+                border: "none",
+                color: "#b5b5b5",
+                fontSize: "12px",
+                padding: 0,
+                cursor: "pointer",
+                fontFamily: appFont
+              }}
+            >
+              Aggiorna
+            </button>
           </div>
         </div>
       </div>
@@ -1467,6 +1602,86 @@ function App() {
         </div>
       )}
 
+      {showHcpEditor && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            backgroundColor: "rgba(0,0,0,0.86)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: "20px",
+            boxSizing: "border-box",
+            zIndex: 20
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: "#111",
+              padding: "24px",
+              borderRadius: "18px",
+              width: "100%",
+              maxWidth: "390px",
+              border: "1px solid #222",
+              boxSizing: "border-box",
+              fontFamily: appFont
+            }}
+          >
+            <h3
+              style={{
+                marginTop: 0,
+                marginBottom: "8px",
+                fontSize: "24px",
+                fontWeight: 700
+              }}
+            >
+              Aggiorna HCP
+            </h3>
+
+            <p
+              style={{
+                color: "#aaa",
+                fontSize: "14px",
+                marginTop: 0,
+                marginBottom: "16px",
+                lineHeight: 1.4
+              }}
+            >
+              Inserisci il tuo HCP attuale.
+            </p>
+
+            <input
+              type="text"
+              inputMode="decimal"
+              value={hcpDraft}
+              onChange={(e) => setHcpDraft(e.target.value)}
+              placeholder="Es. 36"
+              style={{
+                width: "100%",
+                padding: "13px 14px",
+                backgroundColor: "#1a1a1a",
+                border: "1px solid #333",
+                borderRadius: "12px",
+                color: "white",
+                boxSizing: "border-box",
+                outline: "none",
+                fontSize: "15px",
+                fontFamily: appFont
+              }}
+            />
+
+            <button onClick={saveHcp} style={primaryButtonStyle(true)}>
+              Salva HCP
+            </button>
+
+            <button onClick={closeHcpEditor} style={secondaryButtonStyle}>
+              Annulla
+            </button>
+          </div>
+        </div>
+      )}
+
       {showDialog && (
         <div
           style={{
@@ -1477,7 +1692,8 @@ function App() {
             justifyContent: "center",
             alignItems: "center",
             padding: "20px",
-            boxSizing: "border-box"
+            boxSizing: "border-box",
+            zIndex: 10
           }}
         >
           <div
