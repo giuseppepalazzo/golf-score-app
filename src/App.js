@@ -88,6 +88,7 @@ function App() {
     totalCompetitionHoles: 18,
     startHole: 1
   });
+
   const [roundScores, setRoundScores] = useState([]);
   const [savedRounds, setSavedRounds] = useState(() => {
     try {
@@ -101,6 +102,9 @@ function App() {
   });
   const [showRoundsHistory, setShowRoundsHistory] = useState(false);
   const [roundAlreadySaved, setRoundAlreadySaved] = useState(false);
+
+  const [manualReceivedShots, setManualReceivedShots] = useState({});
+  const [editingReceivedIndex, setEditingReceivedIndex] = useState(null);
 
   const [showHcpEditor, setShowHcpEditor] = useState(false);
   const [hcpDraft, setHcpDraft] = useState("");
@@ -379,6 +383,8 @@ function App() {
     setShowRoundSetup(true);
     setShowRoundsHistory(false);
     setRoundAlreadySaved(false);
+    setManualReceivedShots({});
+    setEditingReceivedIndex(null);
     setRoundSetup({
       competitionName: "",
       totalCompetitionHoles: course.holesCount === 18 ? 18 : 18,
@@ -425,6 +431,8 @@ function App() {
     const startingScores = competitionHoles.map((hole) => Number(hole.par));
     setRoundScores(startingScores);
     setRoundAlreadySaved(false);
+    setManualReceivedShots({});
+    setEditingReceivedIndex(null);
     setShowRoundSetup(false);
   };
 
@@ -434,6 +442,8 @@ function App() {
     setRoundScores([]);
     setShowRoundsHistory(false);
     setRoundAlreadySaved(false);
+    setManualReceivedShots({});
+    setEditingReceivedIndex(null);
     setRoundSetup({
       competitionName: "",
       totalCompetitionHoles: 18,
@@ -450,6 +460,47 @@ function App() {
     return Math.max(0, Math.floor((hcp - si) / 18) + 1);
   };
 
+  const getEffectiveReceivedShots = (index, playerHcp, strokeIndex) => {
+    const manualValue = manualReceivedShots[index];
+
+    if (manualValue !== undefined && manualValue !== null && manualValue !== "") {
+      return Number(manualValue);
+    }
+
+    return getReceivedShots(playerHcp, strokeIndex);
+  };
+
+  const setManualReceivedShotValue = (index, value) => {
+    const cleanValue = String(value).replace(/\D/g, "");
+
+    if (cleanValue === "") {
+      setManualReceivedShots((prev) => {
+        const updated = { ...prev };
+        delete updated[index];
+        return updated;
+      });
+      return;
+    }
+
+    const numericValue = Math.max(0, Math.min(5, Number(cleanValue)));
+
+    setManualReceivedShots((prev) => ({
+      ...prev,
+      [index]: numericValue
+    }));
+    setRoundAlreadySaved(false);
+  };
+
+  const clearManualReceivedShotValue = (index) => {
+    setManualReceivedShots((prev) => {
+      const updated = { ...prev };
+      delete updated[index];
+      return updated;
+    });
+    setEditingReceivedIndex(null);
+    setRoundAlreadySaved(false);
+  };
+
   const getStablefordPoints = (par, strokesMade, receivedShots) => {
     const parValue = Number(par || 0);
     const strokes = Number(strokesMade || 0);
@@ -464,7 +515,11 @@ function App() {
     if (!competitionHoles.length) return 0;
 
     return competitionHoles.reduce((sum, hole, index) => {
-      const receivedShots = getReceivedShots(userProfile.hcp, hole.strokeIndex);
+      const receivedShots = getEffectiveReceivedShots(
+        index,
+        userProfile.hcp,
+        hole.strokeIndex
+      );
       const points = getStablefordPoints(
         hole.par,
         roundScores[index],
@@ -472,18 +527,22 @@ function App() {
       );
       return sum + points;
     }, 0);
-  }, [competitionHoles, roundScores, userProfile.hcp]);
+  }, [competitionHoles, roundScores, userProfile.hcp, manualReceivedShots]);
 
   const netTotal = useMemo(() => {
     if (!competitionHoles.length) return 0;
 
     return competitionHoles.reduce((sum, hole, index) => {
-      const receivedShots = getReceivedShots(userProfile.hcp, hole.strokeIndex);
+      const receivedShots = getEffectiveReceivedShots(
+        index,
+        userProfile.hcp,
+        hole.strokeIndex
+      );
       const strokes = Number(roundScores[index] || 0);
       if (!strokes) return sum;
       return sum + (strokes - receivedShots);
     }, 0);
-  }, [competitionHoles, roundScores, userProfile.hcp]);
+  }, [competitionHoles, roundScores, userProfile.hcp, manualReceivedShots]);
 
   const estimatedHcpAfterRound = useMemo(() => {
     if (!competitionHoles.length || stablefordTotal === 0) return userProfile.hcp;
@@ -585,7 +644,8 @@ function App() {
       netTotal,
       stablefordTotal,
       estimatedHcpAfterRound,
-      scores: roundScores
+      scores: roundScores,
+      manualReceivedShots
     };
 
     setSavedRounds((prev) => [newRound, ...prev]);
@@ -1100,14 +1160,16 @@ function App() {
               lineHeight: 1.5
             }}
           >
-              Stima indicativa. L’HCP ufficiale viene calcolato con un algoritmo più complesso:
-  attendi dopo le 00:00 del giorno successivo alla gara e verifica nell’app FIG.
+            Stima indicativa. L’HCP ufficiale viene calcolato con un algoritmo più
+            complesso: attendi dopo le 00:00 del giorno successivo alla gara e
+            verifica nell’app FIG.
           </div>
         </div>
 
         {competitionHoles.length > 0 ? (
           competitionHoles.map((hole, index) => {
-            const receivedShots = getReceivedShots(
+            const receivedShots = getEffectiveReceivedShots(
+              index,
               userProfile.hcp,
               hole.strokeIndex
             );
@@ -1206,18 +1268,90 @@ function App() {
                     SI {hole.strokeIndex}
                   </div>
 
-                  <div
-                    style={{
-                      padding: "8px 12px",
-                      borderRadius: "999px",
-                      backgroundColor: "#16261c",
-                      border: "1px solid #244233",
-                      color: "#2ecc71",
-                      fontSize: "13px"
-                    }}
-                  >
-                    Ricevi {receivedShots}
-                  </div>
+                  {editingReceivedIndex === index ? (
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        flexWrap: "wrap"
+                      }}
+                    >
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        value={
+                          manualReceivedShots[index] !== undefined
+                            ? manualReceivedShots[index]
+                            : receivedShots
+                        }
+                        onChange={(e) =>
+                          setManualReceivedShotValue(index, e.target.value)
+                        }
+                        style={{
+                          width: "56px",
+                          height: "36px",
+                          borderRadius: "10px",
+                          border: "1px solid #244233",
+                          backgroundColor: "#16261c",
+                          color: "#2ecc71",
+                          textAlign: "center",
+                          outline: "none",
+                          fontSize: "14px",
+                          fontFamily: appFont
+                        }}
+                      />
+
+                      <button
+                        onClick={() => setEditingReceivedIndex(null)}
+                        style={{
+                          backgroundColor: "#1a1a1a",
+                          border: "1px solid #333",
+                          color: "white",
+                          borderRadius: "10px",
+                          padding: "8px 10px",
+                          fontSize: "12px",
+                          cursor: "pointer",
+                          fontFamily: appFont
+                        }}
+                      >
+                        OK
+                      </button>
+
+                      <button
+                        onClick={() => clearManualReceivedShotValue(index)}
+                        style={{
+                          backgroundColor: "#1a1a1a",
+                          border: "1px solid #333",
+                          color: "#bbb",
+                          borderRadius: "10px",
+                          padding: "8px 10px",
+                          fontSize: "12px",
+                          cursor: "pointer",
+                          fontFamily: appFont
+                        }}
+                      >
+                        Auto
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setEditingReceivedIndex(index)}
+                      style={{
+                        padding: "8px 12px",
+                        borderRadius: "999px",
+                        backgroundColor: "#16261c",
+                        border: "1px solid #244233",
+                        color: "#2ecc71",
+                        fontSize: "13px",
+                        cursor: "pointer",
+                        fontFamily: appFont
+                      }}
+                    >
+                      Ricevi {receivedShots}
+                      {manualReceivedShots[index] !== undefined ? " *" : ""}
+                    </button>
+                  )}
                 </div>
 
                 <div style={{ marginTop: "14px" }}>
