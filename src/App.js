@@ -1659,7 +1659,7 @@ function App() {
             }}
             title="Impostazioni"
           >
-            ⚙️
+            ≡
           </button>
         </div>
       </div>
