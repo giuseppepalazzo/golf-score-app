@@ -832,9 +832,9 @@ function App() {
   });
 
   const favoriteIconStyle = (active) => ({
-    width: "34px",
-    height: "34px",
-    borderRadius: "50%",
+    width: "46px",
+    height: "46px",
+    borderRadius: "23px",
     border: active ? `1px solid ${colors.green}` : `1px solid ${colors.borderStrong}`,
     backgroundColor: active ? colors.greenDark : colors.cardSecondary,
     color: active ? colors.green : colors.subtext,
