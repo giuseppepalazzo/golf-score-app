@@ -832,9 +832,9 @@ function App() {
   });
 
 const favoriteIconStyle = (active) => ({
-  width: "52px",
-  height: "52px",
-  borderRadius: "26px",
+  width: "48px",
+  height: "48px",
+  borderRadius: "24px",
   border: active ? `2px solid ${colors.green}` : `2px solid ${colors.borderStrong}`,
   backgroundColor: active ? colors.greenDark : colors.card,
   color: active ? colors.green : colors.subtext,
@@ -1607,16 +1607,16 @@ const favoriteIconStyle = (active) => ({
   alignItems: "center",
   gap: "12px",
 
-  paddingLeft: "10px",
-  paddingRight: "10px"
+  paddingLeft: "14px",
+  paddingRight: "14px"
 }}
       >
         <button
           onClick={openDialog}
 style={{
-  width: "52px",
-  height: "52px",
-  borderRadius: "26px",
+  width: "48px",
+  height: "48px",
+  borderRadius: "24px",
   border: `2px solid ${colors.green}`,
   backgroundColor: colors.card,
   color: colors.text,
@@ -1670,9 +1670,9 @@ style={{
           <button
             onClick={() => setShowSettings(true)}
         style={{
-  width: "52px",
-  height: "52px",
-  borderRadius: "26px",
+  width: "48px",
+  height: "48px",
+  borderRadius: "24px",
   border: `2px solid ${colors.borderStrong}`,
   backgroundColor: colors.card,
   color: colors.text,
@@ -1688,7 +1688,7 @@ style={{
 }}
             title="Impostazioni"
           >
-            ≡
+            <span style={{ fontSize: "20px", lineHeight: 1 }}>≡</span>
           </button>
         </div>
       </div>
