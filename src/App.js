@@ -1607,18 +1607,23 @@ function App() {
       >
         <button
           onClick={openDialog}
-          style={{
-            width: "46px",
-            height: "46px",
-            borderRadius: "23px",
-            border: `1px solid ${colors.green}`,
-            backgroundColor: colors.card,
-            color: colors.text,
-            fontSize: "24px",
-            cursor: "pointer",
-            fontFamily: appFont,
-            flexShrink: 0
-          }}
+style={{
+  width: "52px",
+  height: "52px",
+  borderRadius: "26px",
+  border: `2px solid ${colors.green}`,
+  backgroundColor: colors.card,
+  color: colors.text,
+  cursor: "pointer",
+  fontFamily: appFont,
+  fontSize: "26px",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: 0,
+  lineHeight: 1,
+  flexShrink: 0
+}}
         >
           +
         </button>
