@@ -831,20 +831,23 @@ function App() {
     cursor: "pointer"
   });
 
-  const favoriteIconStyle = (active) => ({
-    width: "46px",
-    height: "46px",
-    borderRadius: "23px",
-    border: active ? `1px solid ${colors.green}` : `1px solid ${colors.borderStrong}`,
-    backgroundColor: active ? colors.greenDark : colors.cardSecondary,
-    color: active ? colors.green : colors.subtext,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    cursor: "pointer",
-    fontSize: "16px",
-    flexShrink: 0
-  });
+const favoriteIconStyle = (active) => ({
+  width: "52px",
+  height: "52px",
+  borderRadius: "26px",
+  border: active ? `2px solid ${colors.green}` : `2px solid ${colors.borderStrong}`,
+  backgroundColor: active ? colors.greenDark : colors.card,
+  color: active ? colors.green : colors.subtext,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  cursor: "pointer",
+  fontSize: "20px",
+  padding: 0,
+  lineHeight: 1,
+  flexShrink: 0,
+  boxSizing: "border-box"
+});
 
   const cardStyle = {
     backgroundColor: colors.card,
