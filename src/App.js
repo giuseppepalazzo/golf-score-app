@@ -1646,9 +1646,9 @@ function App() {
           <button
             onClick={() => setShowSettings(true)}
             style={{
-              width: "38px",
-              height: "38px",
-              borderRadius: "19px",
+              width: "46px",
+              height: "46px",
+              borderRadius: "23px",
               border: `1px solid ${colors.borderStrong}`,
               backgroundColor: colors.card,
               color: colors.text,
