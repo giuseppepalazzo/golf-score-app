@@ -6,6 +6,7 @@ const appFont =
 const STORAGE_KEY = "golf-score-app-courses-v1";
 const ROUNDS_STORAGE_KEY = "golf-score-app-rounds-v1";
 const USER_PROFILE_STORAGE_KEY = "golf-score-app-user-profile-v1";
+const THEME_STORAGE_KEY = "golf-score-app-theme-v1";
 
 const stepperButtonStyle = {
   width: "44px",
@@ -20,40 +21,6 @@ const stepperButtonStyle = {
   alignItems: "center",
   justifyContent: "center",
   fontFamily: appFont
-};
-
-const stepperValueStyle = {
-  flex: 1,
-  height: "44px",
-  borderRadius: "12px",
-  border: "1px solid #333",
-  backgroundColor: "#1a1a1a",
-  color: "white",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  fontSize: "18px",
-  fontWeight: 600,
-  fontFamily: appFont
-};
-
-const stepperInputStyle = {
-  flex: 1,
-  height: "44px",
-  borderRadius: "12px",
-  border: "1px solid #333",
-  backgroundColor: "#1a1a1a",
-  color: "white",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  fontSize: "18px",
-  fontWeight: 600,
-  fontFamily: appFont,
-  textAlign: "center",
-  outline: "none",
-  boxSizing: "border-box",
-  width: "100%"
 };
 
 function formatDateItalian(dateLike) {
@@ -118,6 +85,16 @@ function App() {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [showLatestAdded, setShowLatestAdded] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+
+  const [theme, setTheme] = useState(() => {
+    try {
+      const saved = localStorage.getItem(THEME_STORAGE_KEY);
+      return saved || "light";
+    } catch (error) {
+      return "light";
+    }
+  });
 
   const [userProfile, setUserProfile] = useState(() => {
     try {
@@ -156,10 +133,85 @@ function App() {
     }
   });
 
+  const isLight = theme === "light";
+
+  const colors = useMemo(
+    () => ({
+      bg: isLight ? "#f5f5f3" : "#000000",
+      text: isLight ? "#111111" : "#ffffff",
+      subtext: isLight ? "#6b6b6b" : "#8c8c8c",
+      card: isLight ? "#ffffff" : "#111111",
+      cardSecondary: isLight ? "#f0f0ed" : "#171717",
+      border: isLight ? "#e3e3dd" : "#222222",
+      borderStrong: isLight ? "#d0d0c8" : "#333333",
+      inputBg: isLight ? "#f4f4f1" : "#1a1a1a",
+      inputBorder: isLight ? "#dddd d6".replace(" ", "") : "#333333",
+      pillBg: isLight ? "#f2f2ee" : "#171717",
+      pillBorder: isLight ? "#d7d7cf" : "#2b2b2b",
+      green: "#2ecc71",
+      greenDark: isLight ? "#eef9f2" : "#16261c",
+      greenBorder: isLight ? "#b8e7c8" : "#244233",
+      greenManualBg: isLight ? "#e6f8ec" : "#1b3022",
+      greenManualBorder: isLight ? "#7cdb9f" : "#52d88b",
+      overlay: "rgba(0,0,0,0.62)"
+    }),
+    [isLight]
+  );
+
+  const themedStepperButtonStyle = useMemo(
+    () => ({
+      ...stepperButtonStyle,
+      border: `1px solid ${colors.borderStrong}`,
+      backgroundColor: colors.inputBg,
+      color: colors.text
+    }),
+    [colors]
+  );
+
+  const stepperValueStyle = useMemo(
+    () => ({
+      flex: 1,
+      height: "44px",
+      borderRadius: "12px",
+      border: `1px solid ${colors.borderStrong}`,
+      backgroundColor: colors.inputBg,
+      color: colors.text,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      fontSize: "18px",
+      fontWeight: 600,
+      fontFamily: appFont
+    }),
+    [colors]
+  );
+
+  const stepperInputStyle = useMemo(
+    () => ({
+      flex: 1,
+      height: "44px",
+      borderRadius: "12px",
+      border: `1px solid ${colors.borderStrong}`,
+      backgroundColor: colors.inputBg,
+      color: colors.text,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      fontSize: "18px",
+      fontWeight: 600,
+      fontFamily: appFont,
+      textAlign: "center",
+      outline: "none",
+      boxSizing: "border-box",
+      width: "100%"
+    }),
+    [colors]
+  );
+
   useEffect(() => {
     document.body.style.margin = "0";
-    document.body.style.backgroundColor = "black";
-    document.body.style.color = "white";
+    document.body.style.backgroundColor = colors.bg;
+    document.body.style.color = colors.text;
     document.body.style.fontFamily = appFont;
 
     return () => {
@@ -168,7 +220,7 @@ function App() {
       document.body.style.color = "";
       document.body.style.fontFamily = "";
     };
-  }, []);
+  }, [colors.bg, colors.text]);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(savedCourses));
@@ -181,6 +233,10 @@ function App() {
   useEffect(() => {
     localStorage.setItem(USER_PROFILE_STORAGE_KEY, JSON.stringify(userProfile));
   }, [userProfile]);
+
+  useEffect(() => {
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
+  }, [theme]);
 
   const favorites = savedCourses.filter((course) => course.favorite);
   const nearbyCourses = savedCourses.slice(0, 5);
@@ -728,13 +784,13 @@ function App() {
     marginTop: "20px",
     width: "100%",
     padding: "13px",
-    backgroundColor: enabled ? "#2ecc71" : "#244233",
+    backgroundColor: enabled ? colors.green : isLight ? "#bfd9c9" : "#244233",
     border: "none",
-    color: "black",
+    color: enabled ? (isLight ? "#08351c" : "black") : isLight ? "#496457" : "black",
     fontWeight: 700,
     borderRadius: "12px",
     cursor: enabled ? "pointer" : "not-allowed",
-    opacity: enabled ? 1 : 0.6,
+    opacity: enabled ? 1 : 0.7,
     fontFamily: appFont,
     fontSize: "15px"
   });
@@ -743,9 +799,9 @@ function App() {
     marginTop: "10px",
     width: "100%",
     padding: "13px",
-    backgroundColor: "#2a2a2a",
-    border: "none",
-    color: "white",
+    backgroundColor: colors.cardSecondary,
+    border: `1px solid ${colors.border}`,
+    color: colors.text,
     borderRadius: "12px",
     cursor: "pointer",
     fontFamily: appFont,
@@ -756,9 +812,9 @@ function App() {
     marginTop: "10px",
     width: "100%",
     padding: "13px",
-    backgroundColor: "#1b1b1b",
-    border: "1px solid #333",
-    color: "#bbb",
+    backgroundColor: colors.cardSecondary,
+    border: `1px solid ${colors.borderStrong}`,
+    color: colors.subtext,
     borderRadius: "12px",
     cursor: "pointer",
     fontFamily: appFont,
@@ -769,8 +825,8 @@ function App() {
     marginBottom: "16px",
     padding: "14px",
     borderRadius: "14px",
-    border: active ? "1px solid #2ecc71" : "1px solid #2b2b2b",
-    backgroundColor: active ? "#141f18" : "#111",
+    border: active ? `1px solid ${colors.green}` : `1px solid ${colors.border}`,
+    backgroundColor: active ? colors.greenDark : colors.card,
     transition: "all 0.2s ease",
     cursor: "pointer"
   });
@@ -779,9 +835,9 @@ function App() {
     width: "34px",
     height: "34px",
     borderRadius: "50%",
-    border: active ? "1px solid #2ecc71" : "1px solid #444",
-    backgroundColor: active ? "#163322" : "#151515",
-    color: active ? "#2ecc71" : "#8b8b8b",
+    border: active ? `1px solid ${colors.green}` : `1px solid ${colors.borderStrong}`,
+    backgroundColor: active ? colors.greenDark : colors.cardSecondary,
+    color: active ? colors.green : colors.subtext,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -791,8 +847,8 @@ function App() {
   });
 
   const cardStyle = {
-    backgroundColor: "#111",
-    border: "1px solid #222",
+    backgroundColor: colors.card,
+    border: `1px solid ${colors.border}`,
     borderRadius: "16px",
     padding: "16px"
   };
@@ -800,11 +856,12 @@ function App() {
   const setupCardOptionStyle = (active) => ({
     padding: "16px",
     borderRadius: "14px",
-    border: active ? "1px solid #2ecc71" : "1px solid #333",
-    backgroundColor: active ? "#141f18" : "#1a1a1a",
+    border: active ? `1px solid ${colors.green}` : `1px solid ${colors.borderStrong}`,
+    backgroundColor: active ? colors.greenDark : colors.inputBg,
     cursor: "pointer",
     fontWeight: 600,
-    textAlign: "center"
+    textAlign: "center",
+    color: colors.text
   });
 
   const renderCourseRow = (course) => (
@@ -813,7 +870,7 @@ function App() {
       onClick={() => prepareRoundSetup(course)}
       style={{
         padding: "14px 0",
-        borderBottom: "1px solid #222",
+        borderBottom: `1px solid ${colors.border}`,
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
@@ -826,7 +883,7 @@ function App() {
         <div style={{ fontSize: "16px", fontWeight: 500 }}>{course.name}</div>
         <div
           style={{
-            color: "#8c8c8c",
+            color: colors.subtext,
             fontSize: "13px",
             marginTop: "3px"
           }}
@@ -860,8 +917,8 @@ function App() {
     return (
       <div
         style={{
-          backgroundColor: "black",
-          color: "white",
+          backgroundColor: colors.bg,
+          color: colors.text,
           minHeight: "100vh",
           padding: "20px",
           boxSizing: "border-box",
@@ -882,9 +939,9 @@ function App() {
               width: "46px",
               height: "46px",
               borderRadius: "23px",
-              border: "1px solid #444",
-              backgroundColor: "#111",
-              color: "white",
+              border: `1px solid ${colors.borderStrong}`,
+              backgroundColor: colors.card,
+              color: colors.text,
               fontSize: "22px",
               cursor: "pointer",
               fontFamily: appFont
@@ -904,8 +961,8 @@ function App() {
           style={{
             marginTop: "24px",
             padding: "18px",
-            backgroundColor: "#111",
-            border: "1px solid #222",
+            backgroundColor: colors.card,
+            border: `1px solid ${colors.border}`,
             borderRadius: "18px"
           }}
         >
@@ -916,7 +973,7 @@ function App() {
           <div
             style={{
               marginTop: "8px",
-              color: "#9a9a9a",
+              color: colors.subtext,
               fontSize: "14px",
               lineHeight: 1.5
             }}
@@ -940,10 +997,10 @@ function App() {
             style={{
               width: "100%",
               padding: "13px 14px",
-              backgroundColor: "#1a1a1a",
-              border: "1px solid #333",
+              backgroundColor: colors.inputBg,
+              border: `1px solid ${colors.inputBorder}`,
               borderRadius: "12px",
-              color: "white",
+              color: colors.text,
               boxSizing: "border-box",
               outline: "none",
               fontSize: "15px",
@@ -1006,20 +1063,20 @@ function App() {
         <div
           style={{
             marginTop: "20px",
-            backgroundColor: "#111",
-            border: "1px solid #222",
+            backgroundColor: colors.card,
+            border: `1px solid ${colors.border}`,
             borderRadius: "16px",
             padding: "16px"
           }}
         >
-          <div style={{ color: "#8e8e8e", fontSize: "13px" }}>Anteprima</div>
+          <div style={{ color: colors.subtext, fontSize: "13px" }}>Anteprima</div>
           <div style={{ marginTop: "8px", fontSize: "16px", fontWeight: 600 }}>
             {roundSetup.totalCompetitionHoles} buche • partenza dalla {roundSetup.startHole}
           </div>
           <div
             style={{
               marginTop: "8px",
-              color: "#8c8c8c",
+              color: colors.subtext,
               fontSize: "13px",
               lineHeight: 1.5
             }}
@@ -1040,8 +1097,8 @@ function App() {
     return (
       <div
         style={{
-          backgroundColor: "black",
-          color: "white",
+          backgroundColor: colors.bg,
+          color: colors.text,
           minHeight: "100vh",
           padding: "20px",
           boxSizing: "border-box",
@@ -1062,9 +1119,9 @@ function App() {
               width: "46px",
               height: "46px",
               borderRadius: "23px",
-              border: "1px solid #444",
-              backgroundColor: "#111",
-              color: "white",
+              border: `1px solid ${colors.borderStrong}`,
+              backgroundColor: colors.card,
+              color: colors.text,
               fontSize: "22px",
               cursor: "pointer",
               fontFamily: appFont
@@ -1090,8 +1147,8 @@ function App() {
           style={{
             marginTop: "24px",
             padding: "18px",
-            backgroundColor: "#111",
-            border: "1px solid #222",
+            backgroundColor: colors.card,
+            border: `1px solid ${colors.border}`,
             borderRadius: "18px"
           }}
         >
@@ -1102,7 +1159,7 @@ function App() {
           <div
             style={{
               marginTop: "8px",
-              color: "#9a9a9a",
+              color: colors.subtext,
               fontSize: "14px",
               lineHeight: 1.5
             }}
@@ -1113,7 +1170,7 @@ function App() {
           <div
             style={{
               marginTop: "10px",
-              color: "#8c8c8c",
+              color: colors.subtext,
               fontSize: "13px"
             }}
           >
@@ -1131,13 +1188,13 @@ function App() {
         >
           <div
             style={{
-              backgroundColor: "#111",
-              border: "1px solid #222",
+              backgroundColor: colors.card,
+              border: `1px solid ${colors.border}`,
               borderRadius: "16px",
               padding: "16px"
             }}
           >
-            <div style={{ color: "#8e8e8e", fontSize: "13px" }}>Lordo</div>
+            <div style={{ color: colors.subtext, fontSize: "13px" }}>Lordo</div>
             <div style={{ marginTop: "6px", fontSize: "26px", fontWeight: 700 }}>
               {grossTotal}
             </div>
@@ -1145,19 +1202,19 @@ function App() {
 
           <div
             style={{
-              backgroundColor: "#111",
-              border: "1px solid #222",
+              backgroundColor: colors.card,
+              border: `1px solid ${colors.border}`,
               borderRadius: "16px",
               padding: "16px"
             }}
           >
-            <div style={{ color: "#8e8e8e", fontSize: "13px" }}>Stableford</div>
+            <div style={{ color: colors.subtext, fontSize: "13px" }}>Stableford</div>
             <div
               style={{
                 marginTop: "6px",
                 fontSize: "26px",
                 fontWeight: 700,
-                color: "#2ecc71"
+                color: colors.green
               }}
             >
               {stablefordTotal}
@@ -1168,13 +1225,13 @@ function App() {
         <div
           style={{
             marginTop: "12px",
-            backgroundColor: "#111",
-            border: "1px solid #222",
+            backgroundColor: colors.card,
+            border: `1px solid ${colors.border}`,
             borderRadius: "16px",
             padding: "16px"
           }}
         >
-          <div style={{ color: "#8e8e8e", fontSize: "13px" }}>
+          <div style={{ color: colors.subtext, fontSize: "13px" }}>
             HCP stimato dopo il giro
           </div>
           <div
@@ -1182,7 +1239,7 @@ function App() {
               marginTop: "6px",
               fontSize: "24px",
               fontWeight: 700,
-              color: "#2ecc71"
+              color: colors.green
             }}
           >
             {estimatedHcpAfterRound}
@@ -1190,7 +1247,7 @@ function App() {
           <div
             style={{
               marginTop: "8px",
-              color: "#8e8e8e",
+              color: colors.subtext,
               fontSize: "12px",
               lineHeight: 1.5
             }}
@@ -1223,8 +1280,8 @@ function App() {
               <div
                 key={`${hole.competitionHoleNumber}-${hole.courseHoleNumber}-${index}`}
                 style={{
-                  backgroundColor: "#111",
-                  border: "1px solid #222",
+                  backgroundColor: colors.card,
+                  border: `1px solid ${colors.border}`,
                   borderRadius: "16px",
                   padding: "16px",
                   marginTop: "12px"
@@ -1232,7 +1289,7 @@ function App() {
               >
                 <div
                   style={{
-                    color: "#8c8c8c",
+                    color: colors.subtext,
                     fontSize: "13px",
                     marginBottom: "6px"
                   }}
@@ -1255,7 +1312,7 @@ function App() {
                     <div
                       style={{
                         marginTop: "4px",
-                        color: "#8c8c8c",
+                        color: colors.subtext,
                         fontSize: "14px"
                       }}
                     >
@@ -1265,7 +1322,7 @@ function App() {
 
                   <div
                     style={{
-                      color: "#2ecc71",
+                      color: colors.green,
                       fontSize: "14px",
                       fontWeight: 600
                     }}
@@ -1286,9 +1343,9 @@ function App() {
                     style={{
                       padding: "8px 12px",
                       borderRadius: "999px",
-                      backgroundColor: "#171717",
-                      border: "1px solid #2b2b2b",
-                      color: "#d0d0d0",
+                      backgroundColor: colors.pillBg,
+                      border: `1px solid ${colors.pillBorder}`,
+                      color: colors.text,
                       fontSize: "13px"
                     }}
                   >
@@ -1299,9 +1356,9 @@ function App() {
                     style={{
                       padding: "8px 12px",
                       borderRadius: "999px",
-                      backgroundColor: "#171717",
-                      border: "1px solid #2b2b2b",
-                      color: "#d0d0d0",
+                      backgroundColor: colors.pillBg,
+                      border: `1px solid ${colors.pillBorder}`,
+                      color: colors.text,
                       fontSize: "13px"
                     }}
                   >
@@ -1316,9 +1373,13 @@ function App() {
                       minWidth: "56px",
                       padding: "8px 12px",
                       borderRadius: "999px",
-                      backgroundColor: isManual ? "#1b3022" : "#16261c",
-                      border: isManual ? "1px solid #52d88b" : "1px solid #244233",
-                      color: "#2ecc71",
+                      backgroundColor: isManual
+                        ? colors.greenManualBg
+                        : colors.greenDark,
+                      border: isManual
+                        ? `1px solid ${colors.greenManualBorder}`
+                        : `1px solid ${colors.greenBorder}`,
+                      color: colors.green,
                       fontSize: "13px",
                       cursor: "pointer",
                       fontFamily: appFont,
@@ -1332,7 +1393,7 @@ function App() {
                 <div style={{ marginTop: "14px" }}>
                   <div
                     style={{
-                      color: "#a0a0a0",
+                      color: colors.subtext,
                       fontSize: "13px",
                       marginBottom: "8px"
                     }}
@@ -1345,7 +1406,7 @@ function App() {
                   >
                     <button
                       onClick={() => adjustRoundScore(index, -1)}
-                      style={stepperButtonStyle}
+                      style={themedStepperButtonStyle}
                     >
                       -
                     </button>
@@ -1362,7 +1423,7 @@ function App() {
 
                     <button
                       onClick={() => adjustRoundScore(index, 1)}
-                      style={stepperButtonStyle}
+                      style={themedStepperButtonStyle}
                     >
                       +
                     </button>
@@ -1374,9 +1435,9 @@ function App() {
         ) : (
           <div
             style={{
-              color: "#8f8f8f",
-              backgroundColor: "#111",
-              border: "1px solid #222",
+              color: colors.subtext,
+              backgroundColor: colors.card,
+              border: `1px solid ${colors.border}`,
               borderRadius: "14px",
               padding: "16px",
               marginTop: "14px"
@@ -1408,9 +1469,9 @@ function App() {
             {roundsForOpenedCourse.length === 0 ? (
               <div
                 style={{
-                  color: "#8f8f8f",
-                  backgroundColor: "#111",
-                  border: "1px solid #222",
+                  color: colors.subtext,
+                  backgroundColor: colors.card,
+                  border: `1px solid ${colors.border}`,
                   borderRadius: "14px",
                   padding: "16px"
                 }}
@@ -1422,8 +1483,8 @@ function App() {
                 <div
                   key={round.id}
                   style={{
-                    backgroundColor: "#111",
-                    border: "1px solid #222",
+                    backgroundColor: colors.card,
+                    border: `1px solid ${colors.border}`,
                     borderRadius: "16px",
                     padding: "16px",
                     marginBottom: "12px"
@@ -1441,7 +1502,7 @@ function App() {
 
                   <div
                     style={{
-                      color: "#8e8e8e",
+                      color: colors.subtext,
                       fontSize: "12px"
                     }}
                   >
@@ -1460,8 +1521,8 @@ function App() {
                       style={{
                         padding: "8px 12px",
                         borderRadius: "999px",
-                        backgroundColor: "#171717",
-                        border: "1px solid #2b2b2b",
+                        backgroundColor: colors.pillBg,
+                        border: `1px solid ${colors.pillBorder}`,
                         fontSize: "13px"
                       }}
                     >
@@ -1472,8 +1533,8 @@ function App() {
                       style={{
                         padding: "8px 12px",
                         borderRadius: "999px",
-                        backgroundColor: "#171717",
-                        border: "1px solid #2b2b2b",
+                        backgroundColor: colors.pillBg,
+                        border: `1px solid ${colors.pillBorder}`,
                         fontSize: "13px"
                       }}
                     >
@@ -1484,9 +1545,9 @@ function App() {
                       style={{
                         padding: "8px 12px",
                         borderRadius: "999px",
-                        backgroundColor: "#16261c",
-                        border: "1px solid #244233",
-                        color: "#2ecc71",
+                        backgroundColor: colors.greenDark,
+                        border: `1px solid ${colors.greenBorder}`,
+                        color: colors.green,
                         fontSize: "13px"
                       }}
                     >
@@ -1497,7 +1558,7 @@ function App() {
                   <div
                     style={{
                       marginTop: "10px",
-                      color: "#8e8e8e",
+                      color: colors.subtext,
                       fontSize: "12px"
                     }}
                   >
@@ -1515,8 +1576,8 @@ function App() {
   return (
     <div
       style={{
-        backgroundColor: "black",
-        color: "white",
+        backgroundColor: colors.bg,
+        color: colors.text,
         minHeight: "100vh",
         padding: "20px",
         boxSizing: "border-box",
@@ -1537,9 +1598,9 @@ function App() {
             width: "46px",
             height: "46px",
             borderRadius: "23px",
-            border: "1px solid #444",
-            backgroundColor: "#111",
-            color: "white",
+            border: `1px solid ${colors.green}`,
+            backgroundColor: colors.card,
+            color: colors.text,
             fontSize: "24px",
             cursor: "pointer",
             fontFamily: appFont,
@@ -1553,59 +1614,60 @@ function App() {
           style={{
             flex: 1,
             textAlign: "right",
-            lineHeight: 1.2
+            lineHeight: 1.2,
+            display: "flex",
+            justifyContent: "flex-end",
+            alignItems: "center",
+            gap: "10px"
           }}
         >
-          <div
-            style={{
-              fontSize: "16px",
-              fontWeight: 500,
-              color: "white"
-            }}
-          >
-            {userProfile.firstName}
-          </div>
-
-          <div
-            style={{
-              marginTop: "3px",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "flex-end",
-              gap: "4px"
-            }}
-          >
+          <div>
             <div
               style={{
+                fontSize: "16px",
+                fontWeight: 500,
+                color: colors.text
+              }}
+            >
+              {userProfile.firstName}
+            </div>
+
+            <div
+              style={{
+                marginTop: "3px",
                 fontSize: "13px",
-                color: "#8c8c8c"
+                color: colors.subtext
               }}
             >
               HCP {userProfile.hcp}
             </div>
-
-            <button
-              onClick={openHcpEditor}
-              style={{
-                background: "transparent",
-                border: "none",
-                color: "#b5b5b5",
-                fontSize: "12px",
-                padding: 0,
-                cursor: "pointer",
-                fontFamily: appFont
-              }}
-            >
-              Aggiorna
-            </button>
           </div>
+
+          <button
+            onClick={() => setShowSettings(true)}
+            style={{
+              width: "38px",
+              height: "38px",
+              borderRadius: "19px",
+              border: `1px solid ${colors.borderStrong}`,
+              backgroundColor: colors.card,
+              color: colors.text,
+              cursor: "pointer",
+              fontFamily: appFont,
+              fontSize: "16px",
+              flexShrink: 0
+            }}
+            title="Impostazioni"
+          >
+            ⚙️
+          </button>
         </div>
       </div>
 
       <h2 style={titleStyle}>Preferiti</h2>
       <div style={cardStyle}>
         {favorites.length === 0 ? (
-          <div style={{ color: "#888" }}>
+          <div style={{ color: colors.subtext }}>
             Usa ⛳️ per salvare i campi
           </div>
         ) : (
@@ -1616,7 +1678,7 @@ function App() {
       <h2 style={titleStyle}>Vicino a te</h2>
       <div style={cardStyle}>
         {nearbyCourses.length === 0 ? (
-          <div style={{ color: "#888", lineHeight: 1.5 }}>
+          <div style={{ color: colors.subtext, lineHeight: 1.5 }}>
             Quando aggiungerai i primi campi, li vedrai qui. Più avanti collegheremo
             anche la geolocalizzazione.
           </div>
@@ -1632,13 +1694,13 @@ function App() {
             display: "flex",
             alignItems: "center",
             gap: "10px",
-            backgroundColor: "#1a1a1a",
-            border: "1px solid #333",
+            backgroundColor: colors.inputBg,
+            border: `1px solid ${colors.inputBorder}`,
             borderRadius: "14px",
             padding: "12px 14px"
           }}
         >
-          <div style={{ color: "#7d7d7d", fontSize: "16px" }}>⌕</div>
+          <div style={{ color: colors.subtext, fontSize: "16px" }}>⌕</div>
           <input
             type="text"
             value={searchQuery}
@@ -1649,7 +1711,7 @@ function App() {
               background: "transparent",
               border: "none",
               outline: "none",
-              color: "white",
+              color: colors.text,
               fontSize: "15px",
               fontFamily: appFont
             }}
@@ -1663,7 +1725,7 @@ function App() {
             ) : (
               <div
                 style={{
-                  color: "#9a9a9a",
+                  color: colors.subtext,
                   lineHeight: 1.5,
                   paddingTop: "8px"
                 }}
@@ -1689,7 +1751,7 @@ function App() {
         <span>Ultimi aggiunti</span>
         <span
           style={{
-            color: "#b5b5b5",
+            color: colors.subtext,
             fontSize: "18px",
             lineHeight: 1,
             transform: showLatestAdded ? "rotate(180deg)" : "rotate(0deg)",
@@ -1703,7 +1765,7 @@ function App() {
       {showLatestAdded && (
         <div style={cardStyle}>
           {latestAddedCourses.length === 0 ? (
-            <div style={{ color: "#888" }}>
+            <div style={{ color: colors.subtext }}>
               Nessun campo aggiunto di recente.
             </div>
           ) : (
@@ -1712,28 +1774,165 @@ function App() {
         </div>
       )}
 
-      {showHcpEditor && (
+      {showSettings && (
         <div
           style={{
             position: "fixed",
             inset: 0,
-            backgroundColor: "rgba(0,0,0,0.86)",
+            backgroundColor: colors.overlay,
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
             padding: "20px",
             boxSizing: "border-box",
-            zIndex: 20
+            zIndex: 40
           }}
         >
           <div
             style={{
-              backgroundColor: "#111",
+              backgroundColor: colors.card,
               padding: "24px",
               borderRadius: "18px",
               width: "100%",
               maxWidth: "390px",
-              border: "1px solid #222",
+              border: `1px solid ${colors.border}`,
+              boxSizing: "border-box",
+              fontFamily: appFont
+            }}
+          >
+            <h3
+              style={{
+                marginTop: 0,
+                marginBottom: "16px",
+                fontSize: "24px",
+                fontWeight: 700
+              }}
+            >
+              Impostazioni
+            </h3>
+
+            <button
+              onClick={() => {
+                setShowSettings(false);
+                openHcpEditor();
+              }}
+              style={{
+                width: "100%",
+                textAlign: "left",
+                padding: "14px 0",
+                border: "none",
+                background: "transparent",
+                color: colors.text,
+                fontSize: "15px",
+                cursor: "pointer",
+                borderBottom: `1px solid ${colors.border}`
+              }}
+            >
+              Aggiorna HCP
+            </button>
+
+            <div
+              style={{
+                padding: "14px 0",
+                borderBottom: `1px solid ${colors.border}`
+              }}
+            >
+              <div style={{ fontSize: "15px", marginBottom: "10px" }}>Tema</div>
+
+              <div style={{ display: "flex", gap: "8px" }}>
+                <button
+                  onClick={() => setTheme("light")}
+                  style={{
+                    flex: 1,
+                    padding: "10px",
+                    borderRadius: "10px",
+                    border:
+                      theme === "light"
+                        ? `1px solid ${colors.green}`
+                        : `1px solid ${colors.borderStrong}`,
+                    backgroundColor:
+                      theme === "light" ? colors.greenDark : colors.inputBg,
+                    color: colors.text,
+                    cursor: "pointer",
+                    fontFamily: appFont
+                  }}
+                >
+                  Chiaro
+                </button>
+
+                <button
+                  onClick={() => setTheme("dark")}
+                  style={{
+                    flex: 1,
+                    padding: "10px",
+                    borderRadius: "10px",
+                    border:
+                      theme === "dark"
+                        ? `1px solid ${colors.green}`
+                        : `1px solid ${colors.borderStrong}`,
+                    backgroundColor:
+                      theme === "dark" ? colors.greenDark : colors.inputBg,
+                    color: colors.text,
+                    cursor: "pointer",
+                    fontFamily: appFont
+                  }}
+                >
+                  Scuro
+                </button>
+              </div>
+            </div>
+
+            <div
+              style={{
+                padding: "14px 0",
+                borderBottom: `1px solid ${colors.border}`,
+                color: colors.subtext
+              }}
+            >
+              Geolocalizzazione
+            </div>
+
+            <div
+              style={{
+                padding: "14px 0",
+                color: colors.subtext
+              }}
+            >
+              Privacy Policy
+            </div>
+
+            <button
+              onClick={() => setShowSettings(false)}
+              style={secondaryButtonStyle}
+            >
+              Chiudi
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showHcpEditor && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            backgroundColor: colors.overlay,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: "20px",
+            boxSizing: "border-box",
+            zIndex: 50
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: colors.card,
+              padding: "24px",
+              borderRadius: "18px",
+              width: "100%",
+              maxWidth: "390px",
+              border: `1px solid ${colors.border}`,
               boxSizing: "border-box",
               fontFamily: appFont
             }}
@@ -1751,7 +1950,7 @@ function App() {
 
             <p
               style={{
-                color: "#aaa",
+                color: colors.subtext,
                 fontSize: "14px",
                 marginTop: 0,
                 marginBottom: "16px",
@@ -1770,10 +1969,10 @@ function App() {
               style={{
                 width: "100%",
                 padding: "13px 14px",
-                backgroundColor: "#1a1a1a",
-                border: "1px solid #333",
+                backgroundColor: colors.inputBg,
+                border: `1px solid ${colors.inputBorder}`,
                 borderRadius: "12px",
-                color: "white",
+                color: colors.text,
                 boxSizing: "border-box",
                 outline: "none",
                 fontSize: "15px",
@@ -1797,25 +1996,25 @@ function App() {
           style={{
             position: "fixed",
             inset: 0,
-            backgroundColor: "rgba(0,0,0,0.86)",
+            backgroundColor: colors.overlay,
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
             padding: "20px",
             boxSizing: "border-box",
-            zIndex: 10
+            zIndex: 30
           }}
         >
           <div
             style={{
-              backgroundColor: "#111",
+              backgroundColor: colors.card,
               padding: "24px",
               borderRadius: "18px",
               width: "100%",
               maxWidth: "390px",
               maxHeight: "90vh",
               overflowY: "auto",
-              border: "1px solid #222",
+              border: `1px solid ${colors.border}`,
               boxSizing: "border-box",
               fontFamily: appFont
             }}
@@ -1835,7 +2034,7 @@ function App() {
 
                 <p
                   style={{
-                    color: "#aaa",
+                    color: colors.subtext,
                     fontSize: "14px",
                     marginTop: 0,
                     marginBottom: "16px",
@@ -1853,10 +2052,10 @@ function App() {
                   style={{
                     width: "100%",
                     padding: "13px 14px",
-                    backgroundColor: "#1a1a1a",
-                    border: "1px solid #333",
+                    backgroundColor: colors.inputBg,
+                    border: `1px solid ${colors.inputBorder}`,
                     borderRadius: "12px",
-                    color: "white",
+                    color: colors.text,
                     boxSizing: "border-box",
                     outline: "none",
                     fontSize: "15px",
@@ -1893,7 +2092,7 @@ function App() {
 
                 <p
                   style={{
-                    color: "#aaa",
+                    color: colors.subtext,
                     fontSize: "14px",
                     marginTop: 0,
                     marginBottom: "20px",
@@ -1909,9 +2108,11 @@ function App() {
                     style={{
                       flex: 1,
                       padding: "16px",
-                      backgroundColor: "#1a1a1a",
+                      backgroundColor: colors.inputBg,
                       border:
-                        holesCount === 9 ? "1px solid #2ecc71" : "1px solid #333",
+                        holesCount === 9
+                          ? `1px solid ${colors.green}`
+                          : `1px solid ${colors.inputBorder}`,
                       borderRadius: "14px",
                       display: "flex",
                       alignItems: "center",
@@ -1926,9 +2127,11 @@ function App() {
                         height: "22px",
                         borderRadius: "50%",
                         border:
-                          holesCount === 9 ? "2px solid #2ecc71" : "2px solid #666",
+                          holesCount === 9
+                            ? `2px solid ${colors.green}`
+                            : `2px solid ${colors.borderStrong}`,
                         backgroundColor:
-                          holesCount === 9 ? "#2ecc71" : "transparent"
+                          holesCount === 9 ? colors.green : "transparent"
                       }}
                     />
                   </div>
@@ -1938,9 +2141,11 @@ function App() {
                     style={{
                       flex: 1,
                       padding: "16px",
-                      backgroundColor: "#1a1a1a",
+                      backgroundColor: colors.inputBg,
                       border:
-                        holesCount === 18 ? "1px solid #2ecc71" : "1px solid #333",
+                        holesCount === 18
+                          ? `1px solid ${colors.green}`
+                          : `1px solid ${colors.inputBorder}`,
                       borderRadius: "14px",
                       display: "flex",
                       alignItems: "center",
@@ -1955,9 +2160,11 @@ function App() {
                         height: "22px",
                         borderRadius: "50%",
                         border:
-                          holesCount === 18 ? "2px solid #2ecc71" : "2px solid #666",
+                          holesCount === 18
+                            ? `2px solid ${colors.green}`
+                            : `2px solid ${colors.borderStrong}`,
                         backgroundColor:
-                          holesCount === 18 ? "#2ecc71" : "transparent"
+                          holesCount === 18 ? colors.green : "transparent"
                       }}
                     />
                   </div>
@@ -1988,8 +2195,8 @@ function App() {
                     width: "70px",
                     height: "70px",
                     borderRadius: "35px",
-                    backgroundColor: "#16261c",
-                    border: "1px solid #244233",
+                    backgroundColor: colors.greenDark,
+                    border: `1px solid ${colors.greenBorder}`,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -2014,7 +2221,7 @@ function App() {
 
                 <p
                   style={{
-                    color: "#b5b5b5",
+                    color: colors.subtext,
                     fontSize: "15px",
                     marginTop: 0,
                     marginBottom: "10px",
@@ -2027,7 +2234,7 @@ function App() {
 
                 <p
                   style={{
-                    color: "#8e8e8e",
+                    color: colors.subtext,
                     fontSize: "14px",
                     marginTop: 0,
                     marginBottom: "18px",
@@ -2060,7 +2267,7 @@ function App() {
               <>
                 <div
                   style={{
-                    color: "#8f8f8f",
+                    color: colors.subtext,
                     fontSize: "13px",
                     marginBottom: "10px"
                   }}
@@ -2072,7 +2279,7 @@ function App() {
                   style={{
                     width: "100%",
                     height: "8px",
-                    backgroundColor: "#1f1f1f",
+                    backgroundColor: colors.cardSecondary,
                     borderRadius: "999px",
                     overflow: "hidden",
                     marginBottom: "20px"
@@ -2082,7 +2289,7 @@ function App() {
                     style={{
                       width: `${((currentHoleIndex + 1) / holesCount) * 100}%`,
                       height: "100%",
-                      backgroundColor: "#2ecc71",
+                      backgroundColor: colors.green,
                       transition: "width 0.25s ease"
                     }}
                   />
@@ -2101,7 +2308,7 @@ function App() {
 
                 <p
                   style={{
-                    color: "#aaa",
+                    color: colors.subtext,
                     fontSize: "14px",
                     marginTop: 0,
                     marginBottom: "18px",
@@ -2119,7 +2326,7 @@ function App() {
                     style={{
                       display: "block",
                       fontSize: "14px",
-                      color: "#c7c7c7",
+                      color: colors.subtext,
                       marginBottom: "8px"
                     }}
                   >
@@ -2131,7 +2338,7 @@ function App() {
                   >
                     <button
                       onClick={() => adjustPar(-1)}
-                      style={stepperButtonStyle}
+                      style={themedStepperButtonStyle}
                     >
                       -
                     </button>
@@ -2140,7 +2347,7 @@ function App() {
 
                     <button
                       onClick={() => adjustPar(1)}
-                      style={stepperButtonStyle}
+                      style={themedStepperButtonStyle}
                     >
                       +
                     </button>
@@ -2159,7 +2366,7 @@ function App() {
                       marginBottom: "8px"
                     }}
                   >
-                    <label style={{ fontSize: "14px", color: "#c7c7c7" }}>
+                    <label style={{ fontSize: "14px", color: colors.subtext }}>
                       Stroke Index
                     </label>
 
@@ -2173,9 +2380,9 @@ function App() {
                           width: "20px",
                           height: "20px",
                           borderRadius: "50%",
-                          border: "1px solid #555",
-                          backgroundColor: "#1a1a1a",
-                          color: "#d5d5d5",
+                          border: `1px solid ${colors.borderStrong}`,
+                          backgroundColor: colors.inputBg,
+                          color: colors.subtext,
                           fontSize: "12px",
                           cursor: "pointer",
                           display: "flex",
@@ -2195,7 +2402,7 @@ function App() {
                   >
                     <button
                       onClick={() => adjustStrokeIndex(-1)}
-                      style={stepperButtonStyle}
+                      style={themedStepperButtonStyle}
                     >
                       -
                     </button>
@@ -2212,7 +2419,7 @@ function App() {
 
                     <button
                       onClick={() => adjustStrokeIndex(1)}
-                      style={stepperButtonStyle}
+                      style={themedStepperButtonStyle}
                     >
                       +
                     </button>
@@ -2224,10 +2431,10 @@ function App() {
                     style={{
                       marginTop: "12px",
                       padding: "14px",
-                      backgroundColor: "#171717",
-                      border: "1px solid #2b2b2b",
+                      backgroundColor: colors.cardSecondary,
+                      border: `1px solid ${colors.border}`,
                       borderRadius: "12px",
-                      color: "#bcbcbc",
+                      color: colors.subtext,
                       fontSize: "13px",
                       lineHeight: 1.5
                     }}
@@ -2273,7 +2480,7 @@ function App() {
 
                 <p
                   style={{
-                    color: "#aaa",
+                    color: colors.subtext,
                     fontSize: "14px",
                     marginTop: 0,
                     marginBottom: "18px",
@@ -2290,7 +2497,7 @@ function App() {
                     gap: "10px",
                     marginBottom: "12px",
                     fontSize: "13px",
-                    color: "#8f8f8f",
+                    color: colors.subtext,
                     padding: "0 4px"
                   }}
                 >
@@ -2317,8 +2524,8 @@ function App() {
                         alignItems: "center",
                         paddingLeft: "10px",
                         borderRadius: "10px",
-                        backgroundColor: "#1a1a1a",
-                        border: "1px solid #333"
+                        backgroundColor: colors.inputBg,
+                        border: `1px solid ${colors.inputBorder}`
                       }}
                     >
                       {hole.hole}
@@ -2331,8 +2538,8 @@ function App() {
                         alignItems: "center",
                         paddingLeft: "12px",
                         borderRadius: "10px",
-                        backgroundColor: "#1a1a1a",
-                        border: "1px solid #333"
+                        backgroundColor: colors.inputBg,
+                        border: `1px solid ${colors.inputBorder}`
                       }}
                     >
                       {hole.par}
@@ -2345,8 +2552,8 @@ function App() {
                         alignItems: "center",
                         paddingLeft: "12px",
                         borderRadius: "10px",
-                        backgroundColor: "#1a1a1a",
-                        border: "1px solid #333"
+                        backgroundColor: colors.inputBg,
+                        border: `1px solid ${colors.inputBorder}`
                       }}
                     >
                       {hole.strokeIndex}
@@ -2359,19 +2566,19 @@ function App() {
                     marginTop: "18px",
                     padding: "14px 16px",
                     borderRadius: "14px",
-                    backgroundColor: "#151515",
-                    border: "1px solid #292929",
+                    backgroundColor: colors.cardSecondary,
+                    border: `1px solid ${colors.border}`,
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center"
                   }}
                 >
-                  <span style={{ color: "#cfcfcf", fontSize: "15px" }}>
+                  <span style={{ color: colors.text, fontSize: "15px" }}>
                     Par totale campo
                   </span>
                   <span
                     style={{
-                      color: "#2ecc71",
+                      color: colors.green,
                       fontWeight: 700,
                       fontSize: "18px"
                     }}
@@ -2383,7 +2590,7 @@ function App() {
                 <div
                   style={{
                     marginTop: "12px",
-                    color: "#8e8e8e",
+                    color: colors.subtext,
                     fontSize: "13px",
                     lineHeight: 1.5
                   }}
