@@ -1153,8 +1153,21 @@ function App() {
           }}
         >
           <div style={{ fontSize: "24px", fontWeight: 700 }}>
-            {openedCourse.name}
-          </div>
+  {openedCourse.name}
+</div>
+
+{roundSetup.competitionName && (
+  <div
+    style={{
+      marginTop: "6px",
+      fontSize: "14px",
+      color: colors.green,
+      fontWeight: 600
+    }}
+  >
+    {roundSetup.competitionName}
+  </div>
+)}
 
           <div
             style={{

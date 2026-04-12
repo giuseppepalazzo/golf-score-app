@@ -1,0 +1,2629 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2709
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 import \{ useCallback, useEffect, useMemo, useState \} from "react";\
+\
+const appFont =\
+  "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";\
+\
+const STORAGE_KEY = "golf-score-app-courses-v1";\
+const ROUNDS_STORAGE_KEY = "golf-score-app-rounds-v1";\
+const USER_PROFILE_STORAGE_KEY = "golf-score-app-user-profile-v1";\
+const THEME_STORAGE_KEY = "golf-score-app-theme-v1";\
+\
+const stepperButtonStyle = \{\
+  width: "44px",\
+  height: "44px",\
+  borderRadius: "12px",\
+  border: "1px solid #333",\
+  backgroundColor: "#1a1a1a",\
+  color: "white",\
+  fontSize: "22px",\
+  cursor: "pointer",\
+  display: "flex",\
+  alignItems: "center",\
+  justifyContent: "center",\
+  fontFamily: appFont\
+\};\
+\
+function formatDateItalian(dateLike) \{\
+  const date = new Date(dateLike);\
+  const day = String(date.getDate()).padStart(2, "0");\
+  const month = String(date.getMonth() + 1).padStart(2, "0");\
+  const year = date.getFullYear();\
+  return `$\{day\}/$\{month\}/$\{year\}`;\
+\}\
+\
+function sanitizeRoundName(name) \{\
+  return name.trim().replace(/\\s+/g, " ");\
+\}\
+\
+function receivedShotsToSymbols(value) \{\
+  if (value === 0) return "\'97";\
+  if (value === 1) return "*";\
+  if (value === 2) return "**";\
+  if (value === 3) return "***";\
+  return "\'97";\
+\}\
+\
+function App() \{\
+  const [showDialog, setShowDialog] = useState(false);\
+  const [dialogStep, setDialogStep] = useState(1);\
+\
+  const [courseName, setCourseName] = useState("");\
+  const [holesCount, setHolesCount] = useState(null);\
+\
+  const [holesData, setHolesData] = useState([]);\
+  const [currentHoleIndex, setCurrentHoleIndex] = useState(0);\
+\
+  const [showStrokeInfo, setShowStrokeInfo] = useState(false);\
+  const [selectedStepper, setSelectedStepper] = useState("par");\
+\
+  const [openedCourse, setOpenedCourse] = useState(null);\
+  const [showRoundSetup, setShowRoundSetup] = useState(false);\
+  const [roundSetup, setRoundSetup] = useState(\{\
+    competitionName: "",\
+    totalCompetitionHoles: 18,\
+    startHole: 1\
+  \});\
+\
+  const [roundScores, setRoundScores] = useState([]);\
+  const [savedRounds, setSavedRounds] = useState(() => \{\
+    try \{\
+      const stored = localStorage.getItem(ROUNDS_STORAGE_KEY);\
+      if (!stored) return [];\
+      const parsed = JSON.parse(stored);\
+      return Array.isArray(parsed) ? parsed : [];\
+    \} catch (error) \{\
+      return [];\
+    \}\
+  \});\
+  const [showRoundsHistory, setShowRoundsHistory] = useState(false);\
+  const [roundAlreadySaved, setRoundAlreadySaved] = useState(false);\
+\
+  const [manualReceivedShots, setManualReceivedShots] = useState(\{\});\
+\
+  const [showHcpEditor, setShowHcpEditor] = useState(false);\
+  const [hcpDraft, setHcpDraft] = useState("");\
+\
+  const [searchQuery, setSearchQuery] = useState("");\
+  const [showLatestAdded, setShowLatestAdded] = useState(false);\
+  const [showSettings, setShowSettings] = useState(false);\
+\
+  const [theme, setTheme] = useState(() => \{\
+    try \{\
+      const saved = localStorage.getItem(THEME_STORAGE_KEY);\
+      return saved || "light";\
+    \} catch (error) \{\
+      return "light";\
+    \}\
+  \});\
+\
+  const [userProfile, setUserProfile] = useState(() => \{\
+    try \{\
+      const stored = localStorage.getItem(USER_PROFILE_STORAGE_KEY);\
+      if (!stored) \{\
+        return \{\
+          firstName: "Giuseppe",\
+          hcp: 36\
+        \};\
+      \}\
+\
+      const parsed = JSON.parse(stored);\
+      return \{\
+        firstName: parsed.firstName || "Giuseppe",\
+        hcp:\
+          typeof parsed.hcp === "number" || typeof parsed.hcp === "string"\
+            ? parsed.hcp\
+            : 36\
+      \};\
+    \} catch (error) \{\
+      return \{\
+        firstName: "Giuseppe",\
+        hcp: 36\
+      \};\
+    \}\
+  \});\
+\
+  const [savedCourses, setSavedCourses] = useState(() => \{\
+    try \{\
+      const stored = localStorage.getItem(STORAGE_KEY);\
+      if (!stored) return [];\
+      const parsed = JSON.parse(stored);\
+      return Array.isArray(parsed) ? parsed : [];\
+    \} catch (error) \{\
+      return [];\
+    \}\
+  \});\
+\
+  const isLight = theme === "light";\
+\
+  const colors = useMemo(\
+    () => (\{\
+      bg: isLight ? "#f5f5f3" : "#000000",\
+      text: isLight ? "#111111" : "#ffffff",\
+      subtext: isLight ? "#6b6b6b" : "#8c8c8c",\
+      card: isLight ? "#ffffff" : "#111111",\
+      cardSecondary: isLight ? "#f0f0ed" : "#171717",\
+      border: isLight ? "#e3e3dd" : "#222222",\
+      borderStrong: isLight ? "#d0d0c8" : "#333333",\
+      inputBg: isLight ? "#f4f4f1" : "#1a1a1a",\
+      inputBorder: isLight ? "#dddd d6".replace(" ", "") : "#333333",\
+      pillBg: isLight ? "#f2f2ee" : "#171717",\
+      pillBorder: isLight ? "#d7d7cf" : "#2b2b2b",\
+      green: "#2ecc71",\
+      greenDark: isLight ? "#eef9f2" : "#16261c",\
+      greenBorder: isLight ? "#b8e7c8" : "#244233",\
+      greenManualBg: isLight ? "#e6f8ec" : "#1b3022",\
+      greenManualBorder: isLight ? "#7cdb9f" : "#52d88b",\
+      overlay: "rgba(0,0,0,0.62)"\
+    \}),\
+    [isLight]\
+  );\
+\
+  const themedStepperButtonStyle = useMemo(\
+    () => (\{\
+      ...stepperButtonStyle,\
+      border: `1px solid $\{colors.borderStrong\}`,\
+      backgroundColor: colors.inputBg,\
+      color: colors.text\
+    \}),\
+    [colors]\
+  );\
+\
+  const stepperValueStyle = useMemo(\
+    () => (\{\
+      flex: 1,\
+      height: "44px",\
+      borderRadius: "12px",\
+      border: `1px solid $\{colors.borderStrong\}`,\
+      backgroundColor: colors.inputBg,\
+      color: colors.text,\
+      display: "flex",\
+      alignItems: "center",\
+      justifyContent: "center",\
+      fontSize: "18px",\
+      fontWeight: 600,\
+      fontFamily: appFont\
+    \}),\
+    [colors]\
+  );\
+\
+  const stepperInputStyle = useMemo(\
+    () => (\{\
+      flex: 1,\
+      height: "44px",\
+      borderRadius: "12px",\
+      border: `1px solid $\{colors.borderStrong\}`,\
+      backgroundColor: colors.inputBg,\
+      color: colors.text,\
+      display: "flex",\
+      alignItems: "center",\
+      justifyContent: "center",\
+      fontSize: "18px",\
+      fontWeight: 600,\
+      fontFamily: appFont,\
+      textAlign: "center",\
+      outline: "none",\
+      boxSizing: "border-box",\
+      width: "100%"\
+    \}),\
+    [colors]\
+  );\
+\
+  useEffect(() => \{\
+    document.body.style.margin = "0";\
+    document.body.style.backgroundColor = colors.bg;\
+    document.body.style.color = colors.text;\
+    document.body.style.fontFamily = appFont;\
+\
+    return () => \{\
+      document.body.style.margin = "";\
+      document.body.style.backgroundColor = "";\
+      document.body.style.color = "";\
+      document.body.style.fontFamily = "";\
+    \};\
+  \}, [colors.bg, colors.text]);\
+\
+  useEffect(() => \{\
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(savedCourses));\
+  \}, [savedCourses]);\
+\
+  useEffect(() => \{\
+    localStorage.setItem(ROUNDS_STORAGE_KEY, JSON.stringify(savedRounds));\
+  \}, [savedRounds]);\
+\
+  useEffect(() => \{\
+    localStorage.setItem(USER_PROFILE_STORAGE_KEY, JSON.stringify(userProfile));\
+  \}, [userProfile]);\
+\
+  useEffect(() => \{\
+    localStorage.setItem(THEME_STORAGE_KEY, theme);\
+  \}, [theme]);\
+\
+  const favorites = savedCourses.filter((course) => course.favorite);\
+  const nearbyCourses = savedCourses.slice(0, 5);\
+  const latestAddedCourses = [...savedCourses]\
+    .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))\
+    .slice(0, 5);\
+\
+  const filteredCourses = savedCourses.filter((course) =>\
+    course.name.toLowerCase().includes(searchQuery.trim().toLowerCase())\
+  );\
+\
+  const currentHole =\
+    holesData[currentHoleIndex] || \{ hole: 1, par: 4, strokeIndex: "" \};\
+\
+  const totalPar = useMemo(() => \{\
+    return holesData.reduce((sum, hole) => sum + Number(hole.par || 0), 0);\
+  \}, [holesData]);\
+\
+  const grossTotal = useMemo(() => \{\
+    return roundScores.reduce((sum, score) => sum + Number(score || 0), 0);\
+  \}, [roundScores]);\
+\
+  const resetDialogState = () => \{\
+    setDialogStep(1);\
+    setCourseName("");\
+    setHolesCount(null);\
+    setHolesData([]);\
+    setCurrentHoleIndex(0);\
+    setShowStrokeInfo(false);\
+    setSelectedStepper("par");\
+  \};\
+\
+  const openDialog = () => \{\
+    resetDialogState();\
+    setShowDialog(true);\
+  \};\
+\
+  const closeDialog = () => \{\
+    setShowDialog(false);\
+    resetDialogState();\
+  \};\
+\
+  const goToStepTwo = () => \{\
+    if (courseName.trim() === "") return;\
+    setDialogStep(2);\
+  \};\
+\
+  const goBackToStepOne = () => \{\
+    setDialogStep(1);\
+  \};\
+\
+  const goToIntroStep = () => \{\
+    if (!holesCount) return;\
+\
+    const generatedHoles = Array.from(\{ length: holesCount \}, (_, index) => (\{\
+      hole: index + 1,\
+      par: 4,\
+      strokeIndex: ""\
+    \}));\
+\
+    setHolesData(generatedHoles);\
+    setCurrentHoleIndex(0);\
+    setSelectedStepper("par");\
+    setDialogStep(3);\
+  \};\
+\
+  const startMapping = () => \{\
+    setDialogStep(4);\
+    setSelectedStepper("par");\
+  \};\
+\
+  const goBackToStepTwoFromIntro = () => \{\
+    setDialogStep(2);\
+  \};\
+\
+  const updateCurrentHoleField = (field, value) => \{\
+    const updated = [...holesData];\
+    updated[currentHoleIndex] = \{\
+      ...updated[currentHoleIndex],\
+      [field]: value\
+    \};\
+    setHolesData(updated);\
+  \};\
+\
+  const adjustPar = (delta) => \{\
+    const currentValue = Number(currentHole.par || 4);\
+    const nextValue = Math.min(5, Math.max(3, currentValue + delta));\
+    updateCurrentHoleField("par", nextValue);\
+  \};\
+\
+  const adjustStrokeIndex = (delta) => \{\
+    const rawValue = currentHole.strokeIndex;\
+    const isEmpty =\
+      rawValue === "" || rawValue === null || typeof rawValue === "undefined";\
+    const currentValue = isEmpty ? 0 : Number(rawValue);\
+\
+    if (delta < 0) \{\
+      if (isEmpty || currentValue === 0) \{\
+        updateCurrentHoleField("strokeIndex", 18);\
+        return;\
+      \}\
+\
+      const nextValue = currentValue === 1 ? 18 : currentValue - 1;\
+      updateCurrentHoleField("strokeIndex", nextValue);\
+      return;\
+    \}\
+\
+    if (delta > 0) \{\
+      if (isEmpty || currentValue === 0) \{\
+        updateCurrentHoleField("strokeIndex", 1);\
+        return;\
+      \}\
+\
+      const nextValue = currentValue === 18 ? 1 : currentValue + 1;\
+      updateCurrentHoleField("strokeIndex", nextValue);\
+    \}\
+  \};\
+\
+  const handleStrokeInputChange = (value) => \{\
+    if (value === "") \{\
+      updateCurrentHoleField("strokeIndex", "");\
+      return;\
+    \}\
+\
+    const numericValue = value.replace(/\\D/g, "");\
+    updateCurrentHoleField("strokeIndex", numericValue);\
+  \};\
+\
+  const normalizeStrokeInput = () => \{\
+    if (currentHole.strokeIndex === "") return;\
+\
+    let value = Number(currentHole.strokeIndex);\
+\
+    if (Number.isNaN(value)) \{\
+      updateCurrentHoleField("strokeIndex", "");\
+      return;\
+    \}\
+\
+    if (value < 1) value = 1;\
+    if (value > 18) value = 18;\
+\
+    updateCurrentHoleField("strokeIndex", value);\
+  \};\
+\
+  const currentHoleCompleted =\
+    currentHole.par !== "" && currentHole.strokeIndex !== "";\
+\
+  const nextHole = () => \{\
+    if (!currentHoleCompleted) return;\
+\
+    if (currentHoleIndex < holesData.length - 1) \{\
+      setCurrentHoleIndex((prev) => prev + 1);\
+      setSelectedStepper("par");\
+    \} else \{\
+      setDialogStep(5);\
+    \}\
+  \};\
+\
+  const previousHole = () => \{\
+    if (currentHoleIndex > 0) \{\
+      setCurrentHoleIndex((prev) => prev - 1);\
+      setSelectedStepper("par");\
+    \} else \{\
+      setDialogStep(3);\
+    \}\
+  \};\
+\
+  const goBackFromSummary = () => \{\
+    setDialogStep(4);\
+    setCurrentHoleIndex(holesData.length - 1);\
+    setSelectedStepper("par");\
+  \};\
+\
+  const saveCourse = () => \{\
+    const newCourse = \{\
+      id: Date.now(),\
+      name: courseName.trim(),\
+      favorite: false,\
+      totalPar,\
+      holesCount,\
+      holes: holesData,\
+      createdAt: Date.now()\
+    \};\
+\
+    setSavedCourses((prev) => [newCourse, ...prev]);\
+    closeDialog();\
+  \};\
+\
+  const toggleFavorite = (courseId) => \{\
+    setSavedCourses((prev) =>\
+      prev.map((course) =>\
+        course.id === courseId\
+          ? \{ ...course, favorite: !course.favorite \}\
+          : course\
+      )\
+    );\
+\
+    if (openedCourse && openedCourse.id === courseId) \{\
+      setOpenedCourse((prev) =>\
+        prev ? \{ ...prev, favorite: !prev.favorite \} : prev\
+      );\
+    \}\
+  \};\
+\
+  const prepareRoundSetup = (course) => \{\
+    setOpenedCourse(course);\
+    setShowRoundSetup(true);\
+    setShowRoundsHistory(false);\
+    setRoundAlreadySaved(false);\
+    setManualReceivedShots(\{\});\
+    setRoundSetup(\{\
+      competitionName: "",\
+      totalCompetitionHoles: course.holesCount === 18 ? 18 : 18,\
+      startHole: 1\
+    \});\
+    setRoundScores([]);\
+  \};\
+\
+  const getCompetitionSequence = (course, totalCompetitionHoles, startHole) => \{\
+    const courseHoleCount = Number(course.holesCount || 0);\
+    const start = Number(startHole || 1);\
+\
+    if (!courseHoleCount || !course.holes || course.holes.length === 0) return [];\
+\
+    return Array.from(\{ length: totalCompetitionHoles \}, (_, index) => \{\
+      const relativeIndex = (start - 1 + index) % courseHoleCount;\
+      const baseHole = course.holes[relativeIndex];\
+      const competitionHoleNumber = index + 1;\
+      const roundNumber = Math.floor(index / courseHoleCount) + 1;\
+      const totalRounds = totalCompetitionHoles / courseHoleCount;\
+\
+      return \{\
+        competitionHoleNumber,\
+        courseHoleNumber: baseHole.hole,\
+        par: baseHole.par,\
+        strokeIndex: baseHole.strokeIndex,\
+        roundNumber,\
+        totalRounds\
+      \};\
+    \});\
+  \};\
+\
+  const competitionHoles = useMemo(() => \{\
+    if (!openedCourse) return [];\
+\
+    return getCompetitionSequence(\
+      openedCourse,\
+      Number(roundSetup.totalCompetitionHoles),\
+      Number(roundSetup.startHole)\
+    );\
+  \}, [openedCourse, roundSetup]);\
+\
+  const startRound = () => \{\
+    const startingScores = competitionHoles.map((hole) => Number(hole.par));\
+    setRoundScores(startingScores);\
+    setRoundAlreadySaved(false);\
+    setManualReceivedShots(\{\});\
+    setShowRoundSetup(false);\
+  \};\
+\
+  const closeCourse = () => \{\
+    setOpenedCourse(null);\
+    setShowRoundSetup(false);\
+    setRoundScores([]);\
+    setShowRoundsHistory(false);\
+    setRoundAlreadySaved(false);\
+    setManualReceivedShots(\{\});\
+    setRoundSetup(\{\
+      competitionName: "",\
+      totalCompetitionHoles: 18,\
+      startHole: 1\
+    \});\
+  \};\
+\
+  const getReceivedShots = useCallback((playerHcp, strokeIndex) => \{\
+    const hcp = Math.floor(Number(playerHcp || 0));\
+    const si = Number(strokeIndex || 0);\
+\
+    if (hcp <= 0 || si <= 0) return 0;\
+\
+    return Math.max(0, Math.floor((hcp - si) / 18) + 1);\
+  \}, []);\
+\
+  const getAutomaticReceivedShots = useCallback(\
+    (playerHcp, strokeIndex) => \{\
+      return Math.min(3, getReceivedShots(playerHcp, strokeIndex));\
+    \},\
+    [getReceivedShots]\
+  );\
+\
+  const getEffectiveReceivedShots = useCallback(\
+    (index, playerHcp, strokeIndex) => \{\
+      const manualValue = manualReceivedShots[index];\
+\
+      if (manualValue !== undefined && manualValue !== null && manualValue !== "") \{\
+        return Number(manualValue);\
+      \}\
+\
+      return getAutomaticReceivedShots(playerHcp, strokeIndex);\
+    \},\
+    [manualReceivedShots, getAutomaticReceivedShots]\
+  );\
+\
+  const getStablefordPoints = useCallback((par, strokesMade, receivedShots) => \{\
+    const parValue = Number(par || 0);\
+    const strokes = Number(strokesMade || 0);\
+    const shots = Number(receivedShots || 0);\
+\
+    if (!strokes) return 0;\
+\
+    return Math.max(0, 2 + parValue + shots - strokes);\
+  \}, []);\
+\
+  const getManualCycleValues = (autoValue) => \{\
+    if (autoValue === 0) return [1, 2, 3];\
+    if (autoValue === 1) return [2, 3, 0];\
+    if (autoValue === 2) return [3, 0, 1];\
+    return [0, 1, 2];\
+  \};\
+\
+  const cycleReceivedShotsValue = (index, autoValue) => \{\
+    const manualValue = manualReceivedShots[index];\
+    const cycleValues = getManualCycleValues(autoValue);\
+\
+    if (manualValue === undefined) \{\
+      setManualReceivedShots((prev) => (\{\
+        ...prev,\
+        [index]: cycleValues[0]\
+      \}));\
+      setRoundAlreadySaved(false);\
+      return;\
+    \}\
+\
+    if (manualValue === cycleValues[0]) \{\
+      setManualReceivedShots((prev) => (\{\
+        ...prev,\
+        [index]: cycleValues[1]\
+      \}));\
+      setRoundAlreadySaved(false);\
+      return;\
+    \}\
+\
+    if (manualValue === cycleValues[1]) \{\
+      setManualReceivedShots((prev) => (\{\
+        ...prev,\
+        [index]: cycleValues[2]\
+      \}));\
+      setRoundAlreadySaved(false);\
+      return;\
+    \}\
+\
+    setManualReceivedShots((prev) => \{\
+      const updated = \{ ...prev \};\
+      delete updated[index];\
+      return updated;\
+    \});\
+    setRoundAlreadySaved(false);\
+  \};\
+\
+  const stablefordTotal = useMemo(() => \{\
+    if (!competitionHoles.length) return 0;\
+\
+    return competitionHoles.reduce((sum, hole, index) => \{\
+      const receivedShots = getEffectiveReceivedShots(\
+        index,\
+        userProfile.hcp,\
+        hole.strokeIndex\
+      );\
+      const points = getStablefordPoints(\
+        hole.par,\
+        roundScores[index],\
+        receivedShots\
+      );\
+      return sum + points;\
+    \}, 0);\
+  \}, [\
+    competitionHoles,\
+    roundScores,\
+    userProfile.hcp,\
+    getEffectiveReceivedShots,\
+    getStablefordPoints\
+  ]);\
+\
+  const netTotal = useMemo(() => \{\
+    if (!competitionHoles.length) return 0;\
+\
+    return competitionHoles.reduce((sum, hole, index) => \{\
+      const receivedShots = getEffectiveReceivedShots(\
+        index,\
+        userProfile.hcp,\
+        hole.strokeIndex\
+      );\
+      const strokes = Number(roundScores[index] || 0);\
+      if (!strokes) return sum;\
+      return sum + (strokes - receivedShots);\
+    \}, 0);\
+  \}, [competitionHoles, roundScores, userProfile.hcp, getEffectiveReceivedShots]);\
+\
+  const estimatedHcpAfterRound = useMemo(() => \{\
+    if (!competitionHoles.length || stablefordTotal === 0) return userProfile.hcp;\
+\
+    let delta = 0;\
+\
+    if (stablefordTotal >= 37) \{\
+      delta = -Math.min(1.8, (stablefordTotal - 36) * 0.1);\
+    \} else if (stablefordTotal <= 30) \{\
+      delta = Math.min(1.2, (31 - stablefordTotal) * 0.05);\
+    \}\
+\
+    const next = Math.max(0, Number(userProfile.hcp) + delta);\
+    return Number(next.toFixed(1));\
+  \}, [competitionHoles.length, stablefordTotal, userProfile.hcp]);\
+\
+  const updateRoundScore = (index, value) => \{\
+    const updated = [...roundScores];\
+    updated[index] = value;\
+    setRoundScores(updated);\
+    setRoundAlreadySaved(false);\
+  \};\
+\
+  const handleScoreInputChange = (index, value) => \{\
+    if (value === "") \{\
+      updateRoundScore(index, "");\
+      return;\
+    \}\
+\
+    const numericValue = value.replace(/\\D/g, "");\
+    updateRoundScore(index, numericValue);\
+  \};\
+\
+  const normalizeScoreInput = (index) => \{\
+    const rawValue = roundScores[index];\
+    if (rawValue === "") return;\
+\
+    let value = Number(rawValue);\
+\
+    if (Number.isNaN(value)) \{\
+      updateRoundScore(index, "");\
+      return;\
+    \}\
+\
+    if (value < 1) value = 1;\
+    if (value > 15) value = 15;\
+\
+    updateRoundScore(index, value);\
+  \};\
+\
+  const adjustRoundScore = (index, delta) => \{\
+    const rawValue = roundScores[index];\
+    const isEmpty =\
+      rawValue === "" || rawValue === null || typeof rawValue === "undefined";\
+    const currentValue = isEmpty ? 0 : Number(rawValue);\
+\
+    if (delta < 0) \{\
+      if (isEmpty || currentValue <= 1) \{\
+        updateRoundScore(index, "");\
+        return;\
+      \}\
+\
+      updateRoundScore(index, currentValue - 1);\
+      return;\
+    \}\
+\
+    if (delta > 0) \{\
+      if (isEmpty || currentValue === 0) \{\
+        updateRoundScore(index, 1);\
+        return;\
+      \}\
+\
+      updateRoundScore(index, Math.min(15, currentValue + 1));\
+    \}\
+  \};\
+\
+  const saveRound = () => \{\
+    if (!openedCourse || !competitionHoles.length || roundAlreadySaved) return;\
+\
+    const formattedDate = formatDateItalian(Date.now());\
+    const cleanCompetitionName = sanitizeRoundName(roundSetup.competitionName);\
+    const savedName =\
+      cleanCompetitionName !== ""\
+        ? `$\{cleanCompetitionName\}_$\{formattedDate\}`\
+        : `Giro_$\{formattedDate\}`;\
+\
+    const newRound = \{\
+      id: Date.now(),\
+      savedName,\
+      competitionName: cleanCompetitionName || "Giro",\
+      courseId: openedCourse.id,\
+      courseName: openedCourse.name,\
+      createdAt: Date.now(),\
+      formattedDate,\
+      playerHcp: userProfile.hcp,\
+      totalCompetitionHoles: roundSetup.totalCompetitionHoles,\
+      startHole: roundSetup.startHole,\
+      grossTotal,\
+      netTotal,\
+      stablefordTotal,\
+      estimatedHcpAfterRound,\
+      scores: roundScores,\
+      manualReceivedShots\
+    \};\
+\
+    setSavedRounds((prev) => [newRound, ...prev]);\
+    setRoundAlreadySaved(true);\
+    setShowRoundsHistory(true);\
+  \};\
+\
+  const roundsForOpenedCourse = openedCourse\
+    ? savedRounds.filter((round) => round.courseId === openedCourse.id)\
+    : [];\
+\
+  const openHcpEditor = () => \{\
+    setHcpDraft(String(userProfile.hcp));\
+    setShowHcpEditor(true);\
+  \};\
+\
+  const closeHcpEditor = () => \{\
+    setShowHcpEditor(false);\
+    setHcpDraft("");\
+  \};\
+\
+  const saveHcp = () => \{\
+    const cleanValue = String(hcpDraft).replace(",", ".").trim();\
+    const numeric = Number(cleanValue);\
+\
+    if (Number.isNaN(numeric) || numeric < 0) return;\
+\
+    setUserProfile((prev) => (\{\
+      ...prev,\
+      hcp: Number(numeric.toFixed(1))\
+    \}));\
+    closeHcpEditor();\
+  \};\
+\
+  const titleStyle = \{\
+    fontSize: "22px",\
+    fontWeight: 600,\
+    letterSpacing: "0.2px",\
+    marginTop: "28px",\
+    marginBottom: "14px",\
+    fontFamily: appFont\
+  \};\
+\
+  const primaryButtonStyle = (enabled = true) => (\{\
+    marginTop: "20px",\
+    width: "100%",\
+    padding: "13px",\
+    backgroundColor: enabled ? colors.green : isLight ? "#bfd9c9" : "#244233",\
+    border: "none",\
+    color: enabled ? (isLight ? "#08351c" : "black") : isLight ? "#496457" : "black",\
+    fontWeight: 700,\
+    borderRadius: "12px",\
+    cursor: enabled ? "pointer" : "not-allowed",\
+    opacity: enabled ? 1 : 0.7,\
+    fontFamily: appFont,\
+    fontSize: "15px"\
+  \});\
+\
+  const secondaryButtonStyle = \{\
+    marginTop: "10px",\
+    width: "100%",\
+    padding: "13px",\
+    backgroundColor: colors.cardSecondary,\
+    border: `1px solid $\{colors.border\}`,\
+    color: colors.text,\
+    borderRadius: "12px",\
+    cursor: "pointer",\
+    fontFamily: appFont,\
+    fontSize: "15px"\
+  \};\
+\
+  const subtleButtonStyle = \{\
+    marginTop: "10px",\
+    width: "100%",\
+    padding: "13px",\
+    backgroundColor: colors.cardSecondary,\
+    border: `1px solid $\{colors.borderStrong\}`,\
+    color: colors.subtext,\
+    borderRadius: "12px",\
+    cursor: "pointer",\
+    fontFamily: appFont,\
+    fontSize: "15px"\
+  \};\
+\
+  const stepperCardStyle = (active) => (\{\
+    marginBottom: "16px",\
+    padding: "14px",\
+    borderRadius: "14px",\
+    border: active ? `1px solid $\{colors.green\}` : `1px solid $\{colors.border\}`,\
+    backgroundColor: active ? colors.greenDark : colors.card,\
+    transition: "all 0.2s ease",\
+    cursor: "pointer"\
+  \});\
+\
+  const favoriteIconStyle = (active) => (\{\
+    width: "46px",\
+    height: "46px",\
+    borderRadius: "23px",\
+    border: active ? `1px solid $\{colors.green\}` : `1px solid $\{colors.borderStrong\}`,\
+    backgroundColor: active ? colors.greenDark : colors.cardSecondary,\
+    color: active ? colors.green : colors.subtext,\
+    display: "flex",\
+    alignItems: "center",\
+    justifyContent: "center",\
+    cursor: "pointer",\
+    fontSize: "16px",\
+    flexShrink: 0\
+  \});\
+\
+  const cardStyle = \{\
+    backgroundColor: colors.card,\
+    border: `1px solid $\{colors.border\}`,\
+    borderRadius: "16px",\
+    padding: "16px"\
+  \};\
+\
+  const setupCardOptionStyle = (active) => (\{\
+    padding: "16px",\
+    borderRadius: "14px",\
+    border: active ? `1px solid $\{colors.green\}` : `1px solid $\{colors.borderStrong\}`,\
+    backgroundColor: active ? colors.greenDark : colors.inputBg,\
+    cursor: "pointer",\
+    fontWeight: 600,\
+    textAlign: "center",\
+    color: colors.text\
+  \});\
+\
+  const renderCourseRow = (course) => (\
+    <div\
+      key=\{course.id\}\
+      onClick=\{() => prepareRoundSetup(course)\}\
+      style=\{\{\
+        padding: "14px 0",\
+        borderBottom: `1px solid $\{colors.border\}`,\
+        display: "flex",\
+        justifyContent: "space-between",\
+        alignItems: "center",\
+        gap: "12px",\
+        fontFamily: appFont,\
+        cursor: "pointer"\
+      \}\}\
+    >\
+      <div style=\{\{ flex: 1 \}\}>\
+        <div style=\{\{ fontSize: "16px", fontWeight: 500 \}\}>\{course.name\}</div>\
+        <div\
+          style=\{\{\
+            color: colors.subtext,\
+            fontSize: "13px",\
+            marginTop: "3px"\
+          \}\}\
+        >\
+          \{course.holesCount\} buche \'95 Par \{course.totalPar\}\
+        </div>\
+      </div>\
+\
+      <div\
+        onClick=\{(e) => \{\
+          e.stopPropagation();\
+          toggleFavorite(course.id);\
+        \}\}\
+        style=\{favoriteIconStyle(course.favorite)\}\
+        title="Preferito"\
+      >\
+        \uc0\u9971 \u65039 \
+      </div>\
+    </div>\
+  );\
+\
+  if (openedCourse && showRoundSetup) \{\
+    const allowedCompetitionOptions =\
+      openedCourse.holesCount === 18 ? [18, 36, 54] : [9, 18, 27, 36, 45, 54];\
+\
+    const allowedStartHoles = Array.from(\
+      \{ length: openedCourse.holesCount \},\
+      (_, index) => index + 1\
+    );\
+\
+    return (\
+      <div\
+        style=\{\{\
+          backgroundColor: colors.bg,\
+          color: colors.text,\
+          minHeight: "100vh",\
+          padding: "20px",\
+          boxSizing: "border-box",\
+          fontFamily: appFont\
+        \}\}\
+      >\
+        <div\
+          style=\{\{\
+            display: "flex",\
+            alignItems: "center",\
+            justifyContent: "space-between",\
+            gap: "12px"\
+          \}\}\
+        >\
+          <button\
+            onClick=\{closeCourse\}\
+            style=\{\{\
+              width: "46px",\
+              height: "46px",\
+              borderRadius: "23px",\
+              border: `1px solid $\{colors.borderStrong\}`,\
+              backgroundColor: colors.card,\
+              color: colors.text,\
+              fontSize: "22px",\
+              cursor: "pointer",\
+              fontFamily: appFont\
+            \}\}\
+          >\
+            \uc0\u8592 \
+          </button>\
+\
+          <div style=\{\{ fontSize: "16px", fontWeight: 500 \}\}>\
+            Imposta il giro\
+          </div>\
+\
+          <div style=\{\{ width: "46px" \}\} />\
+        </div>\
+\
+        <div\
+          style=\{\{\
+            marginTop: "24px",\
+            padding: "18px",\
+            backgroundColor: colors.card,\
+            border: `1px solid $\{colors.border\}`,\
+            borderRadius: "18px"\
+          \}\}\
+        >\
+          <div style=\{\{ fontSize: "24px", fontWeight: 700 \}\}>\
+            \{openedCourse.name\}\
+          </div>\
+\
+          <div\
+            style=\{\{\
+              marginTop: "8px",\
+              color: colors.subtext,\
+              fontSize: "14px",\
+              lineHeight: 1.5\
+            \}\}\
+          >\
+            Campo da \{openedCourse.holesCount\} buche\
+          </div>\
+        </div>\
+\
+        <h2 style=\{titleStyle\}>Nome gara</h2>\
+        <div style=\{cardStyle\}>\
+          <input\
+            type="text"\
+            value=\{roundSetup.competitionName\}\
+            onChange=\{(e) =>\
+              setRoundSetup((prev) => (\{\
+                ...prev,\
+                competitionName: e.target.value\
+              \}))\
+            \}\
+            placeholder="Es. Stableford sabato, Gara sociale, Allenamento"\
+            style=\{\{\
+              width: "100%",\
+              padding: "13px 14px",\
+              backgroundColor: colors.inputBg,\
+              border: `1px solid $\{colors.inputBorder\}`,\
+              borderRadius: "12px",\
+              color: colors.text,\
+              boxSizing: "border-box",\
+              outline: "none",\
+              fontSize: "15px",\
+              fontFamily: appFont\
+            \}\}\
+          />\
+        </div>\
+\
+        <h2 style=\{titleStyle\}>Buche di gara</h2>\
+        <div\
+          style=\{\{\
+            display: "grid",\
+            gridTemplateColumns: "repeat(3, 1fr)",\
+            gap: "12px"\
+          \}\}\
+        >\
+          \{allowedCompetitionOptions.map((option) => (\
+            <div\
+              key=\{option\}\
+              onClick=\{() =>\
+                setRoundSetup((prev) => (\{\
+                  ...prev,\
+                  totalCompetitionHoles: option\
+                \}))\
+              \}\
+              style=\{setupCardOptionStyle(\
+                roundSetup.totalCompetitionHoles === option\
+              )\}\
+            >\
+              \{option\}\
+            </div>\
+          ))\}\
+        </div>\
+\
+        <h2 style=\{titleStyle\}>Buca di partenza</h2>\
+        <div\
+          style=\{\{\
+            display: "grid",\
+            gridTemplateColumns:\
+              openedCourse.holesCount === 18 ? "repeat(6, 1fr)" : "repeat(3, 1fr)",\
+            gap: "12px"\
+          \}\}\
+        >\
+          \{allowedStartHoles.map((holeNumber) => (\
+            <div\
+              key=\{holeNumber\}\
+              onClick=\{() =>\
+                setRoundSetup((prev) => (\{\
+                  ...prev,\
+                  startHole: holeNumber\
+                \}))\
+              \}\
+              style=\{setupCardOptionStyle(roundSetup.startHole === holeNumber)\}\
+            >\
+              \{holeNumber\}\
+            </div>\
+          ))\}\
+        </div>\
+\
+        <div\
+          style=\{\{\
+            marginTop: "20px",\
+            backgroundColor: colors.card,\
+            border: `1px solid $\{colors.border\}`,\
+            borderRadius: "16px",\
+            padding: "16px"\
+          \}\}\
+        >\
+          <div style=\{\{ color: colors.subtext, fontSize: "13px" \}\}>Anteprima</div>\
+          <div style=\{\{ marginTop: "8px", fontSize: "16px", fontWeight: 600 \}\}>\
+            \{roundSetup.totalCompetitionHoles\} buche \'95 partenza dalla \{roundSetup.startHole\}\
+          </div>\
+          <div\
+            style=\{\{\
+              marginTop: "8px",\
+              color: colors.subtext,\
+              fontSize: "13px",\
+              lineHeight: 1.5\
+            \}\}\
+          >\
+            Il sistema calcoler\'e0 automaticamente i giri e mostrer\'e0 per ogni buca\
+            il riferimento reale del campo.\
+          </div>\
+        </div>\
+\
+        <button onClick=\{startRound\} style=\{primaryButtonStyle(true)\}>\
+          Inizia giro\
+        </button>\
+      </div>\
+    );\
+  \}\
+\
+  if (openedCourse && !showRoundSetup) \{\
+    return (\
+      <div\
+        style=\{\{\
+          backgroundColor: colors.bg,\
+          color: colors.text,\
+          minHeight: "100vh",\
+          padding: "20px",\
+          boxSizing: "border-box",\
+          fontFamily: appFont\
+        \}\}\
+      >\
+        <div\
+          style=\{\{\
+            display: "flex",\
+            alignItems: "center",\
+            justifyContent: "space-between",\
+            gap: "12px"\
+          \}\}\
+        >\
+          <button\
+            onClick=\{closeCourse\}\
+            style=\{\{\
+              width: "46px",\
+              height: "46px",\
+              borderRadius: "23px",\
+              border: `1px solid $\{colors.borderStrong\}`,\
+              backgroundColor: colors.card,\
+              color: colors.text,\
+              fontSize: "22px",\
+              cursor: "pointer",\
+              fontFamily: appFont\
+            \}\}\
+          >\
+            \uc0\u8592 \
+          </button>\
+\
+          <div style=\{\{ fontSize: "16px", fontWeight: 500 \}\}>\
+            Scorecard\
+          </div>\
+\
+          <div\
+            onClick=\{() => toggleFavorite(openedCourse.id)\}\
+            style=\{favoriteIconStyle(openedCourse.favorite)\}\
+            title="Preferito"\
+          >\
+            \uc0\u9971 \u65039 \
+          </div>\
+        </div>\
+\
+        <div\
+          style=\{\{\
+            marginTop: "24px",\
+            padding: "18px",\
+            backgroundColor: colors.card,\
+            border: `1px solid $\{colors.border\}`,\
+            borderRadius: "18px"\
+          \}\}\
+        >\
+          <div style=\{\{ fontSize: "24px", fontWeight: 700 \}\}>\
+            \{openedCourse.name\}\
+          </div>\
+\
+          <div\
+            style=\{\{\
+              marginTop: "8px",\
+              color: colors.subtext,\
+              fontSize: "14px",\
+              lineHeight: 1.5\
+            \}\}\
+          >\
+            \{roundSetup.totalCompetitionHoles\} buche di gara \'95 partenza dalla \{roundSetup.startHole\}\
+          </div>\
+\
+          <div\
+            style=\{\{\
+              marginTop: "10px",\
+              color: colors.subtext,\
+              fontSize: "13px"\
+            \}\}\
+          >\
+            \{userProfile.firstName\} \'95 HCP \{userProfile.hcp\}\
+          </div>\
+        </div>\
+\
+        <div\
+          style=\{\{\
+            display: "grid",\
+            gridTemplateColumns: "1fr 1fr",\
+            gap: "12px",\
+            marginTop: "18px"\
+          \}\}\
+        >\
+          <div\
+            style=\{\{\
+              backgroundColor: colors.card,\
+              border: `1px solid $\{colors.border\}`,\
+              borderRadius: "16px",\
+              padding: "16px"\
+            \}\}\
+          >\
+            <div style=\{\{ color: colors.subtext, fontSize: "13px" \}\}>Lordo</div>\
+            <div style=\{\{ marginTop: "6px", fontSize: "26px", fontWeight: 700 \}\}>\
+              \{grossTotal\}\
+            </div>\
+          </div>\
+\
+          <div\
+            style=\{\{\
+              backgroundColor: colors.card,\
+              border: `1px solid $\{colors.border\}`,\
+              borderRadius: "16px",\
+              padding: "16px"\
+            \}\}\
+          >\
+            <div style=\{\{ color: colors.subtext, fontSize: "13px" \}\}>Stableford</div>\
+            <div\
+              style=\{\{\
+                marginTop: "6px",\
+                fontSize: "26px",\
+                fontWeight: 700,\
+                color: colors.green\
+              \}\}\
+            >\
+              \{stablefordTotal\}\
+            </div>\
+          </div>\
+        </div>\
+\
+        <div\
+          style=\{\{\
+            marginTop: "12px",\
+            backgroundColor: colors.card,\
+            border: `1px solid $\{colors.border\}`,\
+            borderRadius: "16px",\
+            padding: "16px"\
+          \}\}\
+        >\
+          <div style=\{\{ color: colors.subtext, fontSize: "13px" \}\}>\
+            HCP stimato dopo il giro\
+          </div>\
+          <div\
+            style=\{\{\
+              marginTop: "6px",\
+              fontSize: "24px",\
+              fontWeight: 700,\
+              color: colors.green\
+            \}\}\
+          >\
+            \{estimatedHcpAfterRound\}\
+          </div>\
+          <div\
+            style=\{\{\
+              marginTop: "8px",\
+              color: colors.subtext,\
+              fontSize: "12px",\
+              lineHeight: 1.5\
+            \}\}\
+          >\
+            Stima indicativa. L\'92HCP ufficiale viene calcolato con un algoritmo pi\'f9\
+            complesso: attendi dopo le 00:00 del giorno successivo alla gara e\
+            verifica nell\'92app FIG.\
+          </div>\
+        </div>\
+\
+        \{competitionHoles.length > 0 ? (\
+          competitionHoles.map((hole, index) => \{\
+            const automaticReceivedShots = getAutomaticReceivedShots(\
+              userProfile.hcp,\
+              hole.strokeIndex\
+            );\
+            const effectiveReceivedShots = getEffectiveReceivedShots(\
+              index,\
+              userProfile.hcp,\
+              hole.strokeIndex\
+            );\
+            const isManual = manualReceivedShots[index] !== undefined;\
+            const stablefordPoints = getStablefordPoints(\
+              hole.par,\
+              roundScores[index],\
+              effectiveReceivedShots\
+            );\
+\
+            return (\
+              <div\
+                key=\{`$\{hole.competitionHoleNumber\}-$\{hole.courseHoleNumber\}-$\{index\}`\}\
+                style=\{\{\
+                  backgroundColor: colors.card,\
+                  border: `1px solid $\{colors.border\}`,\
+                  borderRadius: "16px",\
+                  padding: "16px",\
+                  marginTop: "12px"\
+                \}\}\
+              >\
+                <div\
+                  style=\{\{\
+                    color: colors.subtext,\
+                    fontSize: "13px",\
+                    marginBottom: "6px"\
+                  \}\}\
+                >\
+                  Giro \{hole.roundNumber\} di \{hole.totalRounds\}\
+                </div>\
+\
+                <div\
+                  style=\{\{\
+                    display: "flex",\
+                    justifyContent: "space-between",\
+                    alignItems: "flex-start",\
+                    gap: "12px"\
+                  \}\}\
+                >\
+                  <div>\
+                    <div style=\{\{ fontSize: "20px", fontWeight: 700 \}\}>\
+                      Buca \{hole.competitionHoleNumber\}\
+                    </div>\
+                    <div\
+                      style=\{\{\
+                        marginTop: "4px",\
+                        color: colors.subtext,\
+                        fontSize: "14px"\
+                      \}\}\
+                    >\
+                      \uc0\u9971 \u65039  \{hole.courseHoleNumber\}\
+                    </div>\
+                  </div>\
+\
+                  <div\
+                    style=\{\{\
+                      color: colors.green,\
+                      fontSize: "14px",\
+                      fontWeight: 600\
+                    \}\}\
+                  >\
+                    \{stablefordPoints\} pt\
+                  </div>\
+                </div>\
+\
+                <div\
+                  style=\{\{\
+                    display: "flex",\
+                    gap: "8px",\
+                    flexWrap: "wrap",\
+                    marginTop: "12px"\
+                  \}\}\
+                >\
+                  <div\
+                    style=\{\{\
+                      padding: "8px 12px",\
+                      borderRadius: "999px",\
+                      backgroundColor: colors.pillBg,\
+                      border: `1px solid $\{colors.pillBorder\}`,\
+                      color: colors.text,\
+                      fontSize: "13px"\
+                    \}\}\
+                  >\
+                    Par \{hole.par\}\
+                  </div>\
+\
+                  <div\
+                    style=\{\{\
+                      padding: "8px 12px",\
+                      borderRadius: "999px",\
+                      backgroundColor: colors.pillBg,\
+                      border: `1px solid $\{colors.pillBorder\}`,\
+                      color: colors.text,\
+                      fontSize: "13px"\
+                    \}\}\
+                  >\
+                    SI \{hole.strokeIndex\}\
+                  </div>\
+\
+                  <button\
+                    onClick=\{() =>\
+                      cycleReceivedShotsValue(index, automaticReceivedShots)\
+                    \}\
+                    style=\{\{\
+                      minWidth: "56px",\
+                      padding: "8px 12px",\
+                      borderRadius: "999px",\
+                      backgroundColor: isManual\
+                        ? colors.greenManualBg\
+                        : colors.greenDark,\
+                      border: isManual\
+                        ? `1px solid $\{colors.greenManualBorder\}`\
+                        : `1px solid $\{colors.greenBorder\}`,\
+                      color: colors.green,\
+                      fontSize: "13px",\
+                      cursor: "pointer",\
+                      fontFamily: appFont,\
+                      fontWeight: 600\
+                    \}\}\
+                  >\
+                    \{receivedShotsToSymbols(effectiveReceivedShots)\}\
+                  </button>\
+                </div>\
+\
+                <div style=\{\{ marginTop: "14px" \}\}>\
+                  <div\
+                    style=\{\{\
+                      color: colors.subtext,\
+                      fontSize: "13px",\
+                      marginBottom: "8px"\
+                    \}\}\
+                  >\
+                    Colpi fatti\
+                  </div>\
+\
+                  <div\
+                    style=\{\{ display: "flex", alignItems: "center", gap: "10px" \}\}\
+                  >\
+                    <button\
+                      onClick=\{() => adjustRoundScore(index, -1)\}\
+                      style=\{themedStepperButtonStyle\}\
+                    >\
+                      -\
+                    </button>\
+\
+                    <input\
+                      type="text"\
+                      inputMode="numeric"\
+                      value=\{roundScores[index]\}\
+                      onChange=\{(e) => handleScoreInputChange(index, e.target.value)\}\
+                      onBlur=\{() => normalizeScoreInput(index)\}\
+                      placeholder="0"\
+                      style=\{stepperInputStyle\}\
+                    />\
+\
+                    <button\
+                      onClick=\{() => adjustRoundScore(index, 1)\}\
+                      style=\{themedStepperButtonStyle\}\
+                    >\
+                      +\
+                    </button>\
+                  </div>\
+                </div>\
+              </div>\
+            );\
+          \})\
+        ) : (\
+          <div\
+            style=\{\{\
+              color: colors.subtext,\
+              backgroundColor: colors.card,\
+              border: `1px solid $\{colors.border\}`,\
+              borderRadius: "14px",\
+              padding: "16px",\
+              marginTop: "14px"\
+            \}\}\
+          >\
+            Per questo campo non c\'92\'e8 ancora una mappatura completa.\
+          </div>\
+        )\}\
+\
+        <button\
+          onClick=\{saveRound\}\
+          disabled=\{roundAlreadySaved\}\
+          style=\{primaryButtonStyle(!roundAlreadySaved)\}\
+        >\
+          \{roundAlreadySaved ? "Giro salvato" : "Salva giro"\}\
+        </button>\
+\
+        <button\
+          onClick=\{() => setShowRoundsHistory((prev) => !prev)\}\
+          style=\{secondaryButtonStyle\}\
+        >\
+          \{showRoundsHistory ? "Nascondi storico" : "Mostra storico"\}\
+        </button>\
+\
+        \{showRoundsHistory && (\
+          <div style=\{\{ marginTop: "14px" \}\}>\
+            <h2 style=\{\{ ...titleStyle, marginTop: "0" \}\}>Storico giri</h2>\
+\
+            \{roundsForOpenedCourse.length === 0 ? (\
+              <div\
+                style=\{\{\
+                  color: colors.subtext,\
+                  backgroundColor: colors.card,\
+                  border: `1px solid $\{colors.border\}`,\
+                  borderRadius: "14px",\
+                  padding: "16px"\
+                \}\}\
+              >\
+                Nessun giro salvato per questo campo.\
+              </div>\
+            ) : (\
+              roundsForOpenedCourse.map((round) => (\
+                <div\
+                  key=\{round.id\}\
+                  style=\{\{\
+                    backgroundColor: colors.card,\
+                    border: `1px solid $\{colors.border\}`,\
+                    borderRadius: "16px",\
+                    padding: "16px",\
+                    marginBottom: "12px"\
+                  \}\}\
+                >\
+                  <div\
+                    style=\{\{\
+                      fontSize: "14px",\
+                      fontWeight: 700,\
+                      marginBottom: "6px"\
+                    \}\}\
+                  >\
+                    \{round.savedName\}\
+                  </div>\
+\
+                  <div\
+                    style=\{\{\
+                      color: colors.subtext,\
+                      fontSize: "12px"\
+                    \}\}\
+                  >\
+                    \{round.formattedDate\}\
+                  </div>\
+\
+                  <div\
+                    style=\{\{\
+                      display: "flex",\
+                      gap: "8px",\
+                      flexWrap: "wrap",\
+                      marginTop: "12px"\
+                    \}\}\
+                  >\
+                    <div\
+                      style=\{\{\
+                        padding: "8px 12px",\
+                        borderRadius: "999px",\
+                        backgroundColor: colors.pillBg,\
+                        border: `1px solid $\{colors.pillBorder\}`,\
+                        fontSize: "13px"\
+                      \}\}\
+                    >\
+                      Lordo \{round.grossTotal\}\
+                    </div>\
+\
+                    <div\
+                      style=\{\{\
+                        padding: "8px 12px",\
+                        borderRadius: "999px",\
+                        backgroundColor: colors.pillBg,\
+                        border: `1px solid $\{colors.pillBorder\}`,\
+                        fontSize: "13px"\
+                      \}\}\
+                    >\
+                      Netto \{round.netTotal\}\
+                    </div>\
+\
+                    <div\
+                      style=\{\{\
+                        padding: "8px 12px",\
+                        borderRadius: "999px",\
+                        backgroundColor: colors.greenDark,\
+                        border: `1px solid $\{colors.greenBorder\}`,\
+                        color: colors.green,\
+                        fontSize: "13px"\
+                      \}\}\
+                    >\
+                      Stableford \{round.stablefordTotal\}\
+                    </div>\
+                  </div>\
+\
+                  <div\
+                    style=\{\{\
+                      marginTop: "10px",\
+                      color: colors.subtext,\
+                      fontSize: "12px"\
+                    \}\}\
+                  >\
+                    HCP stimato \{round.estimatedHcpAfterRound\}\
+                  </div>\
+                </div>\
+              ))\
+            )\}\
+          </div>\
+        )\}\
+      </div>\
+    );\
+  \}\
+\
+  return (\
+    <div\
+      style=\{\{\
+        backgroundColor: colors.bg,\
+        color: colors.text,\
+        minHeight: "100vh",\
+        padding: "20px",\
+        boxSizing: "border-box",\
+        fontFamily: appFont\
+      \}\}\
+    >\
+      <div\
+        style=\{\{\
+          display: "flex",\
+          justifyContent: "space-between",\
+          alignItems: "center",\
+          gap: "12px"\
+        \}\}\
+      >\
+        <button\
+          onClick=\{openDialog\}\
+          style=\{\{\
+            width: "46px",\
+            height: "46px",\
+            borderRadius: "23px",\
+            border: `1px solid $\{colors.green\}`,\
+            backgroundColor: colors.card,\
+            color: colors.text,\
+            fontSize: "24px",\
+            cursor: "pointer",\
+            fontFamily: appFont,\
+            flexShrink: 0\
+          \}\}\
+        >\
+          +\
+        </button>\
+\
+        <div\
+          style=\{\{\
+            flex: 1,\
+            textAlign: "right",\
+            lineHeight: 1.2,\
+            display: "flex",\
+            justifyContent: "flex-end",\
+            alignItems: "center",\
+            gap: "10px"\
+          \}\}\
+        >\
+          <div>\
+            <div\
+              style=\{\{\
+                fontSize: "16px",\
+                fontWeight: 500,\
+                color: colors.text\
+              \}\}\
+            >\
+              \{userProfile.firstName\}\
+            </div>\
+\
+            <div\
+              style=\{\{\
+                marginTop: "3px",\
+                fontSize: "13px",\
+                color: colors.subtext\
+              \}\}\
+            >\
+              HCP \{userProfile.hcp\}\
+            </div>\
+          </div>\
+\
+          <button\
+            onClick=\{() => setShowSettings(true)\}\
+            style=\{\{\
+              width: "46px",\
+              height: "46px",\
+              borderRadius: "23px",\
+              border: `1px solid $\{colors.borderStrong\}`,\
+              backgroundColor: colors.card,\
+              color: colors.text,\
+              cursor: "pointer",\
+              fontFamily: appFont,\
+              fontSize: "16px",\
+              flexShrink: 0\
+            \}\}\
+            title="Impostazioni"\
+          >\
+            \uc0\u8801 \
+          </button>\
+        </div>\
+      </div>\
+\
+      <h2 style=\{titleStyle\}>Preferiti</h2>\
+      <div style=\{cardStyle\}>\
+        \{favorites.length === 0 ? (\
+          <div style=\{\{ color: colors.subtext \}\}>\
+            Usa \uc0\u9971 \u65039  per salvare i campi\
+          </div>\
+        ) : (\
+          favorites.map((course) => renderCourseRow(course))\
+        )\}\
+      </div>\
+\
+      <h2 style=\{titleStyle\}>Vicino a te</h2>\
+      <div style=\{cardStyle\}>\
+        \{nearbyCourses.length === 0 ? (\
+          <div style=\{\{ color: colors.subtext, lineHeight: 1.5 \}\}>\
+            Quando aggiungerai i primi campi, li vedrai qui. Pi\'f9 avanti collegheremo\
+            anche la geolocalizzazione.\
+          </div>\
+        ) : (\
+          nearbyCourses.map((course) => renderCourseRow(course))\
+        )\}\
+      </div>\
+\
+      <h2 style=\{titleStyle\}>Cerca un campo</h2>\
+      <div style=\{cardStyle\}>\
+        <div\
+          style=\{\{\
+            display: "flex",\
+            alignItems: "center",\
+            gap: "10px",\
+            backgroundColor: colors.inputBg,\
+            border: `1px solid $\{colors.inputBorder\}`,\
+            borderRadius: "14px",\
+            padding: "12px 14px"\
+          \}\}\
+        >\
+          <div style=\{\{ color: colors.subtext, fontSize: "16px" \}\}>\uc0\u8981 </div>\
+          <input\
+            type="text"\
+            value=\{searchQuery\}\
+            onChange=\{(e) => setSearchQuery(e.target.value)\}\
+            placeholder="Cerca un campo"\
+            style=\{\{\
+              flex: 1,\
+              background: "transparent",\
+              border: "none",\
+              outline: "none",\
+              color: colors.text,\
+              fontSize: "15px",\
+              fontFamily: appFont\
+            \}\}\
+          />\
+        </div>\
+\
+        \{searchQuery.trim() !== "" && (\
+          <div style=\{\{ marginTop: "12px" \}\}>\
+            \{filteredCourses.length > 0 ? (\
+              filteredCourses.map((course) => renderCourseRow(course))\
+            ) : (\
+              <div\
+                style=\{\{\
+                  color: colors.subtext,\
+                  lineHeight: 1.5,\
+                  paddingTop: "8px"\
+                \}\}\
+              >\
+                Campo non trovato. Usa il pulsante + per aggiungerlo.\
+              </div>\
+            )\}\
+          </div>\
+        )\}\
+      </div>\
+\
+      <div\
+        onClick=\{() => setShowLatestAdded((prev) => !prev)\}\
+        style=\{\{\
+          ...titleStyle,\
+          display: "inline-flex",\
+          alignItems: "center",\
+          gap: "8px",\
+          cursor: "pointer",\
+          marginBottom: "14px"\
+        \}\}\
+      >\
+        <span>Ultimi aggiunti</span>\
+        <span\
+          style=\{\{\
+            color: colors.subtext,\
+            fontSize: "18px",\
+            lineHeight: 1,\
+            transform: showLatestAdded ? "rotate(180deg)" : "rotate(0deg)",\
+            transition: "transform 0.2s ease"\
+          \}\}\
+        >\
+          \uc0\u9662 \
+        </span>\
+      </div>\
+\
+      \{showLatestAdded && (\
+        <div style=\{cardStyle\}>\
+          \{latestAddedCourses.length === 0 ? (\
+            <div style=\{\{ color: colors.subtext \}\}>\
+              Nessun campo aggiunto di recente.\
+            </div>\
+          ) : (\
+            latestAddedCourses.map((course) => renderCourseRow(course))\
+          )\}\
+        </div>\
+      )\}\
+\
+      \{showSettings && (\
+        <div\
+          style=\{\{\
+            position: "fixed",\
+            inset: 0,\
+            backgroundColor: colors.overlay,\
+            display: "flex",\
+            justifyContent: "center",\
+            alignItems: "center",\
+            padding: "20px",\
+            boxSizing: "border-box",\
+            zIndex: 40\
+          \}\}\
+        >\
+          <div\
+            style=\{\{\
+              backgroundColor: colors.card,\
+              padding: "24px",\
+              borderRadius: "18px",\
+              width: "100%",\
+              maxWidth: "390px",\
+              border: `1px solid $\{colors.border\}`,\
+              boxSizing: "border-box",\
+              fontFamily: appFont\
+            \}\}\
+          >\
+            <h3\
+              style=\{\{\
+                marginTop: 0,\
+                marginBottom: "16px",\
+                fontSize: "24px",\
+                fontWeight: 700\
+              \}\}\
+            >\
+              Impostazioni\
+            </h3>\
+\
+            <button\
+              onClick=\{() => \{\
+                setShowSettings(false);\
+                openHcpEditor();\
+              \}\}\
+              style=\{\{\
+                width: "100%",\
+                textAlign: "left",\
+                padding: "14px 0",\
+                border: "none",\
+                background: "transparent",\
+                color: colors.text,\
+                fontSize: "15px",\
+                cursor: "pointer",\
+                borderBottom: `1px solid $\{colors.border\}`\
+              \}\}\
+            >\
+              Aggiorna HCP\
+            </button>\
+\
+            <div\
+              style=\{\{\
+                padding: "14px 0",\
+                borderBottom: `1px solid $\{colors.border\}`\
+              \}\}\
+            >\
+              <div style=\{\{ fontSize: "15px", marginBottom: "10px" \}\}>Tema</div>\
+\
+              <div style=\{\{ display: "flex", gap: "8px" \}\}>\
+                <button\
+                  onClick=\{() => setTheme("light")\}\
+                  style=\{\{\
+                    flex: 1,\
+                    padding: "10px",\
+                    borderRadius: "10px",\
+                    border:\
+                      theme === "light"\
+                        ? `1px solid $\{colors.green\}`\
+                        : `1px solid $\{colors.borderStrong\}`,\
+                    backgroundColor:\
+                      theme === "light" ? colors.greenDark : colors.inputBg,\
+                    color: colors.text,\
+                    cursor: "pointer",\
+                    fontFamily: appFont\
+                  \}\}\
+                >\
+                  Chiaro\
+                </button>\
+\
+                <button\
+                  onClick=\{() => setTheme("dark")\}\
+                  style=\{\{\
+                    flex: 1,\
+                    padding: "10px",\
+                    borderRadius: "10px",\
+                    border:\
+                      theme === "dark"\
+                        ? `1px solid $\{colors.green\}`\
+                        : `1px solid $\{colors.borderStrong\}`,\
+                    backgroundColor:\
+                      theme === "dark" ? colors.greenDark : colors.inputBg,\
+                    color: colors.text,\
+                    cursor: "pointer",\
+                    fontFamily: appFont\
+                  \}\}\
+                >\
+                  Scuro\
+                </button>\
+              </div>\
+            </div>\
+\
+            <div\
+              style=\{\{\
+                padding: "14px 0",\
+                borderBottom: `1px solid $\{colors.border\}`,\
+                color: colors.subtext\
+              \}\}\
+            >\
+              Geolocalizzazione\
+            </div>\
+\
+            <div\
+              style=\{\{\
+                padding: "14px 0",\
+                color: colors.subtext\
+              \}\}\
+            >\
+              Privacy Policy\
+            </div>\
+\
+            <button\
+              onClick=\{() => setShowSettings(false)\}\
+              style=\{secondaryButtonStyle\}\
+            >\
+              Chiudi\
+            </button>\
+          </div>\
+        </div>\
+      )\}\
+\
+      \{showHcpEditor && (\
+        <div\
+          style=\{\{\
+            position: "fixed",\
+            inset: 0,\
+            backgroundColor: colors.overlay,\
+            display: "flex",\
+            justifyContent: "center",\
+            alignItems: "center",\
+            padding: "20px",\
+            boxSizing: "border-box",\
+            zIndex: 50\
+          \}\}\
+        >\
+          <div\
+            style=\{\{\
+              backgroundColor: colors.card,\
+              padding: "24px",\
+              borderRadius: "18px",\
+              width: "100%",\
+              maxWidth: "390px",\
+              border: `1px solid $\{colors.border\}`,\
+              boxSizing: "border-box",\
+              fontFamily: appFont\
+            \}\}\
+          >\
+            <h3\
+              style=\{\{\
+                marginTop: 0,\
+                marginBottom: "8px",\
+                fontSize: "24px",\
+                fontWeight: 700\
+              \}\}\
+            >\
+              Aggiorna HCP\
+            </h3>\
+\
+            <p\
+              style=\{\{\
+                color: colors.subtext,\
+                fontSize: "14px",\
+                marginTop: 0,\
+                marginBottom: "16px",\
+                lineHeight: 1.4\
+              \}\}\
+            >\
+              Inserisci il tuo HCP attuale.\
+            </p>\
+\
+            <input\
+              type="text"\
+              inputMode="decimal"\
+              value=\{hcpDraft\}\
+              onChange=\{(e) => setHcpDraft(e.target.value)\}\
+              placeholder="Es. 36"\
+              style=\{\{\
+                width: "100%",\
+                padding: "13px 14px",\
+                backgroundColor: colors.inputBg,\
+                border: `1px solid $\{colors.inputBorder\}`,\
+                borderRadius: "12px",\
+                color: colors.text,\
+                boxSizing: "border-box",\
+                outline: "none",\
+                fontSize: "15px",\
+                fontFamily: appFont\
+              \}\}\
+            />\
+\
+            <button onClick=\{saveHcp\} style=\{primaryButtonStyle(true)\}>\
+              Salva HCP\
+            </button>\
+\
+            <button onClick=\{closeHcpEditor\} style=\{secondaryButtonStyle\}>\
+              Annulla\
+            </button>\
+          </div>\
+        </div>\
+      )\}\
+\
+      \{showDialog && (\
+        <div\
+          style=\{\{\
+            position: "fixed",\
+            inset: 0,\
+            backgroundColor: colors.overlay,\
+            display: "flex",\
+            justifyContent: "center",\
+            alignItems: "center",\
+            padding: "20px",\
+            boxSizing: "border-box",\
+            zIndex: 30\
+          \}\}\
+        >\
+          <div\
+            style=\{\{\
+              backgroundColor: colors.card,\
+              padding: "24px",\
+              borderRadius: "18px",\
+              width: "100%",\
+              maxWidth: "390px",\
+              maxHeight: "90vh",\
+              overflowY: "auto",\
+              border: `1px solid $\{colors.border\}`,\
+              boxSizing: "border-box",\
+              fontFamily: appFont\
+            \}\}\
+          >\
+            \{dialogStep === 1 && (\
+              <>\
+                <h3\
+                  style=\{\{\
+                    marginTop: 0,\
+                    marginBottom: "8px",\
+                    fontSize: "24px",\
+                    fontWeight: 700\
+                  \}\}\
+                >\
+                  Aggiungi campo\
+                </h3>\
+\
+                <p\
+                  style=\{\{\
+                    color: colors.subtext,\
+                    fontSize: "14px",\
+                    marginTop: 0,\
+                    marginBottom: "16px",\
+                    lineHeight: 1.4\
+                  \}\}\
+                >\
+                  Inserisci il nome del campo.\
+                </p>\
+\
+                <input\
+                  type="text"\
+                  placeholder="Nome campo"\
+                  value=\{courseName\}\
+                  onChange=\{(e) => setCourseName(e.target.value)\}\
+                  style=\{\{\
+                    width: "100%",\
+                    padding: "13px 14px",\
+                    backgroundColor: colors.inputBg,\
+                    border: `1px solid $\{colors.inputBorder\}`,\
+                    borderRadius: "12px",\
+                    color: colors.text,\
+                    boxSizing: "border-box",\
+                    outline: "none",\
+                    fontSize: "15px",\
+                    fontFamily: appFont\
+                  \}\}\
+                />\
+\
+                <button\
+                  onClick=\{goToStepTwo\}\
+                  disabled=\{courseName.trim() === ""\}\
+                  style=\{primaryButtonStyle(courseName.trim() !== "")\}\
+                >\
+                  Continua\
+                </button>\
+\
+                <button onClick=\{closeDialog\} style=\{secondaryButtonStyle\}>\
+                  Annulla\
+                </button>\
+              </>\
+            )\}\
+\
+            \{dialogStep === 2 && (\
+              <>\
+                <h3\
+                  style=\{\{\
+                    marginTop: 0,\
+                    marginBottom: "8px",\
+                    fontSize: "24px",\
+                    fontWeight: 700\
+                  \}\}\
+                >\
+                  Numero buche\
+                </h3>\
+\
+                <p\
+                  style=\{\{\
+                    color: colors.subtext,\
+                    fontSize: "14px",\
+                    marginTop: 0,\
+                    marginBottom: "20px",\
+                    lineHeight: 1.4\
+                  \}\}\
+                >\
+                  Seleziona il numero di buche\
+                </p>\
+\
+                <div style=\{\{ display: "flex", gap: "12px" \}\}>\
+                  <div\
+                    onClick=\{() => setHolesCount(9)\}\
+                    style=\{\{\
+                      flex: 1,\
+                      padding: "16px",\
+                      backgroundColor: colors.inputBg,\
+                      border:\
+                        holesCount === 9\
+                          ? `1px solid $\{colors.green\}`\
+                          : `1px solid $\{colors.inputBorder\}`,\
+                      borderRadius: "14px",\
+                      display: "flex",\
+                      alignItems: "center",\
+                      justifyContent: "space-between",\
+                      cursor: "pointer"\
+                    \}\}\
+                  >\
+                    <span style=\{\{ fontWeight: 600, fontSize: "16px" \}\}>9</span>\
+                    <div\
+                      style=\{\{\
+                        width: "22px",\
+                        height: "22px",\
+                        borderRadius: "50%",\
+                        border:\
+                          holesCount === 9\
+                            ? `2px solid $\{colors.green\}`\
+                            : `2px solid $\{colors.borderStrong\}`,\
+                        backgroundColor:\
+                          holesCount === 9 ? colors.green : "transparent"\
+                      \}\}\
+                    />\
+                  </div>\
+\
+                  <div\
+                    onClick=\{() => setHolesCount(18)\}\
+                    style=\{\{\
+                      flex: 1,\
+                      padding: "16px",\
+                      backgroundColor: colors.inputBg,\
+                      border:\
+                        holesCount === 18\
+                          ? `1px solid $\{colors.green\}`\
+                          : `1px solid $\{colors.inputBorder\}`,\
+                      borderRadius: "14px",\
+                      display: "flex",\
+                      alignItems: "center",\
+                      justifyContent: "space-between",\
+                      cursor: "pointer"\
+                    \}\}\
+                  >\
+                    <span style=\{\{ fontWeight: 600, fontSize: "16px" \}\}>18</span>\
+                    <div\
+                      style=\{\{\
+                        width: "22px",\
+                        height: "22px",\
+                        borderRadius: "50%",\
+                        border:\
+                          holesCount === 18\
+                            ? `2px solid $\{colors.green\}`\
+                            : `2px solid $\{colors.borderStrong\}`,\
+                        backgroundColor:\
+                          holesCount === 18 ? colors.green : "transparent"\
+                      \}\}\
+                    />\
+                  </div>\
+                </div>\
+\
+                <button\
+                  onClick=\{goToIntroStep\}\
+                  disabled=\{!holesCount\}\
+                  style=\{primaryButtonStyle(Boolean(holesCount))\}\
+                >\
+                  Continua\
+                </button>\
+\
+                <button onClick=\{goBackToStepOne\} style=\{secondaryButtonStyle\}>\
+                  Indietro\
+                </button>\
+\
+                <button onClick=\{closeDialog\} style=\{subtleButtonStyle\}>\
+                  Annulla\
+                </button>\
+              </>\
+            )\}\
+\
+            \{dialogStep === 3 && (\
+              <>\
+                <div\
+                  style=\{\{\
+                    width: "70px",\
+                    height: "70px",\
+                    borderRadius: "35px",\
+                    backgroundColor: colors.greenDark,\
+                    border: `1px solid $\{colors.greenBorder\}`,\
+                    display: "flex",\
+                    alignItems: "center",\
+                    justifyContent: "center",\
+                    fontSize: "28px",\
+                    margin: "0 auto 18px auto"\
+                  \}\}\
+                >\
+                  \uc0\u9971 \u65039 \
+                </div>\
+\
+                <h3\
+                  style=\{\{\
+                    marginTop: 0,\
+                    marginBottom: "10px",\
+                    fontSize: "24px",\
+                    fontWeight: 700,\
+                    textAlign: "center"\
+                  \}\}\
+                >\
+                  Bene!\
+                </h3>\
+\
+                <p\
+                  style=\{\{\
+                    color: colors.subtext,\
+                    fontSize: "15px",\
+                    marginTop: 0,\
+                    marginBottom: "10px",\
+                    lineHeight: 1.5,\
+                    textAlign: "center"\
+                  \}\}\
+                >\
+                  Ora mappiamo il campo buca per buca.\
+                </p>\
+\
+                <p\
+                  style=\{\{\
+                    color: colors.subtext,\
+                    fontSize: "14px",\
+                    marginTop: 0,\
+                    marginBottom: "18px",\
+                    lineHeight: 1.5,\
+                    textAlign: "center"\
+                  \}\}\
+                >\
+                  Alla fine vedrai il riepilogo completo con il Par del campo e\
+                  su quali buche riceverai pi\'f9 colpi in base al tuo HCP di gioco.\
+                </p>\
+\
+                <button onClick=\{startMapping\} style=\{primaryButtonStyle(true)\}>\
+                  Inizia\
+                </button>\
+\
+                <button\
+                  onClick=\{goBackToStepTwoFromIntro\}\
+                  style=\{secondaryButtonStyle\}\
+                >\
+                  Indietro\
+                </button>\
+\
+                <button onClick=\{closeDialog\} style=\{subtleButtonStyle\}>\
+                  Annulla\
+                </button>\
+              </>\
+            )\}\
+\
+            \{dialogStep === 4 && (\
+              <>\
+                <div\
+                  style=\{\{\
+                    color: colors.subtext,\
+                    fontSize: "13px",\
+                    marginBottom: "10px"\
+                  \}\}\
+                >\
+                  Buca \{currentHoleIndex + 1\} di \{holesCount\}\
+                </div>\
+\
+                <div\
+                  style=\{\{\
+                    width: "100%",\
+                    height: "8px",\
+                    backgroundColor: colors.cardSecondary,\
+                    borderRadius: "999px",\
+                    overflow: "hidden",\
+                    marginBottom: "20px"\
+                  \}\}\
+                >\
+                  <div\
+                    style=\{\{\
+                      width: `$\{((currentHoleIndex + 1) / holesCount) * 100\}%`,\
+                      height: "100%",\
+                      backgroundColor: colors.green,\
+                      transition: "width 0.25s ease"\
+                    \}\}\
+                  />\
+                </div>\
+\
+                <h3\
+                  style=\{\{\
+                    marginTop: 0,\
+                    marginBottom: "8px",\
+                    fontSize: "24px",\
+                    fontWeight: 700\
+                  \}\}\
+                >\
+                  Buca \{currentHole.hole\}\
+                </h3>\
+\
+                <p\
+                  style=\{\{\
+                    color: colors.subtext,\
+                    fontSize: "14px",\
+                    marginTop: 0,\
+                    marginBottom: "18px",\
+                    lineHeight: 1.5\
+                  \}\}\
+                >\
+                  Inserisci il Par e lo Stroke Index.\
+                </p>\
+\
+                <div\
+                  onClick=\{() => setSelectedStepper("par")\}\
+                  style=\{stepperCardStyle(selectedStepper === "par")\}\
+                >\
+                  <label\
+                    style=\{\{\
+                      display: "block",\
+                      fontSize: "14px",\
+                      color: colors.subtext,\
+                      marginBottom: "8px"\
+                    \}\}\
+                  >\
+                    Par\
+                  </label>\
+\
+                  <div\
+                    style=\{\{ display: "flex", alignItems: "center", gap: "10px" \}\}\
+                  >\
+                    <button\
+                      onClick=\{() => adjustPar(-1)\}\
+                      style=\{themedStepperButtonStyle\}\
+                    >\
+                      -\
+                    </button>\
+\
+                    <div style=\{stepperValueStyle\}>\{currentHole.par\}</div>\
+\
+                    <button\
+                      onClick=\{() => adjustPar(1)\}\
+                      style=\{themedStepperButtonStyle\}\
+                    >\
+                      +\
+                    </button>\
+                  </div>\
+                </div>\
+\
+                <div\
+                  onClick=\{() => setSelectedStepper("stroke")\}\
+                  style=\{stepperCardStyle(selectedStepper === "stroke")\}\
+                >\
+                  <div\
+                    style=\{\{\
+                      display: "flex",\
+                      alignItems: "center",\
+                      gap: "8px",\
+                      marginBottom: "8px"\
+                    \}\}\
+                  >\
+                    <label style=\{\{ fontSize: "14px", color: colors.subtext \}\}>\
+                      Stroke Index\
+                    </label>\
+\
+                    \{currentHoleIndex === 0 && (\
+                      <button\
+                        onClick=\{(e) => \{\
+                          e.stopPropagation();\
+                          setShowStrokeInfo((prev) => !prev);\
+                        \}\}\
+                        style=\{\{\
+                          width: "20px",\
+                          height: "20px",\
+                          borderRadius: "50%",\
+                          border: `1px solid $\{colors.borderStrong\}`,\
+                          backgroundColor: colors.inputBg,\
+                          color: colors.subtext,\
+                          fontSize: "12px",\
+                          cursor: "pointer",\
+                          display: "flex",\
+                          alignItems: "center",\
+                          justifyContent: "center",\
+                          padding: 0,\
+                          fontFamily: appFont\
+                        \}\}\
+                      >\
+                        i\
+                      </button>\
+                    )\}\
+                  </div>\
+\
+                  <div\
+                    style=\{\{ display: "flex", alignItems: "center", gap: "10px" \}\}\
+                  >\
+                    <button\
+                      onClick=\{() => adjustStrokeIndex(-1)\}\
+                      style=\{themedStepperButtonStyle\}\
+                    >\
+                      -\
+                    </button>\
+\
+                    <input\
+                      type="text"\
+                      inputMode="numeric"\
+                      value=\{currentHole.strokeIndex\}\
+                      onChange=\{(e) => handleStrokeInputChange(e.target.value)\}\
+                      onBlur=\{normalizeStrokeInput\}\
+                      placeholder="0"\
+                      style=\{stepperInputStyle\}\
+                    />\
+\
+                    <button\
+                      onClick=\{() => adjustStrokeIndex(1)\}\
+                      style=\{themedStepperButtonStyle\}\
+                    >\
+                      +\
+                    </button>\
+                  </div>\
+                </div>\
+\
+                \{currentHoleIndex === 0 && showStrokeInfo && (\
+                  <div\
+                    style=\{\{\
+                      marginTop: "12px",\
+                      padding: "14px",\
+                      backgroundColor: colors.cardSecondary,\
+                      border: `1px solid $\{colors.border\}`,\
+                      borderRadius: "12px",\
+                      color: colors.subtext,\
+                      fontSize: "13px",\
+                      lineHeight: 1.5\
+                    \}\}\
+                  >\
+                    Lo Stroke Index serve a determinare su quali buche ricevi pi\'f9\
+                    colpi in base al tuo handicap di gioco. Se non conosci questo\
+                    dato chiedilo alla segreteria del campo.\
+                  </div>\
+                )\}\
+\
+                <button\
+                  onClick=\{nextHole\}\
+                  disabled=\{!currentHoleCompleted\}\
+                  style=\{primaryButtonStyle(currentHoleCompleted)\}\
+                >\
+                  \{currentHoleIndex === holesCount - 1\
+                    ? "Vai al riepilogo"\
+                    : "Avanti"\}\
+                </button>\
+\
+                <button onClick=\{previousHole\} style=\{secondaryButtonStyle\}>\
+                  \{currentHoleIndex === 0 ? "Indietro" : "Buca precedente"\}\
+                </button>\
+\
+                <button onClick=\{closeDialog\} style=\{subtleButtonStyle\}>\
+                  Annulla\
+                </button>\
+              </>\
+            )\}\
+\
+            \{dialogStep === 5 && (\
+              <>\
+                <h3\
+                  style=\{\{\
+                    marginTop: 0,\
+                    marginBottom: "8px",\
+                    fontSize: "24px",\
+                    fontWeight: 700\
+                  \}\}\
+                >\
+                  Riepilogo campo\
+                </h3>\
+\
+                <p\
+                  style=\{\{\
+                    color: colors.subtext,\
+                    fontSize: "14px",\
+                    marginTop: 0,\
+                    marginBottom: "18px",\
+                    lineHeight: 1.5\
+                  \}\}\
+                >\
+                  Controlla la mappatura completa di \{courseName\}.\
+                </p>\
+\
+                <div\
+                  style=\{\{\
+                    display: "grid",\
+                    gridTemplateColumns: "70px 1fr 1fr",\
+                    gap: "10px",\
+                    marginBottom: "12px",\
+                    fontSize: "13px",\
+                    color: colors.subtext,\
+                    padding: "0 4px"\
+                  \}\}\
+                >\
+                  <div>Buca</div>\
+                  <div>Par</div>\
+                  <div>Stroke Index</div>\
+                </div>\
+\
+                \{holesData.map((hole) => (\
+                  <div\
+                    key=\{hole.hole\}\
+                    style=\{\{\
+                      display: "grid",\
+                      gridTemplateColumns: "70px 1fr 1fr",\
+                      gap: "10px",\
+                      alignItems: "center",\
+                      marginBottom: "10px"\
+                    \}\}\
+                  >\
+                    <div\
+                      style=\{\{\
+                        height: "42px",\
+                        display: "flex",\
+                        alignItems: "center",\
+                        paddingLeft: "10px",\
+                        borderRadius: "10px",\
+                        backgroundColor: colors.inputBg,\
+                        border: `1px solid $\{colors.inputBorder\}`\
+                      \}\}\
+                    >\
+                      \{hole.hole\}\
+                    </div>\
+\
+                    <div\
+                      style=\{\{\
+                        height: "42px",\
+                        display: "flex",\
+                        alignItems: "center",\
+                        paddingLeft: "12px",\
+                        borderRadius: "10px",\
+                        backgroundColor: colors.inputBg,\
+                        border: `1px solid $\{colors.inputBorder\}`\
+                      \}\}\
+                    >\
+                      \{hole.par\}\
+                    </div>\
+\
+                    <div\
+                      style=\{\{\
+                        height: "42px",\
+                        display: "flex",\
+                        alignItems: "center",\
+                        paddingLeft: "12px",\
+                        borderRadius: "10px",\
+                        backgroundColor: colors.inputBg,\
+                        border: `1px solid $\{colors.inputBorder\}`\
+                      \}\}\
+                    >\
+                      \{hole.strokeIndex\}\
+                    </div>\
+                  </div>\
+                ))\}\
+\
+                <div\
+                  style=\{\{\
+                    marginTop: "18px",\
+                    padding: "14px 16px",\
+                    borderRadius: "14px",\
+                    backgroundColor: colors.cardSecondary,\
+                    border: `1px solid $\{colors.border\}`,\
+                    display: "flex",\
+                    justifyContent: "space-between",\
+                    alignItems: "center"\
+                  \}\}\
+                >\
+                  <span style=\{\{ color: colors.text, fontSize: "15px" \}\}>\
+                    Par totale campo\
+                  </span>\
+                  <span\
+                    style=\{\{\
+                      color: colors.green,\
+                      fontWeight: 700,\
+                      fontSize: "18px"\
+                    \}\}\
+                  >\
+                    \{totalPar\}\
+                  </span>\
+                </div>\
+\
+                <div\
+                  style=\{\{\
+                    marginTop: "12px",\
+                    color: colors.subtext,\
+                    fontSize: "13px",\
+                    lineHeight: 1.5\
+                  \}\}\
+                >\
+                  Una volta salvato, il campo rester\'e0 nel sistema e potr\'e0 essere\
+                  richiamato senza rimappatura.\
+                </div>\
+\
+                <button onClick=\{saveCourse\} style=\{primaryButtonStyle(true)\}>\
+                  Salva campo\
+                </button>\
+\
+                <button onClick=\{goBackFromSummary\} style=\{secondaryButtonStyle\}>\
+                  Modifica ultima buca\
+                </button>\
+\
+                <button onClick=\{closeDialog\} style=\{subtleButtonStyle\}>\
+                  Annulla\
+                </button>\
+              </>\
+            )\}\
+          </div>\
+        </div>\
+      )\}\
+    </div>\
+  );\
+\}\
+\
+export default App;}
