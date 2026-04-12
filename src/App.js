@@ -1601,12 +1601,15 @@ const favoriteIconStyle = (active) => ({
       }}
     >
       <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          gap: "12px"
-        }}
+     style={{
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  gap: "12px",
+
+  paddingLeft: "10px",
+  paddingRight: "10px"
+}}
       >
         <button
           onClick={openDialog}
