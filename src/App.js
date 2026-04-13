@@ -1133,7 +1133,8 @@ const favoriteIconStyle = (isFav) => ({
   justifyContent: "center",
   padding: 0,
   lineHeight: 1,
-  flexShrink: 0
+  flexShrink: 0,
+  marginLeft: "4px"
 }}
           >
             ←
