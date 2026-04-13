@@ -923,7 +923,7 @@ const favoriteIconStyle = (isFav) => ({
   backgroundColor: colors.bg,
   color: colors.text,
   minHeight: "100vh",
-  padding: "20px 18px",
+  padding: "20px 16px",
   boxSizing: "border-box",
   fontFamily: appFont
 }}
