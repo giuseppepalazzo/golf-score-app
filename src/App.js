@@ -1118,17 +1118,23 @@ const favoriteIconStyle = (active) => ({
         >
           <button
             onClick={closeCourse}
-            style={{
-              width: "46px",
-              height: "46px",
-              borderRadius: "23px",
-              border: `1px solid ${colors.borderStrong}`,
-              backgroundColor: colors.card,
-              color: colors.text,
-              fontSize: "22px",
-              cursor: "pointer",
-              fontFamily: appFont
-            }}
+           style={{
+  width: "48px",
+  height: "48px",
+  borderRadius: "24px",
+  border: `2px solid ${colors.borderStrong}`,
+  backgroundColor: colors.card,
+  color: colors.text,
+  fontSize: "22px",
+  cursor: "pointer",
+  fontFamily: appFont,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: 0,
+  lineHeight: 1,
+  flexShrink: 0
+}}
           >
             ←
           </button>
