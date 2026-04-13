@@ -831,22 +831,22 @@ function App() {
     cursor: "pointer"
   });
 
-const favoriteIconStyle = (active) => ({
+const favoriteIconStyle = (isFav) => ({
   width: "48px",
   height: "48px",
   borderRadius: "24px",
-  border: active ? `2px solid ${colors.green}` : `2px solid ${colors.borderStrong}`,
-  backgroundColor: active ? colors.greenDark : colors.card,
-  color: active ? colors.green : colors.subtext,
+  border: `2px solid ${isFav ? colors.green : colors.borderStrong}`,
+  backgroundColor: colors.card,
+  color: colors.text,
+  cursor: "pointer",
+  fontFamily: appFont,
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  cursor: "pointer",
-  fontSize: "20px",
   padding: 0,
   lineHeight: 1,
   flexShrink: 0,
-  boxSizing: "border-box"
+  marginRight: "-2px"
 });
 
   const cardStyle = {
