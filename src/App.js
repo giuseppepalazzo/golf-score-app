@@ -1133,8 +1133,8 @@ const favoriteIconStyle = (isFav) => ({
   justifyContent: "center",
   padding: 0,
   lineHeight: 1,
-  flexShrink: 0,
-  marginLeft: "4px"
+  flexShrink: 0
+
 }}
           >
             ←
@@ -1692,8 +1692,8 @@ style={{
   justifyContent: "center",
   padding: 0,
   lineHeight: 1,
-  flexShrink: 0,
-  marginRight: "-2px"
+  flexShrink: 0
+
 }}
             title="Impostazioni"
           >
@@ -2608,7 +2608,9 @@ style={{
                     border: `1px solid ${colors.border}`,
                     display: "flex",
                     justifyContent: "space-between",
-                    alignItems: "center"
+                    alignItems: "center",
+                    paddingLeft: "18px",
+                    paddingRight: "18px"
                   }}
                 >
                   <span style={{ color: colors.text, fontSize: "15px" }}>
