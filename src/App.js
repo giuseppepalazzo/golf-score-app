@@ -1109,12 +1109,14 @@ const favoriteIconStyle = (isFav) => ({
         }}
       >
         <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "12px"
-          }}
+         style={{
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: "12px",
+  paddingLeft: "18px",
+  paddingRight: "18px"
+}}
         >
           <button
             onClick={closeCourse}
@@ -2608,9 +2610,8 @@ style={{
                     border: `1px solid ${colors.border}`,
                     display: "flex",
                     justifyContent: "space-between",
-                    alignItems: "center",
-                    paddingLeft: "18px",
-                    paddingRight: "18px"
+                    alignItems: "center"
+                    
                   }}
                 >
                   <span style={{ color: colors.text, fontSize: "15px" }}>
