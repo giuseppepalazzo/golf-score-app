@@ -1684,7 +1684,8 @@ style={{
   justifyContent: "center",
   padding: 0,
   lineHeight: 1,
-  flexShrink: 0
+  flexShrink: 0,
+  marginRight: "-2px"
 }}
             title="Impostazioni"
           >
