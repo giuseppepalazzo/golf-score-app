@@ -1628,7 +1628,8 @@ style={{
   justifyContent: "center",
   padding: 0,
   lineHeight: 1,
-  flexShrink: 0
+  flexShrink: 0,
+  marginLeft: "-2px"
 }}
         >
           +
