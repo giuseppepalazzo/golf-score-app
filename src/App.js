@@ -919,14 +919,14 @@ const favoriteIconStyle = (isFav) => ({
 
     return (
       <div
-        style={{
-          backgroundColor: colors.bg,
-          color: colors.text,
-          minHeight: "100vh",
-          padding: "20px",
-          boxSizing: "border-box",
-          fontFamily: appFont
-        }}
+      style={{
+  backgroundColor: colors.bg,
+  color: colors.text,
+  minHeight: "100vh",
+  padding: "20px 18px",
+  boxSizing: "border-box",
+  fontFamily: appFont
+}}
       >
         <div
           style={{
@@ -939,9 +939,9 @@ const favoriteIconStyle = (isFav) => ({
           <button
             onClick={closeCourse}
           style={{
-  width: "46px",
-  height: "46px",
-  borderRadius: "23px",
+  width: "48px",
+  height: "48px",
+  borderRadius: "24px",
   border: `2px solid ${colors.borderStrong}`,
   backgroundColor: colors.card,
   color: colors.text,
@@ -963,7 +963,7 @@ const favoriteIconStyle = (isFav) => ({
             Imposta il giro
           </div>
 
-          <div style={{ width: "46px" }} />
+          <div style={{ width: "48px" }} />
         </div>
 
         <div
