@@ -928,14 +928,12 @@ const favoriteIconStyle = (isFav) => ({
   fontFamily: appFont
 }}
       >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "12px"
-          }}
-        >
+  <div style={{
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  position: "relative"
+}}>
           <button
             onClick={closeCourse}
           style={{
@@ -953,16 +951,24 @@ const favoriteIconStyle = (isFav) => ({
   justifyContent: "center",
   padding: 0,
   lineHeight: 1,
-  flexShrink: 0,
-  marginLeft: "18px"
+  flexShrink: 0
+  
 }}
           >
             ←
           </button>
 
-          <div style={{ fontSize: "16px", fontWeight: 500 }}>
-            Imposta il giro
-          </div>
+          <div
+  style={{
+    fontSize: "16px",
+    fontWeight: 500,
+    position: "absolute",
+    left: "50%",
+    transform: "translateX(-50%)"
+  }}
+>
+  Imposta il giro
+</div>
 
           <div style={{ width: "48px" }} />
         </div>
