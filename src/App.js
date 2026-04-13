@@ -1136,7 +1136,7 @@ const favoriteIconStyle = (active) => ({
   flexShrink: 0
 }}
           >
-            <span style={{ fontSize: "24px", lineHeight: 1, transform: "translateY(-1px)" }}>←</span>
+            ←
           </button>
 
           <div style={{ fontSize: "16px", fontWeight: 500 }}>
