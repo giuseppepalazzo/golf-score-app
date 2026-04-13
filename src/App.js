@@ -1607,8 +1607,8 @@ const favoriteIconStyle = (active) => ({
   alignItems: "center",
   gap: "12px",
 
-  paddingLeft: "14px",
-  paddingRight: "14px"
+  paddingLeft: "18px",
+  paddingRight: "18px"
 }}
       >
         <button
