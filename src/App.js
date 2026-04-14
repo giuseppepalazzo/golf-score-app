@@ -94,7 +94,8 @@ function App() {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [showLatestAdded, setShowLatestAdded] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
+  const [showAppMenu, setShowAppMenu] = useState(false);
+  const [showGlobalRoundsHistory, setShowGlobalRoundsHistory] = useState(false);
 
   const [theme, setTheme] = useState(() => {
     try {
@@ -453,6 +454,7 @@ function App() {
   const prepareRoundSetup = (course) => {
     setOpenedCourse(course);
     setShowRoundSetup(true);
+    setShowAppMenu(false);
     setShowRoundsHistory(false);
     setRoundAlreadySaved(false);
     setManualReceivedShots({});
@@ -509,6 +511,7 @@ function App() {
   const closeCourse = () => {
     setOpenedCourse(null);
     setShowRoundSetup(false);
+    setShowAppMenu(false);
     setRoundScores([]);
     setShowRoundsHistory(false);
     setRoundAlreadySaved(false);
@@ -757,8 +760,15 @@ function App() {
     ? savedRounds.filter((round) => round.courseId === openedCourse.id)
     : [];
 
+  const openHistoryFromMenu = () => {
+    setShowRoundsHistory(false);
+    setShowGlobalRoundsHistory(true);
+    setShowAppMenu(false);
+  };
+
   const openHcpEditor = () => {
     setHcpDraft(String(userProfile.hcp));
+    setShowAppMenu(false);
     setShowHcpEditor(true);
   };
 
@@ -779,6 +789,301 @@ function App() {
     }));
     closeHcpEditor();
   };
+
+  const appMenuModal = showAppMenu ? (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        backgroundColor: colors.overlay,
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        padding: "20px",
+        boxSizing: "border-box",
+        zIndex: 40
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: colors.card,
+          padding: "18px",
+          borderRadius: "18px",
+          width: "100%",
+          maxWidth: "390px",
+          border: `1px solid ${colors.border}`,
+          boxSizing: "border-box",
+          fontFamily: appFont
+        }}
+      >
+        <h3
+          style={{
+            marginTop: 0,
+            marginBottom: "16px",
+            fontSize: "24px",
+            fontWeight: 700
+          }}
+        >
+          Menu
+        </h3>
+
+        <button
+          onClick={openHcpEditor}
+          style={{
+            width: "100%",
+            textAlign: "left",
+            padding: "14px 0",
+            border: "none",
+            background: "transparent",
+            color: colors.text,
+            fontSize: "15px",
+            cursor: "pointer",
+            borderBottom: `1px solid ${colors.border}`
+          }}
+        >
+          Aggiorna HCP
+        </button>
+
+        <div
+          style={{
+            padding: "14px 0",
+            borderBottom: `1px solid ${colors.border}`
+          }}
+        >
+          <div style={{ fontSize: "15px", marginBottom: "10px" }}>Tema</div>
+
+          <div style={{ display: "flex", gap: "8px" }}>
+            <button
+              onClick={() => setTheme("light")}
+              style={{
+                flex: 1,
+                padding: "10px",
+                borderRadius: "10px",
+                border:
+                  theme === "light"
+                    ? `1px solid ${colors.green}`
+                    : `1px solid ${colors.borderStrong}`,
+                backgroundColor:
+                  theme === "light" ? colors.greenDark : colors.inputBg,
+                color: colors.text,
+                cursor: "pointer",
+                fontFamily: appFont
+              }}
+            >
+              Chiaro
+            </button>
+
+            <button
+              onClick={() => setTheme("dark")}
+              style={{
+                flex: 1,
+                padding: "10px",
+                borderRadius: "10px",
+                border:
+                  theme === "dark"
+                    ? `1px solid ${colors.green}`
+                    : `1px solid ${colors.borderStrong}`,
+                backgroundColor:
+                  theme === "dark" ? colors.greenDark : colors.inputBg,
+                color: colors.text,
+                cursor: "pointer",
+                fontFamily: appFont
+              }}
+            >
+              Scuro
+            </button>
+          </div>
+        </div>
+
+        <div
+          style={{
+            padding: "14px 0",
+            color: colors.subtext
+          }}
+        >
+          Geolocalizzazione
+        </div>
+
+        <button
+          onClick={openHistoryFromMenu}
+          style={{
+            width: "100%",
+            textAlign: "left",
+            padding: "14px 0",
+            border: "none",
+            background: "transparent",
+            color: colors.text,
+            fontSize: "15px",
+            cursor: "pointer",
+            borderTop: `1px solid ${colors.border}`,
+            borderBottom: `1px solid ${colors.border}`
+          }}
+        >
+          Storico
+        </button>
+
+        <div
+          style={{
+            padding: "14px 0",
+            color: colors.subtext
+          }}
+        >
+          Privacy Policy
+        </div>
+
+        <button
+          onClick={() => setShowAppMenu(false)}
+          style={{
+            marginTop: "10px",
+            width: "100%",
+            padding: "13px",
+            backgroundColor: colors.cardSecondary,
+            border: `1px solid ${colors.border}`,
+            color: colors.text,
+            borderRadius: "12px",
+            cursor: "pointer",
+            fontFamily: appFont,
+            fontSize: "15px"
+          }}
+        >
+          Chiudi
+        </button>
+      </div>
+    </div>
+  ) : null;
+
+  const globalRoundsHistoryModal = showGlobalRoundsHistory ? (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        backgroundColor: colors.overlay,
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        padding: "20px",
+        boxSizing: "border-box",
+        zIndex: 41
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: colors.card,
+          padding: "18px",
+          borderRadius: "18px",
+          width: "100%",
+          maxWidth: "390px",
+          maxHeight: "85vh",
+          overflowY: "auto",
+          border: `1px solid ${colors.border}`,
+          boxSizing: "border-box",
+          fontFamily: appFont
+        }}
+      >
+        <h3
+          style={{
+            marginTop: 0,
+            marginBottom: "16px",
+            fontSize: "24px",
+            fontWeight: 700
+          }}
+        >
+          Storico
+        </h3>
+
+        {savedRounds.length === 0 ? (
+          <div
+            style={{
+              color: colors.subtext,
+              lineHeight: 1.5,
+              backgroundColor: colors.cardSecondary,
+              border: `1px solid ${colors.border}`,
+              borderRadius: "14px",
+              padding: "16px"
+            }}
+          >
+            Nessun giro salvato per ora.
+          </div>
+        ) : (
+          savedRounds.map((round) => (
+            <div
+              key={round.id}
+              style={{
+                backgroundColor: colors.card,
+                border: `1px solid ${colors.border}`,
+                borderRadius: "16px",
+                padding: "18px",
+                marginBottom: "12px"
+              }}
+            >
+              <div style={{ fontSize: "14px", fontWeight: 700 }}>
+                {round.savedName}
+              </div>
+              <div
+                style={{
+                  marginTop: "4px",
+                  color: colors.subtext,
+                  fontSize: "12px"
+                }}
+              >
+                {round.courseName} • {round.formattedDate}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "8px",
+                  flexWrap: "wrap",
+                  marginTop: "12px"
+                }}
+              >
+                <div
+                  style={{
+                    padding: "8px 12px",
+                    borderRadius: "999px",
+                    backgroundColor: colors.pillBg,
+                    border: `1px solid ${colors.pillBorder}`,
+                    fontSize: "13px"
+                  }}
+                >
+                  Lordo {round.grossTotal}
+                </div>
+                <div
+                  style={{
+                    padding: "8px 12px",
+                    borderRadius: "999px",
+                    backgroundColor: colors.greenDark,
+                    border: `1px solid ${colors.greenBorder}`,
+                    color: colors.green,
+                    fontSize: "13px"
+                  }}
+                >
+                  Stableford {round.stablefordTotal}
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+
+        <button
+          onClick={() => setShowGlobalRoundsHistory(false)}
+          style={{
+            marginTop: "10px",
+            width: "100%",
+            padding: "13px",
+            backgroundColor: colors.cardSecondary,
+            border: `1px solid ${colors.border}`,
+            color: colors.text,
+            borderRadius: "12px",
+            cursor: "pointer",
+            fontFamily: appFont,
+            fontSize: "15px"
+          }}
+        >
+          Chiudi
+        </button>
+      </div>
+    </div>
+  ) : null;
 
   const titleStyle = {
     fontSize: "22px",
@@ -892,12 +1197,6 @@ function App() {
     border: `2px solid ${borderColor}`,
     fontSize
   });
-
-  const favoriteIconStyle = (isFav) =>
-    headerCircleButtonStyle({
-      borderColor: isFav ? colors.green : colors.borderStrong,
-      fontSize: "22px"
-    });
 
   const cardFavoriteIconStyle = (isFav) => ({
     width: CARD_FAVORITE_SIZE,
@@ -1142,7 +1441,18 @@ function App() {
 
           <div style={headerTitleTextStyle}>Imposta il giro</div>
 
-          <div aria-hidden="true" />
+          <button
+            onClick={() => setShowAppMenu(true)}
+            style={headerCircleButtonStyle({ fontSize: "18px" })}
+            title="Apri menu"
+            aria-label="Apri menu"
+          >
+            <span
+              style={{ fontSize: "18px", lineHeight: 1, transform: "translateY(-1px)" }}
+            >
+              ≡
+            </span>
+          </button>
         </div>
 
         <div style={roundSetupTopCardStyle}>
@@ -1259,6 +1569,9 @@ function App() {
         <button onClick={startRound} style={primaryButtonStyle(true)}>
           Inizia giro
         </button>
+
+        {appMenuModal}
+        {globalRoundsHistoryModal}
       </div>
     );
   }
@@ -1290,18 +1603,18 @@ function App() {
 
           <div style={headerTitleTextStyle}>Scorecard</div>
 
-          <div
-            onClick={() => toggleFavorite(openedCourse.id)}
-            style={favoriteIconStyle(openedCourse.favorite)}
-            title="Preferito"
-            aria-label={
-              openedCourse.favorite ? "Rimuovi dai preferiti" : "Aggiungi ai preferiti"
-            }
+          <button
+            onClick={() => setShowAppMenu(true)}
+            style={headerCircleButtonStyle({ fontSize: "18px" })}
+            title="Apri menu"
+            aria-label="Apri menu"
           >
-            <span style={{ fontSize: "18px", lineHeight: 1, transform: "translateY(-1px)" }}>
-              ⛳️
+            <span
+              style={{ fontSize: "18px", lineHeight: 1, transform: "translateY(-1px)" }}
+            >
+              ≡
             </span>
-          </div>
+          </button>
         </div>
 
         <div style={scorecardTopCardStyle}>
@@ -1598,16 +1911,9 @@ function App() {
           {roundAlreadySaved ? "Giro salvato" : "Salva giro"}
         </button>
 
-        <button
-          onClick={() => setShowRoundsHistory((prev) => !prev)}
-          style={secondaryButtonStyle}
-        >
-          {showRoundsHistory ? "Nascondi storico" : "Mostra storico"}
-        </button>
-
         {showRoundsHistory && (
           <div style={{ marginTop: "14px" }}>
-            <h2 style={{ ...titleStyle, marginTop: "0" }}>Storico giri</h2>
+            <h2 style={{ ...titleStyle, marginTop: "0" }}>Storico</h2>
 
             {roundsForOpenedCourse.length === 0 ? (
               <div
@@ -1712,6 +2018,10 @@ function App() {
             )}
           </div>
         )}
+
+        {appMenuModal}
+        {globalRoundsHistoryModal}
+
       </div>
     );
   }
@@ -1766,10 +2076,10 @@ function App() {
           </div>
 
           <button
-            onClick={() => setShowSettings(true)}
+            onClick={() => setShowAppMenu(true)}
             style={headerCircleButtonStyle({ fontSize: "18px" })}
-            title="Impostazioni"
-            aria-label="Apri impostazioni"
+            title="Apri menu"
+            aria-label="Apri menu"
           >
             <span
               style={{ fontSize: "18px", lineHeight: 1, transform: "translateY(-1px)" }}
@@ -1882,142 +2192,8 @@ function App() {
         </div>
       )}
 
-      {showSettings && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            backgroundColor: colors.overlay,
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            padding: "20px",
-            boxSizing: "border-box",
-            zIndex: 40
-          }}
-        >
-          <div
-            style={{
-              backgroundColor: colors.card,
-              padding: "18px",
-              borderRadius: "18px",
-              width: "100%",
-              maxWidth: "390px",
-              border: `1px solid ${colors.border}`,
-              boxSizing: "border-box",
-              fontFamily: appFont
-            }}
-          >
-            <h3
-              style={{
-                marginTop: 0,
-                marginBottom: "16px",
-                fontSize: "24px",
-                fontWeight: 700
-              }}
-            >
-              Impostazioni
-            </h3>
-
-            <button
-              onClick={() => {
-                setShowSettings(false);
-                openHcpEditor();
-              }}
-              style={{
-                width: "100%",
-                textAlign: "left",
-                padding: "14px 0",
-                border: "none",
-                background: "transparent",
-                color: colors.text,
-                fontSize: "15px",
-                cursor: "pointer",
-                borderBottom: `1px solid ${colors.border}`
-              }}
-            >
-              Aggiorna HCP
-            </button>
-
-            <div
-              style={{
-                padding: "14px 0",
-                borderBottom: `1px solid ${colors.border}`
-              }}
-            >
-              <div style={{ fontSize: "15px", marginBottom: "10px" }}>Tema</div>
-
-              <div style={{ display: "flex", gap: "8px" }}>
-                <button
-                  onClick={() => setTheme("light")}
-                  style={{
-                    flex: 1,
-                    padding: "10px",
-                    borderRadius: "10px",
-                    border:
-                      theme === "light"
-                        ? `1px solid ${colors.green}`
-                        : `1px solid ${colors.borderStrong}`,
-                    backgroundColor:
-                      theme === "light" ? colors.greenDark : colors.inputBg,
-                    color: colors.text,
-                    cursor: "pointer",
-                    fontFamily: appFont
-                  }}
-                >
-                  Chiaro
-                </button>
-
-                <button
-                  onClick={() => setTheme("dark")}
-                  style={{
-                    flex: 1,
-                    padding: "10px",
-                    borderRadius: "10px",
-                    border:
-                      theme === "dark"
-                        ? `1px solid ${colors.green}`
-                        : `1px solid ${colors.borderStrong}`,
-                    backgroundColor:
-                      theme === "dark" ? colors.greenDark : colors.inputBg,
-                    color: colors.text,
-                    cursor: "pointer",
-                    fontFamily: appFont
-                  }}
-                >
-                  Scuro
-                </button>
-              </div>
-            </div>
-
-            <div
-              style={{
-                padding: "14px 0",
-                borderBottom: `1px solid ${colors.border}`,
-                color: colors.subtext
-              }}
-            >
-              Geolocalizzazione
-            </div>
-
-            <div
-              style={{
-                padding: "14px 0",
-                color: colors.subtext
-              }}
-            >
-              Privacy Policy
-            </div>
-
-            <button
-              onClick={() => setShowSettings(false)}
-              style={secondaryButtonStyle}
-            >
-              Chiudi
-            </button>
-          </div>
-        </div>
-      )}
+      {appMenuModal}
+      {globalRoundsHistoryModal}
 
       {showHcpEditor && (
         <div
