@@ -978,6 +978,37 @@ function App() {
     marginRight: "2px"
   };
 
+  const scorecardTopCardStyle = {
+    padding: "18px",
+    backgroundColor: colors.card,
+    border: `1px solid ${colors.border}`,
+    borderRadius: "18px",
+    boxShadow: isLight
+      ? "0 6px 18px rgba(17, 24, 39, 0.04)"
+      : "0 8px 20px rgba(0, 0, 0, 0.18)"
+  };
+
+  const scorecardSummaryCardStyle = {
+    backgroundColor: colors.card,
+    border: `1px solid ${colors.border}`,
+    borderRadius: "16px",
+    padding: "18px",
+    boxShadow: isLight
+      ? "0 4px 14px rgba(17, 24, 39, 0.03)"
+      : "0 6px 16px rgba(0, 0, 0, 0.14)"
+  };
+
+  const scorecardHoleCardStyle = {
+    backgroundColor: colors.card,
+    border: `1px solid ${colors.border}`,
+    borderRadius: "16px",
+    padding: "18px",
+    marginTop: "14px",
+    boxShadow: isLight
+      ? "0 5px 16px rgba(17, 24, 39, 0.035)"
+      : "0 7px 18px rgba(0, 0, 0, 0.14)"
+  };
+
   const setupCardOptionStyle = (active) => ({
     padding: "16px",
     borderRadius: "14px",
@@ -1246,14 +1277,7 @@ function App() {
           </div>
         </div>
 
-        <div
-          style={{
-            padding: "18px",
-            backgroundColor: colors.card,
-            border: `1px solid ${colors.border}`,
-            borderRadius: "18px"
-          }}
-        >
+        <div style={scorecardTopCardStyle}>
           <div style={{ fontSize: "24px", fontWeight: 700 }}>
   {openedCourse.name}
 </div>
@@ -1273,7 +1297,7 @@ function App() {
 
           <div
             style={{
-              marginTop: "8px",
+              marginTop: "10px",
               color: colors.subtext,
               fontSize: "14px",
               lineHeight: 1.5
@@ -1284,7 +1308,7 @@ function App() {
 
           <div
             style={{
-              marginTop: "10px",
+              marginTop: "12px",
               color: colors.subtext,
               fontSize: "13px"
             }}
@@ -1301,28 +1325,14 @@ function App() {
             marginTop: "18px"
           }}
         >
-          <div
-            style={{
-              backgroundColor: colors.card,
-              border: `1px solid ${colors.border}`,
-              borderRadius: "16px",
-              padding: "18px"
-            }}
-          >
+          <div style={scorecardSummaryCardStyle}>
             <div style={{ color: colors.subtext, fontSize: "13px" }}>Lordo</div>
             <div style={{ marginTop: "6px", fontSize: "26px", fontWeight: 700 }}>
               {grossTotal}
             </div>
           </div>
 
-          <div
-            style={{
-              backgroundColor: colors.card,
-              border: `1px solid ${colors.border}`,
-              borderRadius: "16px",
-              padding: "18px"
-            }}
-          >
+          <div style={scorecardSummaryCardStyle}>
             <div style={{ color: colors.subtext, fontSize: "13px" }}>Stableford</div>
             <div
               style={{
@@ -1339,11 +1349,8 @@ function App() {
 
         <div
           style={{
-            marginTop: "12px",
-            backgroundColor: colors.card,
-            border: `1px solid ${colors.border}`,
-            borderRadius: "16px",
-            padding: "18px"
+            ...scorecardSummaryCardStyle,
+            marginTop: "12px"
           }}
         >
           <div style={{ color: colors.subtext, fontSize: "13px" }}>
@@ -1394,19 +1401,13 @@ function App() {
             return (
               <div
                 key={`${hole.competitionHoleNumber}-${hole.courseHoleNumber}-${index}`}
-                style={{
-                  backgroundColor: colors.card,
-                  border: `1px solid ${colors.border}`,
-                  borderRadius: "16px",
-                  padding: "18px",
-                  marginTop: "12px"
-                }}
+                style={scorecardHoleCardStyle}
               >
                 <div
                   style={{
                     color: colors.subtext,
                     fontSize: "13px",
-                    marginBottom: "6px"
+                    marginBottom: "8px"
                   }}
                 >
                   Giro {hole.roundNumber} di {hole.totalRounds}
@@ -1426,7 +1427,7 @@ function App() {
                     </div>
                     <div
                       style={{
-                        marginTop: "4px",
+                        marginTop: "6px",
                         color: colors.subtext,
                         fontSize: "14px"
                       }}
@@ -1439,7 +1440,7 @@ function App() {
                     style={{
                       color: colors.green,
                       fontSize: "14px",
-                      fontWeight: 600
+                      fontWeight: 700
                     }}
                   >
                     {stablefordPoints} pt
@@ -1451,7 +1452,7 @@ function App() {
                     display: "flex",
                     gap: "8px",
                     flexWrap: "wrap",
-                    marginTop: "12px"
+                    marginTop: "14px"
                   }}
                 >
                   <div
@@ -1510,7 +1511,7 @@ function App() {
                     style={{
                       color: colors.subtext,
                       fontSize: "13px",
-                      marginBottom: "8px"
+                      marginBottom: "10px"
                     }}
                   >
                     Colpi fatti
