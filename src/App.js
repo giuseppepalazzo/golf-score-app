@@ -853,7 +853,7 @@ const favoriteIconStyle = (isFav) => ({
     backgroundColor: colors.card,
     border: `1px solid ${colors.border}`,
     borderRadius: "16px",
-    padding: "16px"
+    padding: "18px"
   };
 
   const setupCardOptionStyle = (active) => ({
@@ -1084,7 +1084,7 @@ paddingBottom: "16px"
             backgroundColor: colors.card,
             border: `1px solid ${colors.border}`,
             borderRadius: "16px",
-            padding: "16px"
+            padding: "18px"
           }}
         >
           <div style={{ color: colors.subtext, fontSize: "13px" }}>Anteprima</div>
@@ -1231,7 +1231,7 @@ paddingBottom: "16px"
               backgroundColor: colors.card,
               border: `1px solid ${colors.border}`,
               borderRadius: "16px",
-              padding: "16px"
+              padding: "18px"
             }}
           >
             <div style={{ color: colors.subtext, fontSize: "13px" }}>Lordo</div>
@@ -1245,7 +1245,7 @@ paddingBottom: "16px"
               backgroundColor: colors.card,
               border: `1px solid ${colors.border}`,
               borderRadius: "16px",
-              padding: "16px"
+              padding: "18px"
             }}
           >
             <div style={{ color: colors.subtext, fontSize: "13px" }}>Stableford</div>
@@ -1268,7 +1268,7 @@ paddingBottom: "16px"
             backgroundColor: colors.card,
             border: `1px solid ${colors.border}`,
             borderRadius: "16px",
-            padding: "16px"
+            padding: "18px"
           }}
         >
           <div style={{ color: colors.subtext, fontSize: "13px" }}>
@@ -1323,7 +1323,7 @@ paddingBottom: "16px"
                   backgroundColor: colors.card,
                   border: `1px solid ${colors.border}`,
                   borderRadius: "16px",
-                  padding: "16px",
+                  padding: "18px",
                   marginTop: "12px"
                 }}
               >
@@ -1479,7 +1479,7 @@ paddingBottom: "16px"
               backgroundColor: colors.card,
               border: `1px solid ${colors.border}`,
               borderRadius: "14px",
-              padding: "16px",
+              padding: "18px",
               marginTop: "14px"
             }}
           >
@@ -1513,7 +1513,7 @@ paddingBottom: "16px"
                   backgroundColor: colors.card,
                   border: `1px solid ${colors.border}`,
                   borderRadius: "14px",
-                  padding: "16px"
+                  padding: "18px"
                 }}
               >
                 Nessun giro salvato per questo campo.
@@ -1526,7 +1526,7 @@ paddingBottom: "16px"
                     backgroundColor: colors.card,
                     border: `1px solid ${colors.border}`,
                     borderRadius: "16px",
-                    padding: "16px",
+                    padding: "18px",
                     marginBottom: "12px"
                   }}
                 >
@@ -1848,7 +1848,7 @@ style={{
           <div
             style={{
               backgroundColor: colors.card,
-              padding: "24px",
+              padding: "18px",
               borderRadius: "18px",
               width: "100%",
               maxWidth: "390px",
@@ -1985,7 +1985,7 @@ style={{
           <div
             style={{
               backgroundColor: colors.card,
-              padding: "24px",
+              padding: "18px",
               borderRadius: "18px",
               width: "100%",
               maxWidth: "390px",
@@ -2065,7 +2065,7 @@ style={{
           <div
             style={{
               backgroundColor: colors.card,
-              padding: "24px",
+              padding: "18px",
               borderRadius: "18px",
               width: "100%",
               maxWidth: "390px",
