@@ -11,9 +11,11 @@ const SCREEN_HORIZONTAL_PADDING = "24px";
 const CARD_ROW_HORIZONTAL_PADDING = "14px";
 const CARD_CONTAINER_HORIZONTAL_PADDING = "18px";
 const HEADER_HORIZONTAL_INSET = "32px";
-const HOME_SECTION_INSET = "10px";
+const HOME_SECTION_INSET = "0px";
 const HEADER_CIRCLE_SIZE = "44px";
 const HEADER_CIRCLE_RADIUS = "22px";
+const CARD_FAVORITE_SIZE = "40px";
+const CARD_FAVORITE_RADIUS = "20px";
 
 const stepperButtonStyle = {
   width: "44px",
@@ -897,6 +899,27 @@ function App() {
       fontSize: "22px"
     });
 
+  const cardFavoriteIconStyle = (isFav) => ({
+    width: CARD_FAVORITE_SIZE,
+    height: CARD_FAVORITE_SIZE,
+    borderRadius: CARD_FAVORITE_RADIUS,
+    border: `2px solid ${isFav ? colors.green : colors.borderStrong}`,
+    backgroundColor: colors.card,
+    color: colors.text,
+    cursor: "pointer",
+    fontFamily: appFont,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 0,
+    lineHeight: 1,
+    flexShrink: 0,
+    boxSizing: "border-box",
+    boxShadow: isLight
+      ? "0 4px 12px rgba(17, 24, 39, 0.05)"
+      : "0 6px 16px rgba(0, 0, 0, 0.24)"
+  });
+
   const headerTitleTextStyle = {
     fontSize: "16px",
     fontWeight: 600,
@@ -999,10 +1022,12 @@ function App() {
           e.stopPropagation();
           toggleFavorite(course.id);
         }}
-        style={favoriteIconStyle(course.favorite)}
+        style={cardFavoriteIconStyle(course.favorite)}
         title="Preferito"
       >
-        ⛳️
+        <span style={{ fontSize: "17px", lineHeight: 1, transform: "translateY(-1px)" }}>
+          ⛳️
+        </span>
       </div>
     </div>
   );
