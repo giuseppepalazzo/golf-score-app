@@ -9,6 +9,9 @@ const USER_PROFILE_STORAGE_KEY = "golf-score-app-user-profile-v1";
 const THEME_STORAGE_KEY = "golf-score-app-theme-v1";
 const SCREEN_HORIZONTAL_PADDING = "24px";
 const CARD_ROW_HORIZONTAL_PADDING = "14px";
+const CARD_CONTAINER_HORIZONTAL_PADDING = "18px";
+const HEADER_HORIZONTAL_INSET = "32px";
+const HOME_SECTION_INSET = "10px";
 
 const stepperButtonStyle = {
   width: "44px",
@@ -838,9 +841,11 @@ function App() {
     gridTemplateColumns: "48px 1fr auto",
     alignItems: "center",
     columnGap: "12px",
-    paddingTop: "8px",
-    paddingBottom: "10px",
-    marginBottom: "24px"
+    paddingLeft: HEADER_HORIZONTAL_INSET,
+    paddingRight: HEADER_HORIZONTAL_INSET,
+    paddingTop: "10px",
+    paddingBottom: "12px",
+    marginBottom: "18px"
   };
 
   const centeredHeaderStyle = {
@@ -848,6 +853,8 @@ function App() {
     gridTemplateColumns: "48px 1fr 48px",
     alignItems: "center",
     columnGap: "12px",
+    paddingLeft: HEADER_HORIZONTAL_INSET,
+    paddingRight: HEADER_HORIZONTAL_INSET,
     paddingTop: "8px",
     paddingBottom: "10px",
     marginBottom: "24px"
@@ -917,7 +924,33 @@ function App() {
     backgroundColor: colors.card,
     border: `1px solid ${colors.border}`,
     borderRadius: "16px",
-    padding: "18px"
+    padding: CARD_CONTAINER_HORIZONTAL_PADDING
+  };
+
+  const homeSectionCardStyle = {
+    ...cardStyle,
+    marginLeft: HOME_SECTION_INSET,
+    marginRight: HOME_SECTION_INSET
+  };
+
+  const homeSectionTitleStyle = {
+    ...titleStyle,
+    marginTop: "22px",
+    marginBottom: "12px",
+    marginLeft: HOME_SECTION_INSET,
+    marginRight: HOME_SECTION_INSET
+  };
+
+  const homeSearchInnerStyle = {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    backgroundColor: colors.inputBg,
+    border: `1px solid ${colors.inputBorder}`,
+    borderRadius: "14px",
+    padding: "12px 14px",
+    marginLeft: "2px",
+    marginRight: "2px"
   };
 
   const setupCardOptionStyle = (active) => ({
@@ -931,13 +964,13 @@ function App() {
     color: colors.text
   });
 
-  const renderCourseRow = (course) => (
+  const renderCourseRow = (course, { showDivider = true } = {}) => (
     <div
       key={course.id}
       onClick={() => prepareRoundSetup(course)}
       style={{
         padding: `14px ${CARD_ROW_HORIZONTAL_PADDING}`,
-        borderBottom: `1px solid ${colors.border}`,
+        borderBottom: showDivider ? `1px solid ${colors.border}` : "none",
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
@@ -1692,41 +1725,33 @@ function App() {
         </div>
       </div>
 
-      <h2 style={titleStyle}>Preferiti</h2>
-      <div style={cardStyle}>
+      <h2 style={homeSectionTitleStyle}>Preferiti</h2>
+      <div style={homeSectionCardStyle}>
         {favorites.length === 0 ? (
           <div style={{ color: colors.subtext }}>
             Usa ⛳️ per salvare i campi
           </div>
         ) : (
-          favorites.map((course) => renderCourseRow(course))
+          favorites.map((course) => renderCourseRow(course, { showDivider: false }))
         )}
       </div>
 
-      <h2 style={titleStyle}>Vicino a te</h2>
-      <div style={cardStyle}>
+      <h2 style={homeSectionTitleStyle}>Vicino a te</h2>
+      <div style={homeSectionCardStyle}>
         {nearbyCourses.length === 0 ? (
           <div style={{ color: colors.subtext, lineHeight: 1.5 }}>
             Quando aggiungerai i primi campi, li vedrai qui. Più avanti collegheremo
             anche la geolocalizzazione.
           </div>
         ) : (
-          nearbyCourses.map((course) => renderCourseRow(course))
+          nearbyCourses.map((course) => renderCourseRow(course, { showDivider: false }))
         )}
       </div>
 
-      <h2 style={titleStyle}>Cerca un campo</h2>
-      <div style={cardStyle}>
+      <h2 style={homeSectionTitleStyle}>Cerca un campo</h2>
+      <div style={homeSectionCardStyle}>
         <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-            backgroundColor: colors.inputBg,
-            border: `1px solid ${colors.inputBorder}`,
-            borderRadius: "14px",
-            padding: "12px 14px"
-          }}
+          style={homeSearchInnerStyle}
         >
           <div style={{ color: colors.subtext, fontSize: "16px" }}>⌕</div>
           <input
@@ -1768,12 +1793,12 @@ function App() {
       <div
         onClick={() => setShowLatestAdded((prev) => !prev)}
         style={{
-          ...titleStyle,
+          ...homeSectionTitleStyle,
           display: "inline-flex",
           alignItems: "center",
           gap: "8px",
           cursor: "pointer",
-          marginBottom: "14px"
+          marginBottom: "12px"
         }}
       >
         <span>Ultimi aggiunti</span>
@@ -1791,7 +1816,7 @@ function App() {
       </div>
 
       {showLatestAdded && (
-        <div style={cardStyle}>
+        <div style={homeSectionCardStyle}>
           {latestAddedCourses.length === 0 ? (
             <div style={{ color: colors.subtext }}>
               Nessun campo aggiunto di recente.
