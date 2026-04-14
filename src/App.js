@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { hasSupabaseConfig, supabase } from "./lib/supabase";
 
 const appFont =
   "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
@@ -97,6 +98,17 @@ function App() {
   const [showLatestAdded, setShowLatestAdded] = useState(false);
   const [showAppMenu, setShowAppMenu] = useState(false);
   const [showGlobalRoundsHistory, setShowGlobalRoundsHistory] = useState(false);
+  const [session, setSession] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [authMode, setAuthMode] = useState("login");
+  const [authForm, setAuthForm] = useState({
+    email: "",
+    password: "",
+    firstName: "",
+    hcp: ""
+  });
+  const [authError, setAuthError] = useState("");
+  const [authMessage, setAuthMessage] = useState("");
 
   const [theme, setTheme] = useState(() => {
     try {
@@ -248,6 +260,62 @@ function App() {
   useEffect(() => {
     localStorage.setItem(THEME_STORAGE_KEY, theme);
   }, [theme]);
+
+  useEffect(() => {
+    if (!hasSupabaseConfig || !supabase) {
+      setAuthLoading(false);
+      return;
+    }
+
+    let mounted = true;
+
+    const loadSession = async () => {
+      const {
+        data: { session: activeSession }
+      } = await supabase.auth.getSession();
+
+      if (!mounted) return;
+
+      setSession(activeSession);
+      setAuthLoading(false);
+    };
+
+    loadSession();
+
+    const {
+      data: { subscription }
+    } = supabase.auth.onAuthStateChange((_event, activeSession) => {
+      setSession(activeSession);
+      setAuthLoading(false);
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!session?.user) return;
+
+    const metadata = session.user.user_metadata || {};
+    const metadataFirstName =
+      typeof metadata.firstName === "string" && metadata.firstName.trim() !== ""
+        ? metadata.firstName.trim()
+        : null;
+    const metadataHcp =
+      typeof metadata.hcp === "number" || typeof metadata.hcp === "string"
+        ? Number(metadata.hcp)
+        : null;
+
+    setUserProfile((prev) => ({
+      firstName: metadataFirstName || prev.firstName || "Giuseppe",
+      hcp:
+        metadataHcp !== null && !Number.isNaN(metadataHcp)
+          ? Number(metadataHcp.toFixed(1))
+          : prev.hcp
+    }));
+  }, [session]);
 
   const favorites = savedCourses.filter((course) => course.favorite);
   const nearbyCourses = savedCourses.slice(0, 5);
@@ -777,6 +845,88 @@ function App() {
     setSavedRounds((prev) => prev.filter((round) => round.id !== roundId));
   };
 
+  const handleAuthSubmit = async () => {
+    if (!supabase) {
+      setAuthError("Configurazione Supabase mancante.");
+      return;
+    }
+
+    const email = authForm.email.trim();
+    const password = authForm.password;
+    const firstName = authForm.firstName.trim();
+    const hcpValue = authForm.hcp === "" ? null : Number(String(authForm.hcp).replace(",", "."));
+
+    if (!email || !password) {
+      setAuthError("Inserisci email e password.");
+      setAuthMessage("");
+      return;
+    }
+
+    if (authMode === "signup") {
+      if (!firstName) {
+        setAuthError("Inserisci il nome da visualizzare.");
+        setAuthMessage("");
+        return;
+      }
+
+      if (hcpValue === null || Number.isNaN(hcpValue) || hcpValue < 0) {
+        setAuthError("Inserisci un HCP valido.");
+        setAuthMessage("");
+        return;
+      }
+    }
+
+    setAuthError("");
+    setAuthMessage("");
+    setAuthLoading(true);
+
+    if (authMode === "login") {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) {
+        setAuthError(error.message);
+        setAuthLoading(false);
+        return;
+      }
+
+      setAuthForm({ email: "", password: "", firstName: "", hcp: "" });
+      return;
+    }
+
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          firstName,
+          hcp: Number(hcpValue.toFixed(1))
+        }
+      }
+    });
+
+    if (error) {
+      setAuthError(error.message);
+      setAuthLoading(false);
+      return;
+    }
+
+    setAuthMessage(
+      "Account creato. Controlla la tua email per confermare la registrazione, se richiesto."
+    );
+    setAuthMode("login");
+    setAuthForm({ email, password: "", firstName: "", hcp: "" });
+    setAuthLoading(false);
+  };
+
+  const handleLogout = async () => {
+    if (!supabase) return;
+    await supabase.auth.signOut();
+    setShowAppMenu(false);
+  };
+
   const closeHcpEditor = () => {
     setShowHcpEditor(false);
     setHcpDraft("");
@@ -852,6 +1002,17 @@ function App() {
         <div
           style={{
             padding: "14px 0",
+            borderBottom: `1px solid ${colors.border}`,
+            color: colors.subtext,
+            fontSize: "13px"
+          }}
+        >
+          {session?.user?.email || "Non autenticato"}
+        </div>
+
+        <div
+          style={{
+            padding: "14px 0",
             borderBottom: `1px solid ${colors.border}`
           }}
         >
@@ -906,7 +1067,7 @@ function App() {
             color: colors.subtext
           }}
         >
-          Geolocalizzazione
+          Usa la mia posizione
         </div>
 
         <button
@@ -952,6 +1113,24 @@ function App() {
           }}
         >
           Chiudi
+        </button>
+
+        <button
+          onClick={handleLogout}
+          style={{
+            marginTop: "10px",
+            width: "100%",
+            padding: "13px",
+            backgroundColor: colors.cardSecondary,
+            border: `1px solid ${colors.borderStrong}`,
+            color: colors.subtext,
+            borderRadius: "12px",
+            cursor: "pointer",
+            fontFamily: appFont,
+            fontSize: "15px"
+          }}
+        >
+          Logout
         </button>
       </div>
     </div>
@@ -1172,6 +1351,286 @@ function App() {
     transition: "all 0.2s ease",
     cursor: "pointer"
   });
+
+  if (authLoading) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: colors.bg,
+          color: colors.text,
+          fontFamily: appFont,
+          padding: "24px",
+          boxSizing: "border-box"
+        }}
+      >
+        Caricamento...
+      </div>
+    );
+  }
+
+  if (!hasSupabaseConfig) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          backgroundColor: colors.bg,
+          color: colors.text,
+          fontFamily: appFont,
+          padding: "24px",
+          boxSizing: "border-box",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center"
+        }}
+      >
+        <div
+          style={{
+            width: "100%",
+            maxWidth: "420px",
+            backgroundColor: colors.card,
+            border: `1px solid ${colors.border}`,
+            borderRadius: "24px",
+            padding: "24px",
+            boxSizing: "border-box"
+          }}
+        >
+          <div style={{ fontSize: "24px", fontWeight: 700 }}>Configura Supabase</div>
+          <div
+            style={{
+              marginTop: "10px",
+              color: colors.subtext,
+              lineHeight: 1.5,
+              fontSize: "14px"
+            }}
+          >
+            Manca la configurazione `REACT_APP_SUPABASE_URL` e/o
+            `REACT_APP_SUPABASE_ANON_KEY` nel file `.env.local`.
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          backgroundColor: colors.bg,
+          color: colors.text,
+          fontFamily: appFont,
+          padding: "24px",
+          boxSizing: "border-box",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center"
+        }}
+      >
+        <div
+          style={{
+            width: "100%",
+            maxWidth: "380px",
+            backgroundColor: colors.card,
+            border: `1px solid ${colors.border}`,
+            borderRadius: "24px",
+            padding: "24px",
+            boxSizing: "border-box",
+            boxShadow: isLight
+              ? "0 18px 36px rgba(17, 24, 39, 0.08)"
+              : "0 18px 36px rgba(0, 0, 0, 0.26)"
+          }}
+        >
+          <div style={{ fontSize: "28px", fontWeight: 700 }}>Golf Score</div>
+          <div
+            style={{
+              marginTop: "8px",
+              color: colors.subtext,
+              fontSize: "14px",
+              lineHeight: 1.5
+            }}
+          >
+            Accedi per salvare e sincronizzare i tuoi giri.
+          </div>
+
+          <div style={{ marginTop: "22px" }}>
+            <div style={{ fontSize: "14px", marginBottom: "8px" }}>Email</div>
+            <input
+              type="email"
+              name="email"
+              autoComplete="email"
+              value={authForm.email}
+              onChange={(e) =>
+                setAuthForm((prev) => ({
+                  ...prev,
+                  email: e.target.value
+                }))
+              }
+              placeholder="tu@email.com"
+              style={{
+                width: "100%",
+                padding: "13px 14px",
+                backgroundColor: colors.inputBg,
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: "12px",
+                color: colors.text,
+                boxSizing: "border-box",
+                outline: "none",
+                fontSize: "15px",
+                fontFamily: appFont
+              }}
+            />
+          </div>
+
+          {authMode === "signup" && (
+            <>
+              <div style={{ marginTop: "14px" }}>
+                <div style={{ fontSize: "14px", marginBottom: "8px" }}>
+                  Nome da visualizzare
+                </div>
+                <input
+                  type="text"
+                  name="firstName"
+                  autoComplete="given-name"
+                  value={authForm.firstName}
+                  onChange={(e) =>
+                    setAuthForm((prev) => ({
+                      ...prev,
+                      firstName: e.target.value
+                    }))
+                  }
+                  placeholder="Es. Mario"
+                  style={{
+                    width: "100%",
+                    padding: "13px 14px",
+                    backgroundColor: colors.inputBg,
+                    border: `1px solid ${colors.inputBorder}`,
+                    borderRadius: "12px",
+                    color: colors.text,
+                    boxSizing: "border-box",
+                    outline: "none",
+                    fontSize: "15px",
+                    fontFamily: appFont
+                  }}
+                />
+              </div>
+
+              <div style={{ marginTop: "14px" }}>
+                <div style={{ fontSize: "14px", marginBottom: "8px" }}>HCP</div>
+                <input
+                  type="text"
+                  name="hcp"
+                  autoComplete="off"
+                  inputMode="decimal"
+                  value={authForm.hcp}
+                  onChange={(e) =>
+                    setAuthForm((prev) => ({
+                      ...prev,
+                      hcp: e.target.value
+                    }))
+                  }
+                  placeholder="Es. 36.4"
+                  style={{
+                    width: "100%",
+                    padding: "13px 14px",
+                    backgroundColor: colors.inputBg,
+                    border: `1px solid ${colors.inputBorder}`,
+                    borderRadius: "12px",
+                    color: colors.text,
+                    boxSizing: "border-box",
+                    outline: "none",
+                    fontSize: "15px",
+                    fontFamily: appFont
+                  }}
+                />
+              </div>
+            </>
+          )}
+
+          <div style={{ marginTop: "14px" }}>
+            <div style={{ fontSize: "14px", marginBottom: "8px" }}>Password</div>
+            <input
+              type="password"
+              name="password"
+              autoComplete={authMode === "login" ? "current-password" : "new-password"}
+              value={authForm.password}
+              onChange={(e) =>
+                setAuthForm((prev) => ({
+                  ...prev,
+                  password: e.target.value
+                }))
+              }
+              placeholder="Password"
+              style={{
+                width: "100%",
+                padding: "13px 14px",
+                backgroundColor: colors.inputBg,
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: "12px",
+                color: colors.text,
+                boxSizing: "border-box",
+                outline: "none",
+                fontSize: "15px",
+                fontFamily: appFont
+              }}
+            />
+          </div>
+
+          {authError && (
+            <div
+              style={{
+                marginTop: "14px",
+                color: "#d64545",
+                fontSize: "13px",
+                lineHeight: 1.5
+              }}
+            >
+              {authError}
+            </div>
+          )}
+
+          {authMessage && (
+            <div
+              style={{
+                marginTop: "14px",
+                color: colors.green,
+                fontSize: "13px",
+                lineHeight: 1.5
+              }}
+            >
+              {authMessage}
+            </div>
+          )}
+
+          <button onClick={handleAuthSubmit} style={primaryButtonStyle(true)}>
+            {authMode === "login" ? "Accedi" : "Crea account"}
+          </button>
+
+          <button
+            onClick={() => {
+              setAuthMode((prev) => (prev === "login" ? "signup" : "login"));
+              setAuthError("");
+              setAuthMessage("");
+              setAuthForm((prev) => ({
+                ...prev,
+                password: "",
+                firstName: "",
+                hcp: ""
+              }));
+            }}
+            style={secondaryButtonStyle}
+          >
+            {authMode === "login"
+              ? "Non hai un account? Registrati"
+              : "Hai già un account? Accedi"}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const homeHeaderStyle = {
     display: "grid",
