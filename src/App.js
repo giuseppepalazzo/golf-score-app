@@ -1009,15 +1009,59 @@ function App() {
       : "0 7px 18px rgba(0, 0, 0, 0.14)"
   };
 
+  const roundSetupTopCardStyle = {
+    padding: "20px",
+    backgroundColor: colors.card,
+    border: `1px solid ${colors.border}`,
+    borderRadius: "20px",
+    boxShadow: isLight
+      ? "0 6px 18px rgba(17, 24, 39, 0.04)"
+      : "0 8px 20px rgba(0, 0, 0, 0.18)"
+  };
+
+  const roundSetupInputCardStyle = {
+    ...cardStyle,
+    boxShadow: isLight
+      ? "0 4px 14px rgba(17, 24, 39, 0.03)"
+      : "0 6px 16px rgba(0, 0, 0, 0.12)"
+  };
+
+  const roundSetupSectionTitleStyle = {
+    ...titleStyle,
+    marginTop: "24px",
+    marginBottom: "12px"
+  };
+
+  const roundSetupGridStyle = {
+    display: "grid",
+    gap: "12px"
+  };
+
+  const roundSetupPreviewStyle = {
+    marginTop: "20px",
+    backgroundColor: colors.card,
+    border: `1px solid ${colors.greenBorder}`,
+    borderRadius: "16px",
+    padding: "18px",
+    boxShadow: isLight
+      ? "0 4px 14px rgba(17, 24, 39, 0.03)"
+      : "0 6px 16px rgba(0, 0, 0, 0.12)"
+  };
+
   const setupCardOptionStyle = (active) => ({
-    padding: "16px",
+    padding: "18px 16px",
     borderRadius: "14px",
     border: active ? `1px solid ${colors.green}` : `1px solid ${colors.borderStrong}`,
     backgroundColor: active ? colors.greenDark : colors.inputBg,
     cursor: "pointer",
     fontWeight: 600,
     textAlign: "center",
-    color: colors.text
+    color: colors.text,
+    boxShadow: active
+      ? isLight
+        ? "0 6px 16px rgba(46, 204, 113, 0.14)"
+        : "0 8px 18px rgba(0, 0, 0, 0.2)"
+      : "none"
   });
 
   const renderCourseRow = (course, { showDivider = true } = {}) => (
@@ -1101,21 +1145,14 @@ function App() {
           <div aria-hidden="true" />
         </div>
 
-        <div
-          style={{
-            padding: "18px",
-            backgroundColor: colors.card,
-            border: `1px solid ${colors.border}`,
-            borderRadius: "18px"
-          }}
-        >
-          <div style={{ fontSize: "24px", fontWeight: 700 }}>
+        <div style={roundSetupTopCardStyle}>
+          <div style={{ fontSize: "25px", fontWeight: 700 }}>
             {openedCourse.name}
           </div>
 
           <div
             style={{
-              marginTop: "8px",
+              marginTop: "10px",
               color: colors.subtext,
               fontSize: "14px",
               lineHeight: 1.5
@@ -1125,8 +1162,8 @@ function App() {
           </div>
         </div>
 
-        <h2 style={titleStyle}>Nome gara</h2>
-        <div style={cardStyle}>
+        <h2 style={roundSetupSectionTitleStyle}>Nome gara</h2>
+        <div style={roundSetupInputCardStyle}>
           <input
             type="text"
             value={roundSetup.competitionName}
@@ -1152,12 +1189,11 @@ function App() {
           />
         </div>
 
-        <h2 style={titleStyle}>Buche di gara</h2>
+        <h2 style={roundSetupSectionTitleStyle}>Buche di gara</h2>
         <div
           style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: "12px"
+            ...roundSetupGridStyle,
+            gridTemplateColumns: "repeat(3, 1fr)"
           }}
         >
           {allowedCompetitionOptions.map((option) => (
@@ -1178,13 +1214,12 @@ function App() {
           ))}
         </div>
 
-        <h2 style={titleStyle}>Buca di partenza</h2>
+        <h2 style={roundSetupSectionTitleStyle}>Buca di partenza</h2>
         <div
           style={{
-            display: "grid",
+            ...roundSetupGridStyle,
             gridTemplateColumns:
-              openedCourse.holesCount === 18 ? "repeat(6, 1fr)" : "repeat(3, 1fr)",
-            gap: "12px"
+              openedCourse.holesCount === 18 ? "repeat(6, 1fr)" : "repeat(3, 1fr)"
           }}
         >
           {allowedStartHoles.map((holeNumber) => (
@@ -1203,22 +1238,14 @@ function App() {
           ))}
         </div>
 
-        <div
-          style={{
-            marginTop: "20px",
-            backgroundColor: colors.card,
-            border: `1px solid ${colors.border}`,
-            borderRadius: "16px",
-            padding: "18px"
-          }}
-        >
+        <div style={roundSetupPreviewStyle}>
           <div style={{ color: colors.subtext, fontSize: "13px" }}>Anteprima</div>
-          <div style={{ marginTop: "8px", fontSize: "16px", fontWeight: 600 }}>
+          <div style={{ marginTop: "10px", fontSize: "17px", fontWeight: 700 }}>
             {roundSetup.totalCompetitionHoles} buche • partenza dalla {roundSetup.startHole}
           </div>
           <div
             style={{
-              marginTop: "8px",
+              marginTop: "10px",
               color: colors.subtext,
               fontSize: "13px",
               lineHeight: 1.5
