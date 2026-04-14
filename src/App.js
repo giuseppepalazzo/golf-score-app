@@ -12,6 +12,8 @@ const CARD_ROW_HORIZONTAL_PADDING = "14px";
 const CARD_CONTAINER_HORIZONTAL_PADDING = "18px";
 const HEADER_HORIZONTAL_INSET = "32px";
 const HOME_SECTION_INSET = "10px";
+const HEADER_CIRCLE_SIZE = "44px";
+const HEADER_CIRCLE_RADIUS = "22px";
 
 const stepperButtonStyle = {
   width: "44px",
@@ -838,7 +840,7 @@ function App() {
 
   const homeHeaderStyle = {
     display: "grid",
-    gridTemplateColumns: "48px 1fr auto",
+    gridTemplateColumns: `${HEADER_CIRCLE_SIZE} 1fr auto`,
     alignItems: "center",
     columnGap: "12px",
     paddingLeft: HEADER_HORIZONTAL_INSET,
@@ -850,20 +852,20 @@ function App() {
 
   const centeredHeaderStyle = {
     display: "grid",
-    gridTemplateColumns: "48px 1fr 48px",
+    gridTemplateColumns: `${HEADER_CIRCLE_SIZE} 1fr ${HEADER_CIRCLE_SIZE}`,
     alignItems: "center",
     columnGap: "12px",
     paddingLeft: HEADER_HORIZONTAL_INSET,
     paddingRight: HEADER_HORIZONTAL_INSET,
-    paddingTop: "8px",
-    paddingBottom: "10px",
-    marginBottom: "24px"
+    paddingTop: "10px",
+    paddingBottom: "12px",
+    marginBottom: "18px"
   };
 
   const headerCircleButtonBaseStyle = {
-    width: "48px",
-    height: "48px",
-    borderRadius: "24px",
+    width: HEADER_CIRCLE_SIZE,
+    height: HEADER_CIRCLE_SIZE,
+    borderRadius: HEADER_CIRCLE_RADIUS,
     backgroundColor: colors.card,
     color: colors.text,
     cursor: "pointer",
@@ -896,8 +898,8 @@ function App() {
     });
 
   const headerTitleTextStyle = {
-    fontSize: "18px",
-    fontWeight: 700,
+    fontSize: "16px",
+    fontWeight: 600,
     color: colors.text,
     textAlign: "center"
   };
@@ -1032,7 +1034,7 @@ function App() {
             aria-label="Torna indietro"
           >
             <span
-              style={{ fontSize: "23px", lineHeight: 1, transform: "translateX(-1px)" }}
+              style={{ fontSize: "21px", lineHeight: 1, transform: "translateX(-1px)" }}
             >
               ←
             </span>
@@ -1197,7 +1199,7 @@ function App() {
             aria-label="Torna alla home"
           >
             <span
-              style={{ fontSize: "23px", lineHeight: 1, transform: "translateX(-1px)" }}
+              style={{ fontSize: "21px", lineHeight: 1, transform: "translateX(-1px)" }}
             >
               ←
             </span>
@@ -1213,7 +1215,7 @@ function App() {
               openedCourse.favorite ? "Rimuovi dai preferiti" : "Aggiungi ai preferiti"
             }
           >
-            <span style={{ fontSize: "20px", lineHeight: 1, transform: "translateY(-1px)" }}>
+            <span style={{ fontSize: "18px", lineHeight: 1, transform: "translateY(-1px)" }}>
               ⛳️
             </span>
           </div>
@@ -1677,11 +1679,11 @@ function App() {
           onClick={openDialog}
           style={headerCircleButtonStyle({
             borderColor: colors.green,
-            fontSize: "26px"
+            fontSize: "24px"
           })}
           aria-label="Aggiungi campo"
         >
-          <span style={{ fontSize: "26px", lineHeight: 1, transform: "translateY(-1px)" }}>
+          <span style={{ fontSize: "24px", lineHeight: 1, transform: "translateY(-1px)" }}>
             +
           </span>
         </button>
@@ -1712,12 +1714,12 @@ function App() {
 
           <button
             onClick={() => setShowSettings(true)}
-            style={headerCircleButtonStyle({ fontSize: "20px" })}
+            style={headerCircleButtonStyle({ fontSize: "18px" })}
             title="Impostazioni"
             aria-label="Apri impostazioni"
           >
             <span
-              style={{ fontSize: "20px", lineHeight: 1, transform: "translateY(-1px)" }}
+              style={{ fontSize: "18px", lineHeight: 1, transform: "translateY(-1px)" }}
             >
               ≡
             </span>
