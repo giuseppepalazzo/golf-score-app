@@ -1248,8 +1248,9 @@ function App() {
   });
 
   const headerTitleTextStyle = {
-    fontSize: "16px",
-    fontWeight: 600,
+    fontSize: "17px",
+    fontWeight: 700,
+    letterSpacing: "0.01em",
     color: colors.text,
     textAlign: "center"
   };
