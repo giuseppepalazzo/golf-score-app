@@ -846,7 +846,8 @@ const favoriteIconStyle = (isFav) => ({
   padding: 0,
   lineHeight: 1,
   flexShrink: 0,
-  marginRight: "-2px"
+  marginLeft: "-2px",
+marginRight: "-2px"
 });
 
   const cardStyle = {
@@ -956,7 +957,9 @@ paddingBottom: "16px"
       justifyContent: "center",
       padding: 0,
       lineHeight: 1,
-      flexShrink: 0
+      flexShrink: 0,
+      marginLeft: "-2px",
+marginRight: "-2px"
     }}
   >
     <span style={{ fontSize: "24px", lineHeight: 1 }}>←</span>
@@ -1150,7 +1153,9 @@ paddingBottom: "16px"
   justifyContent: "center",
   padding: 0,
   lineHeight: 1,
-  flexShrink: 0
+  flexShrink: 0,
+  marginLeft: "-2px",
+marginRight: "-2px"
 
 }}
           >
@@ -1655,7 +1660,8 @@ style={{
   padding: 0,
   lineHeight: 1,
   flexShrink: 0,
-  marginLeft: "-2px"
+  marginLeft: "-2px",
+marginRight: "-2px"
 }}
         >
           +
