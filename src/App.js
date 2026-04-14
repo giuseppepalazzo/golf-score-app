@@ -928,50 +928,50 @@ const favoriteIconStyle = (isFav) => ({
   fontFamily: appFont
 }}
       >
-  <div style={{
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  position: "relative"
-}}>
-          <button
-            onClick={closeCourse}
-          style={{
-  width: "48px",
-  height: "48px",
-  borderRadius: "24px",
-  border: `2px solid ${colors.borderStrong}`,
-  backgroundColor: colors.card,
-  color: colors.text,
-  fontSize: "22px",
-  cursor: "pointer",
-  fontFamily: appFont,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  padding: 0,
-  lineHeight: 1,
-  flexShrink: 0
-  
-}}
-          >
-            ←
-          </button>
-
-          <div
+<div
   style={{
-    fontSize: "16px",
-    fontWeight: 500,
-    position: "absolute",
-    left: "50%",
-    transform: "translateX(-50%)"
+    display: "grid",
+    gridTemplateColumns: "48px 1fr 48px",
+    alignItems: "center",
+    columnGap: "12px",
+    marginBottom: "24px"
   }}
 >
-  Imposta il giro
-</div>
+  <button
+    onClick={closeCourse}
+    style={{
+      width: "48px",
+      height: "48px",
+      borderRadius: "24px",
+      border: `2px solid ${colors.borderStrong}`,
+      backgroundColor: colors.card,
+      color: colors.text,
+      fontSize: "22px",
+      cursor: "pointer",
+      fontFamily: appFont,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 0,
+      lineHeight: 1,
+      flexShrink: 0
+    }}
+  >
+    <span style={{ fontSize: "24px", lineHeight: 1 }}>←</span>
+  </button>
 
-          <div style={{ width: "48px" }} />
-        </div>
+  <div
+    style={{
+      fontSize: "16px",
+      fontWeight: 500,
+      textAlign: "center"
+    }}
+  >
+    Imposta il giro
+  </div>
+
+  <div style={{ width: "48px", height: "48px" }} />
+</div>
 
         <div
           style={{
