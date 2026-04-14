@@ -934,7 +934,9 @@ const favoriteIconStyle = (isFav) => ({
     gridTemplateColumns: "48px 1fr 48px",
     alignItems: "center",
     columnGap: "12px",
-    marginBottom: "24px"
+    marginBottom: "24px",
+    paddingTop: "16px",
+paddingBottom: "16px"
   }}
 >
   <button
@@ -1126,7 +1128,9 @@ const favoriteIconStyle = (isFav) => ({
   display: "grid",
   gridTemplateColumns: "48px 1fr 48px",
   alignItems: "center",
-  columnGap: "12px"
+  columnGap: "12px",
+  paddingTop: "16px",
+paddingBottom: "16px"
 }}
         >
           <button
@@ -1628,7 +1632,9 @@ const favoriteIconStyle = (isFav) => ({
   gap: "12px",
 
   paddingLeft: "18px",
-  paddingRight: "18px"
+  paddingRight: "18px",
+  paddingTop: "12px",
+paddingBottom: "12px"
 }}
       >
         <button
