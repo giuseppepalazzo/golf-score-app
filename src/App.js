@@ -103,7 +103,6 @@ function App() {
   const [authMode, setAuthMode] = useState("login");
   const [authForm, setAuthForm] = useState({
     email: "",
-    password: "",
     firstName: "",
     hcp: ""
   });
@@ -852,12 +851,11 @@ function App() {
     }
 
     const email = authForm.email.trim();
-    const password = authForm.password;
     const firstName = authForm.firstName.trim();
     const hcpValue = authForm.hcp === "" ? null : Number(String(authForm.hcp).replace(",", "."));
 
-    if (!email || !password) {
-      setAuthError("Inserisci email e password.");
+    if (!email) {
+      setAuthError("Inserisci l'email.");
       setAuthMessage("");
       return;
     }
@@ -880,31 +878,24 @@ function App() {
     setAuthMessage("");
     setAuthLoading(true);
 
-    if (authMode === "login") {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
+    const authOptions =
+      authMode === "signup"
+        ? {
+            shouldCreateUser: true,
+            data: {
+              firstName,
+              hcp: Number(hcpValue.toFixed(1))
+            },
+            emailRedirectTo: window.location.origin
+          }
+        : {
+            shouldCreateUser: false,
+            emailRedirectTo: window.location.origin
+          };
 
-      if (error) {
-        setAuthError(error.message);
-        setAuthLoading(false);
-        return;
-      }
-
-      setAuthForm({ email: "", password: "", firstName: "", hcp: "" });
-      return;
-    }
-
-    const { error } = await supabase.auth.signUp({
+    const { error } = await supabase.auth.signInWithOtp({
       email,
-      password,
-      options: {
-        data: {
-          firstName,
-          hcp: Number(hcpValue.toFixed(1))
-        }
-      }
+      options: authOptions
     });
 
     if (error) {
@@ -913,11 +904,9 @@ function App() {
       return;
     }
 
-    setAuthMessage(
-      "Account creato. Controlla la tua email per confermare la registrazione, se richiesto."
-    );
+    setAuthMessage("Riceverai un link per accedere via email.");
     setAuthMode("login");
-    setAuthForm({ email, password: "", firstName: "", hcp: "" });
+    setAuthForm({ email: "", firstName: "", hcp: "" });
     setAuthLoading(false);
   };
 
@@ -1453,7 +1442,7 @@ function App() {
               lineHeight: 1.5
             }}
           >
-            Accedi per salvare e sincronizzare i tuoi giri.
+            Inserisci la tua email per accedere e sincronizzare i tuoi giri.
           </div>
 
           <div style={{ marginTop: "22px" }}>
@@ -1550,35 +1539,6 @@ function App() {
             </>
           )}
 
-          <div style={{ marginTop: "14px" }}>
-            <div style={{ fontSize: "14px", marginBottom: "8px" }}>Password</div>
-            <input
-              type="password"
-              name="password"
-              autoComplete={authMode === "login" ? "current-password" : "new-password"}
-              value={authForm.password}
-              onChange={(e) =>
-                setAuthForm((prev) => ({
-                  ...prev,
-                  password: e.target.value
-                }))
-              }
-              placeholder="Password"
-              style={{
-                width: "100%",
-                padding: "13px 14px",
-                backgroundColor: colors.inputBg,
-                border: `1px solid ${colors.inputBorder}`,
-                borderRadius: "12px",
-                color: colors.text,
-                boxSizing: "border-box",
-                outline: "none",
-                fontSize: "15px",
-                fontFamily: appFont
-              }}
-            />
-          </div>
-
           {authError && (
             <div
               style={{
@@ -1606,8 +1566,20 @@ function App() {
           )}
 
           <button onClick={handleAuthSubmit} style={primaryButtonStyle(true)}>
-            {authMode === "login" ? "Accedi" : "Crea account"}
+            Continua
           </button>
+
+          <div
+            style={{
+              marginTop: "10px",
+              color: colors.subtext,
+              fontSize: "13px",
+              lineHeight: 1.5,
+              textAlign: "center"
+            }}
+          >
+            Riceverai un link per accedere via email.
+          </div>
 
           <button
             onClick={() => {
@@ -1616,7 +1588,6 @@ function App() {
               setAuthMessage("");
               setAuthForm((prev) => ({
                 ...prev,
-                password: "",
                 firstName: "",
                 hcp: ""
               }));
@@ -1624,7 +1595,7 @@ function App() {
             style={secondaryButtonStyle}
           >
             {authMode === "login"
-              ? "Non hai un account? Registrati"
+              ? "Non hai un account? Continua"
               : "Hai già un account? Accedi"}
           </button>
         </div>
