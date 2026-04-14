@@ -1122,13 +1122,11 @@ const favoriteIconStyle = (isFav) => ({
         }}
       >
         <div
-         style={{
-  display: "flex",
+   style={{
+  display: "grid",
+  gridTemplateColumns: "48px 1fr 48px",
   alignItems: "center",
-  justifyContent: "space-between",
-  gap: "12px",
-  paddingLeft: "18px",
-  paddingRight: "18px"
+  columnGap: "12px"
 }}
         >
           <button
