@@ -7,6 +7,8 @@ const STORAGE_KEY = "golf-score-app-courses-v1";
 const ROUNDS_STORAGE_KEY = "golf-score-app-rounds-v1";
 const USER_PROFILE_STORAGE_KEY = "golf-score-app-user-profile-v1";
 const THEME_STORAGE_KEY = "golf-score-app-theme-v1";
+const SCREEN_HORIZONTAL_PADDING = "24px";
+const CARD_ROW_HORIZONTAL_PADDING = "14px";
 
 const stepperButtonStyle = {
   width: "44px",
@@ -934,7 +936,7 @@ function App() {
       key={course.id}
       onClick={() => prepareRoundSetup(course)}
       style={{
-        padding: "14px 0",
+        padding: `14px ${CARD_ROW_HORIZONTAL_PADDING}`,
         borderBottom: `1px solid ${colors.border}`,
         display: "flex",
         justifyContent: "space-between",
@@ -985,7 +987,7 @@ function App() {
           backgroundColor: colors.bg,
           color: colors.text,
           minHeight: "100vh",
-          padding: "20px",
+          padding: `20px ${SCREEN_HORIZONTAL_PADDING}`,
           boxSizing: "border-box",
           fontFamily: appFont
         }}
@@ -1150,7 +1152,7 @@ function App() {
           backgroundColor: colors.bg,
           color: colors.text,
           minHeight: "100vh",
-          padding: "20px",
+          padding: `20px ${SCREEN_HORIZONTAL_PADDING}`,
           boxSizing: "border-box",
           fontFamily: appFont
         }}
@@ -1632,7 +1634,7 @@ function App() {
         backgroundColor: colors.bg,
         color: colors.text,
         minHeight: "100vh",
-        padding: "20px",
+        padding: `20px ${SCREEN_HORIZONTAL_PADDING}`,
         boxSizing: "border-box",
         fontFamily: appFont
       }}
