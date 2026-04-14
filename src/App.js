@@ -7,6 +7,7 @@ const STORAGE_KEY = "golf-score-app-courses-v1";
 const ROUNDS_STORAGE_KEY = "golf-score-app-rounds-v1";
 const USER_PROFILE_STORAGE_KEY = "golf-score-app-user-profile-v1";
 const THEME_STORAGE_KEY = "golf-score-app-theme-v1";
+const MAX_SAVED_ROUNDS = 100;
 const SCREEN_HORIZONTAL_PADDING = "16px";
 const CARD_ROW_HORIZONTAL_PADDING = "12px";
 const CARD_CONTAINER_HORIZONTAL_PADDING = "14px";
@@ -751,7 +752,7 @@ function App() {
       manualReceivedShots
     };
 
-    setSavedRounds((prev) => [newRound, ...prev]);
+    setSavedRounds((prev) => [newRound, ...prev].slice(0, MAX_SAVED_ROUNDS));
     setRoundAlreadySaved(true);
     setShowRoundsHistory(true);
   };
@@ -770,6 +771,10 @@ function App() {
     setHcpDraft(String(userProfile.hcp));
     setShowAppMenu(false);
     setShowHcpEditor(true);
+  };
+
+  const deleteRound = (roundId) => {
+    setSavedRounds((prev) => prev.filter((round) => round.id !== roundId));
   };
 
   const closeHcpEditor = () => {
@@ -1016,8 +1021,31 @@ function App() {
                 marginBottom: "12px"
               }}
             >
-              <div style={{ fontSize: "14px", fontWeight: 700 }}>
-                {round.savedName}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                  gap: "12px"
+                }}
+              >
+                <div style={{ fontSize: "14px", fontWeight: 700 }}>
+                  {round.savedName}
+                </div>
+                <button
+                  onClick={() => deleteRound(round.id)}
+                  style={{
+                    border: "none",
+                    background: "transparent",
+                    color: colors.subtext,
+                    cursor: "pointer",
+                    fontFamily: appFont,
+                    fontSize: "12px",
+                    padding: 0
+                  }}
+                >
+                  Elimina
+                </button>
               </div>
               <div
                 style={{
@@ -1941,12 +1969,30 @@ function App() {
                 >
                   <div
                     style={{
-                      fontSize: "14px",
-                      fontWeight: 700,
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                      gap: "12px",
                       marginBottom: "6px"
                     }}
                   >
-                    {round.savedName}
+                    <div style={{ fontSize: "14px", fontWeight: 700 }}>
+                      {round.savedName}
+                    </div>
+                    <button
+                      onClick={() => deleteRound(round.id)}
+                      style={{
+                        border: "none",
+                        background: "transparent",
+                        color: colors.subtext,
+                        cursor: "pointer",
+                        fontFamily: appFont,
+                        fontSize: "12px",
+                        padding: 0
+                      }}
+                    >
+                      Elimina
+                    </button>
                   </div>
 
                   <div
