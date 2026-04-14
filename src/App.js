@@ -1157,9 +1157,9 @@ paddingBottom: "16px"
             ←
           </button>
 
-          <div style={{ fontSize: "16px", fontWeight: 500 }}>
-            Scorecard
-          </div>
+          <div style={{ fontSize: "16px", fontWeight: 500, textAlign: "center" }}>
+  Scorecard
+</div>
 
           <div
             onClick={() => toggleFavorite(openedCourse.id)}
@@ -1626,9 +1626,9 @@ paddingBottom: "16px"
     >
       <div
      style={{
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
+  display: "grid",
+gridTemplateColumns: "48px 1fr 48px",
+alignItems: "center",
   gap: "12px",
 
   paddingLeft: "18px",
