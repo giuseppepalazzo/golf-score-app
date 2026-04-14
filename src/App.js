@@ -831,24 +831,85 @@ function App() {
     cursor: "pointer"
   });
 
-const favoriteIconStyle = (isFav) => ({
-  width: "48px",
-  height: "48px",
-  borderRadius: "24px",
-  border: `2px solid ${isFav ? colors.green : colors.borderStrong}`,
-  backgroundColor: colors.card,
-  color: colors.text,
-  cursor: "pointer",
-  fontFamily: appFont,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  padding: 0,
-  lineHeight: 1,
-  flexShrink: 0,
-  marginLeft: "-2px",
-marginRight: "-2px"
-});
+  const homeHeaderStyle = {
+    display: "grid",
+    gridTemplateColumns: "48px 1fr auto",
+    alignItems: "center",
+    columnGap: "12px",
+    paddingTop: "8px",
+    paddingBottom: "10px",
+    marginBottom: "24px"
+  };
+
+  const centeredHeaderStyle = {
+    display: "grid",
+    gridTemplateColumns: "48px 1fr 48px",
+    alignItems: "center",
+    columnGap: "12px",
+    paddingTop: "8px",
+    paddingBottom: "10px",
+    marginBottom: "24px"
+  };
+
+  const headerCircleButtonBaseStyle = {
+    width: "48px",
+    height: "48px",
+    borderRadius: "24px",
+    backgroundColor: colors.card,
+    color: colors.text,
+    cursor: "pointer",
+    fontFamily: appFont,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 0,
+    lineHeight: 1,
+    flexShrink: 0,
+    boxSizing: "border-box",
+    boxShadow: isLight
+      ? "0 8px 20px rgba(17, 24, 39, 0.08)"
+      : "0 10px 24px rgba(0, 0, 0, 0.34)"
+  };
+
+  const headerCircleButtonStyle = ({
+    borderColor = colors.borderStrong,
+    fontSize = "22px"
+  } = {}) => ({
+    ...headerCircleButtonBaseStyle,
+    border: `2px solid ${borderColor}`,
+    fontSize
+  });
+
+  const favoriteIconStyle = (isFav) =>
+    headerCircleButtonStyle({
+      borderColor: isFav ? colors.green : colors.borderStrong,
+      fontSize: "22px"
+    });
+
+  const headerTitleTextStyle = {
+    fontSize: "18px",
+    fontWeight: 700,
+    color: colors.text,
+    textAlign: "center"
+  };
+
+  const homeHeaderInfoWrapStyle = {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    gap: "12px",
+    minWidth: 0
+  };
+
+  const homeHeaderIdentityStyle = {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-end",
+    justifyContent: "center",
+    minWidth: 0,
+    textAlign: "right",
+    lineHeight: 1.15
+  };
 
   const cardStyle = {
     backgroundColor: colors.card,
@@ -920,67 +981,35 @@ marginRight: "-2px"
 
     return (
       <div
-      style={{
-  backgroundColor: colors.bg,
-  color: colors.text,
-  minHeight: "100vh",
-  padding: "20px",
-  boxSizing: "border-box",
-  fontFamily: appFont
-}}
+        style={{
+          backgroundColor: colors.bg,
+          color: colors.text,
+          minHeight: "100vh",
+          padding: "20px",
+          boxSizing: "border-box",
+          fontFamily: appFont
+        }}
       >
-<div
-  style={{
-    display: "grid",
-    gridTemplateColumns: "48px 1fr 48px",
-    alignItems: "center",
-    columnGap: "12px",
-    marginBottom: "24px",
-    paddingTop: "16px",
-paddingBottom: "16px"
-  }}
->
-  <button
-    onClick={closeCourse}
-    style={{
-      width: "48px",
-      height: "48px",
-      borderRadius: "24px",
-      border: `2px solid ${colors.borderStrong}`,
-      backgroundColor: colors.card,
-      color: colors.text,
-      fontSize: "22px",
-      cursor: "pointer",
-      fontFamily: appFont,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      padding: 0,
-      lineHeight: 1,
-      flexShrink: 0,
-      marginLeft: "-2px",
-marginRight: "-2px"
-    }}
-  >
-    <span style={{ fontSize: "24px", lineHeight: 1 }}>←</span>
-  </button>
+        <div style={centeredHeaderStyle}>
+          <button
+            onClick={closeCourse}
+            style={headerCircleButtonStyle()}
+            aria-label="Torna indietro"
+          >
+            <span
+              style={{ fontSize: "23px", lineHeight: 1, transform: "translateX(-1px)" }}
+            >
+              ←
+            </span>
+          </button>
 
-  <div
-    style={{
-      fontSize: "16px",
-      fontWeight: 500,
-      textAlign: "center"
-    }}
-  >
-    Imposta il giro
-  </div>
+          <div style={headerTitleTextStyle}>Imposta il giro</div>
 
-  <div style={{ width: "48px", height: "48px" }} />
-</div>
+          <div aria-hidden="true" />
+        </div>
 
         <div
           style={{
-            marginTop: "24px",
             padding: "18px",
             backgroundColor: colors.card,
             border: `1px solid ${colors.border}`,
@@ -1126,58 +1155,37 @@ marginRight: "-2px"
           fontFamily: appFont
         }}
       >
-        <div
-   style={{
-  display: "grid",
-  gridTemplateColumns: "48px 1fr 48px",
-  alignItems: "center",
-  columnGap: "12px",
-  paddingTop: "16px",
-paddingBottom: "16px"
-}}
-        >
+        <div style={centeredHeaderStyle}>
           <button
             onClick={closeCourse}
-           style={{
-  width: "48px",
-  height: "48px",
-  borderRadius: "24px",
-  border: `2px solid ${colors.borderStrong}`,
-  backgroundColor: colors.card,
-  color: colors.text,
-  fontSize: "22px",
-  cursor: "pointer",
-  fontFamily: appFont,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  padding: 0,
-  lineHeight: 1,
-  flexShrink: 0,
-  marginLeft: "-2px",
-marginRight: "-2px"
-
-}}
+            style={headerCircleButtonStyle()}
+            aria-label="Torna alla home"
           >
-            ←
+            <span
+              style={{ fontSize: "23px", lineHeight: 1, transform: "translateX(-1px)" }}
+            >
+              ←
+            </span>
           </button>
 
-          <div style={{ fontSize: "16px", fontWeight: 500, textAlign: "center" }}>
-  Scorecard
-</div>
+          <div style={headerTitleTextStyle}>Scorecard</div>
 
           <div
             onClick={() => toggleFavorite(openedCourse.id)}
             style={favoriteIconStyle(openedCourse.favorite)}
             title="Preferito"
+            aria-label={
+              openedCourse.favorite ? "Rimuovi dai preferiti" : "Aggiungi ai preferiti"
+            }
           >
-            ⛳️
+            <span style={{ fontSize: "20px", lineHeight: 1, transform: "translateY(-1px)" }}>
+              ⛳️
+            </span>
           </div>
         </div>
 
         <div
           style={{
-            marginTop: "24px",
             padding: "18px",
             backgroundColor: colors.card,
             border: `1px solid ${colors.border}`,
@@ -1629,66 +1637,33 @@ marginRight: "-2px"
         fontFamily: appFont
       }}
     >
-      <div
-     style={{
-  display: "grid",
-gridTemplateColumns: "48px 1fr 48px",
-alignItems: "center",
-  gap: "12px",
-
-  paddingLeft: "18px",
-  paddingRight: "18px",
-  paddingTop: "12px",
-paddingBottom: "12px"
-}}
-      >
+      <div style={homeHeaderStyle}>
         <button
           onClick={openDialog}
-style={{
-  width: "48px",
-  height: "48px",
-  borderRadius: "24px",
-  border: `2px solid ${colors.green}`,
-  backgroundColor: colors.card,
-  color: colors.text,
-  cursor: "pointer",
-  fontFamily: appFont,
-  fontSize: "26px",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  padding: 0,
-  lineHeight: 1,
-  flexShrink: 0,
-  marginLeft: "-2px",
-marginRight: "-2px"
-}}
+          style={headerCircleButtonStyle({
+            borderColor: colors.green,
+            fontSize: "26px"
+          })}
+          aria-label="Aggiungi campo"
         >
-          +
+          <span style={{ fontSize: "26px", lineHeight: 1, transform: "translateY(-1px)" }}>
+            +
+          </span>
         </button>
 
-        <div
-          style={{
-            flex: 1,
-            textAlign: "right",
-            lineHeight: 1.2,
-            display: "flex",
-            justifyContent: "flex-end",
-            alignItems: "center",
-            gap: "10px"
-          }}
-        >
-          <div>
+        <div aria-hidden="true" />
+
+        <div style={homeHeaderInfoWrapStyle}>
+          <div style={homeHeaderIdentityStyle}>
             <div
               style={{
                 fontSize: "16px",
-                fontWeight: 500,
+                fontWeight: 700,
                 color: colors.text
               }}
             >
               {userProfile.firstName}
             </div>
-
             <div
               style={{
                 marginTop: "3px",
@@ -1702,27 +1677,15 @@ marginRight: "-2px"
 
           <button
             onClick={() => setShowSettings(true)}
-        style={{
-  width: "48px",
-  height: "48px",
-  borderRadius: "24px",
-  border: `2px solid ${colors.borderStrong}`,
-  backgroundColor: colors.card,
-  color: colors.text,
-  cursor: "pointer",
-  fontFamily: appFont,
-  fontSize: "20px",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  padding: 0,
-  lineHeight: 1,
-  flexShrink: 0
-
-}}
+            style={headerCircleButtonStyle({ fontSize: "20px" })}
             title="Impostazioni"
+            aria-label="Apri impostazioni"
           >
-            <span style={{ fontSize: "20px", lineHeight: 1 }}>≡</span>
+            <span
+              style={{ fontSize: "20px", lineHeight: 1, transform: "translateY(-1px)" }}
+            >
+              ≡
+            </span>
           </button>
         </div>
       </div>

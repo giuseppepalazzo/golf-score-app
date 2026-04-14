@@ -1,8 +1,11 @@
-import { render, screen } from '@testing-library/react';
-import App from './App';
+import { render, screen } from "@testing-library/react";
+import App from "./App";
 
-test('renders learn react link', () => {
+test("renders the app header and main sections", () => {
   render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+
+  expect(screen.getByText("Golf Score")).toBeInTheDocument();
+  expect(screen.getByText("Preferiti")).toBeInTheDocument();
+  expect(screen.getByText("Vicino a te")).toBeInTheDocument();
+  expect(screen.getByText("Cerca un campo")).toBeInTheDocument();
 });
