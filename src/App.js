@@ -1425,23 +1425,6 @@ function App() {
               : "0 18px 36px rgba(0, 0, 0, 0.26)"
           }}
         >
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              padding: "6px 10px",
-              borderRadius: "999px",
-              backgroundColor: colors.greenDark,
-              border: `1px solid ${colors.greenBorder}`,
-              color: colors.green,
-              fontSize: "11px",
-              fontWeight: 700,
-              letterSpacing: "0.08em"
-            }}
-          >
-            STABLEFORD MODE
-          </div>
-
           <div style={{ fontSize: "28px", fontWeight: 700 }}>Entra in campo</div>
           <div
             style={{
@@ -1484,19 +1467,20 @@ function App() {
           </div>
 
           <div style={{ marginTop: "14px" }}>
-            <div style={{ fontSize: "14px", marginBottom: "8px" }}>Email</div>
+            <div style={{ fontSize: "14px", marginBottom: "8px" }}>HCP</div>
             <input
-              type="email"
-              name="email"
-              autoComplete="email"
-              value={authForm.email}
+              type="text"
+              name="hcp"
+              autoComplete="off"
+              inputMode="decimal"
+              value={authForm.hcp}
               onChange={(e) =>
                 setAuthForm((prev) => ({
                   ...prev,
-                  email: e.target.value
+                  hcp: e.target.value
                 }))
               }
-              placeholder=""
+              placeholder="Es. 36"
               style={{
                 width: "100%",
                 padding: "13px 14px",
@@ -1512,21 +1496,20 @@ function App() {
             />
           </div>
 
-          <div style={{ marginTop: "14px" }}>
-            <div style={{ fontSize: "14px", marginBottom: "8px" }}>HCP</div>
+          <div style={{ marginTop: "14px", marginBottom: "20px" }}>
+            <div style={{ fontSize: "14px", marginBottom: "8px" }}>Email</div>
             <input
-              type="text"
-              name="hcp"
-              autoComplete="off"
-              inputMode="decimal"
-              value={authForm.hcp}
+              type="email"
+              name="email"
+              autoComplete="email"
+              value={authForm.email}
               onChange={(e) =>
                 setAuthForm((prev) => ({
                   ...prev,
-                  hcp: e.target.value
+                  email: e.target.value
                 }))
               }
-              placeholder="Es. 36"
+              placeholder="nome@email.com"
               style={{
                 width: "100%",
                 padding: "13px 14px",
@@ -1581,7 +1564,7 @@ function App() {
               textAlign: "center"
             }}
           >
-            Riceverai un link di accesso solo la prima volta. Poi resterai automaticamente connesso.
+            Riceverai un link di accesso solo la prima volta e poi resterai connesso
           </div>
         </div>
       </div>
