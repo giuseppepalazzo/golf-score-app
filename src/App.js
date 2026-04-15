@@ -328,6 +328,8 @@ function App() {
 
   const currentHole =
     holesData[currentHoleIndex] || { hole: 1, par: 4, strokeIndex: "" };
+  const authRedirectUrl =
+    typeof window !== "undefined" ? window.location.origin : undefined;
 
   const totalPar = useMemo(() => {
     return holesData.reduce((sum, hole) => sum + Number(hole.par || 0), 0);
@@ -885,7 +887,7 @@ function App() {
           firstName,
           ...(hcpValue !== null ? { hcp: Number(hcpValue.toFixed(1)) } : {})
         },
-        emailRedirectTo: window.location.origin
+        emailRedirectTo: authRedirectUrl
       }
     });
 
@@ -1423,6 +1425,23 @@ function App() {
               : "0 18px 36px rgba(0, 0, 0, 0.26)"
           }}
         >
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              padding: "6px 10px",
+              borderRadius: "999px",
+              backgroundColor: colors.greenDark,
+              border: `1px solid ${colors.greenBorder}`,
+              color: colors.green,
+              fontSize: "11px",
+              fontWeight: 700,
+              letterSpacing: "0.08em"
+            }}
+          >
+            STABLEFORD MODE
+          </div>
+
           <div style={{ fontSize: "28px", fontWeight: 700 }}>Entra in campo</div>
           <div
             style={{
@@ -1432,7 +1451,7 @@ function App() {
               lineHeight: 1.5
             }}
           >
-            La tua scorecard Stableford
+            La tua partita inizia qui
           </div>
 
           <div style={{ marginTop: "22px" }}>
@@ -1448,7 +1467,7 @@ function App() {
                   firstName: e.target.value
                 }))
               }
-              placeholder="Es. Tiger"
+              placeholder="Il tuo nome sullo scorecard"
               style={{
                 width: "100%",
                 padding: "13px 14px",
@@ -1507,7 +1526,7 @@ function App() {
                   hcp: e.target.value
                 }))
               }
-              placeholder="Es. 36.4"
+              placeholder="Es. 36"
               style={{
                 width: "100%",
                 padding: "13px 14px",
@@ -1550,7 +1569,7 @@ function App() {
           )}
 
           <button onClick={handleAuthSubmit} style={primaryButtonStyle(true)}>
-            {authSubmitting ? "Invio in corso..." : "Vai al tee"}
+            {authSubmitting ? "Invio in corso..." : "Inizia il giro"}
           </button>
 
           <div
@@ -1562,7 +1581,7 @@ function App() {
               textAlign: "center"
             }}
           >
-            Ti invieremo un magic link solo al primo accesso. Dopo il primo ingresso resterai connesso.
+            Riceverai un link di accesso solo la prima volta. Poi resterai automaticamente connesso.
           </div>
         </div>
       </div>
