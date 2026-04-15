@@ -100,7 +100,7 @@ function App() {
   const [showGlobalRoundsHistory, setShowGlobalRoundsHistory] = useState(false);
   const [session, setSession] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const [authMode, setAuthMode] = useState("login");
+  const [authSubmitting, setAuthSubmitting] = useState(false);
   const [authForm, setAuthForm] = useState({
     email: "",
     firstName: "",
@@ -852,7 +852,8 @@ function App() {
 
     const email = authForm.email.trim();
     const firstName = authForm.firstName.trim();
-    const hcpValue = authForm.hcp === "" ? null : Number(String(authForm.hcp).replace(",", "."));
+    const hcpValue =
+      authForm.hcp === "" ? null : Number(String(authForm.hcp).replace(",", "."));
 
     if (!email) {
       setAuthError("Inserisci l'email.");
@@ -860,54 +861,43 @@ function App() {
       return;
     }
 
-    if (authMode === "signup") {
-      if (!firstName) {
-        setAuthError("Inserisci il nome da visualizzare.");
-        setAuthMessage("");
-        return;
-      }
+    if (!firstName) {
+      setAuthError("Inserisci il nome del giocatore.");
+      setAuthMessage("");
+      return;
+    }
 
-      if (hcpValue === null || Number.isNaN(hcpValue) || hcpValue < 0) {
-        setAuthError("Inserisci un HCP valido.");
-        setAuthMessage("");
-        return;
-      }
+    if (hcpValue !== null && (Number.isNaN(hcpValue) || hcpValue < 0)) {
+      setAuthError("Inserisci un HCP valido.");
+      setAuthMessage("");
+      return;
     }
 
     setAuthError("");
     setAuthMessage("");
-    setAuthLoading(true);
-
-    const authOptions =
-      authMode === "signup"
-        ? {
-            shouldCreateUser: true,
-            data: {
-              firstName,
-              hcp: Number(hcpValue.toFixed(1))
-            },
-            emailRedirectTo: window.location.origin
-          }
-        : {
-            shouldCreateUser: false,
-            emailRedirectTo: window.location.origin
-          };
+    setAuthSubmitting(true);
 
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: authOptions
+      options: {
+        shouldCreateUser: true,
+        data: {
+          firstName,
+          ...(hcpValue !== null ? { hcp: Number(hcpValue.toFixed(1)) } : {})
+        },
+        emailRedirectTo: window.location.origin
+      }
     });
 
     if (error) {
       setAuthError(error.message);
-      setAuthLoading(false);
+      setAuthSubmitting(false);
       return;
     }
 
-    setAuthMessage("Riceverai un link per accedere via email.");
-    setAuthMode("login");
+    setAuthMessage("Birdie! Controlla la tua email");
     setAuthForm({ email: "", firstName: "", hcp: "" });
-    setAuthLoading(false);
+    setAuthSubmitting(false);
   };
 
   const handleLogout = async () => {
@@ -1433,7 +1423,7 @@ function App() {
               : "0 18px 36px rgba(0, 0, 0, 0.26)"
           }}
         >
-          <div style={{ fontSize: "28px", fontWeight: 700 }}>Golf Score</div>
+          <div style={{ fontSize: "28px", fontWeight: 700 }}>Entra in campo</div>
           <div
             style={{
               marginTop: "8px",
@@ -1442,23 +1432,23 @@ function App() {
               lineHeight: 1.5
             }}
           >
-            Inserisci la tua email per accedere e sincronizzare i tuoi giri.
+            La tua scorecard Stableford
           </div>
 
           <div style={{ marginTop: "22px" }}>
-            <div style={{ fontSize: "14px", marginBottom: "8px" }}>Email</div>
+            <div style={{ fontSize: "14px", marginBottom: "8px" }}>Giocatore</div>
             <input
-              type="email"
-              name="email"
-              autoComplete="email"
-              value={authForm.email}
+              type="text"
+              name="firstName"
+              autoComplete="given-name"
+              value={authForm.firstName}
               onChange={(e) =>
                 setAuthForm((prev) => ({
                   ...prev,
-                  email: e.target.value
+                  firstName: e.target.value
                 }))
               }
-              placeholder="tu@email.com"
+              placeholder="Es. Tiger"
               style={{
                 width: "100%",
                 padding: "13px 14px",
@@ -1474,70 +1464,64 @@ function App() {
             />
           </div>
 
-          {authMode === "signup" && (
-            <>
-              <div style={{ marginTop: "14px" }}>
-                <div style={{ fontSize: "14px", marginBottom: "8px" }}>
-                  Nome da visualizzare
-                </div>
-                <input
-                  type="text"
-                  name="firstName"
-                  autoComplete="given-name"
-                  value={authForm.firstName}
-                  onChange={(e) =>
-                    setAuthForm((prev) => ({
-                      ...prev,
-                      firstName: e.target.value
-                    }))
-                  }
-                  placeholder="Es. Mario"
-                  style={{
-                    width: "100%",
-                    padding: "13px 14px",
-                    backgroundColor: colors.inputBg,
-                    border: `1px solid ${colors.inputBorder}`,
-                    borderRadius: "12px",
-                    color: colors.text,
-                    boxSizing: "border-box",
-                    outline: "none",
-                    fontSize: "15px",
-                    fontFamily: appFont
-                  }}
-                />
-              </div>
+          <div style={{ marginTop: "14px" }}>
+            <div style={{ fontSize: "14px", marginBottom: "8px" }}>Email</div>
+            <input
+              type="email"
+              name="email"
+              autoComplete="email"
+              value={authForm.email}
+              onChange={(e) =>
+                setAuthForm((prev) => ({
+                  ...prev,
+                  email: e.target.value
+                }))
+              }
+              placeholder=""
+              style={{
+                width: "100%",
+                padding: "13px 14px",
+                backgroundColor: colors.inputBg,
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: "12px",
+                color: colors.text,
+                boxSizing: "border-box",
+                outline: "none",
+                fontSize: "15px",
+                fontFamily: appFont
+              }}
+            />
+          </div>
 
-              <div style={{ marginTop: "14px" }}>
-                <div style={{ fontSize: "14px", marginBottom: "8px" }}>HCP</div>
-                <input
-                  type="text"
-                  name="hcp"
-                  autoComplete="off"
-                  inputMode="decimal"
-                  value={authForm.hcp}
-                  onChange={(e) =>
-                    setAuthForm((prev) => ({
-                      ...prev,
-                      hcp: e.target.value
-                    }))
-                  }
-                  placeholder="Es. 36.4"
-                  style={{
-                    width: "100%",
-                    padding: "13px 14px",
-                    backgroundColor: colors.inputBg,
-                    border: `1px solid ${colors.inputBorder}`,
-                    borderRadius: "12px",
-                    color: colors.text,
-                    boxSizing: "border-box",
-                    outline: "none",
-                    fontSize: "15px",
-                    fontFamily: appFont
-                  }}
-                />
-              </div>
-            </>
-          )}
+          <div style={{ marginTop: "14px" }}>
+            <div style={{ fontSize: "14px", marginBottom: "8px" }}>HCP</div>
+            <input
+              type="text"
+              name="hcp"
+              autoComplete="off"
+              inputMode="decimal"
+              value={authForm.hcp}
+              onChange={(e) =>
+                setAuthForm((prev) => ({
+                  ...prev,
+                  hcp: e.target.value
+                }))
+              }
+              placeholder="Es. 36.4"
+              style={{
+                width: "100%",
+                padding: "13px 14px",
+                backgroundColor: colors.inputBg,
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: "12px",
+                color: colors.text,
+                boxSizing: "border-box",
+                outline: "none",
+                fontSize: "15px",
+                fontFamily: appFont
+              }}
+            />
+          </div>
 
           {authError && (
             <div
@@ -1566,7 +1550,7 @@ function App() {
           )}
 
           <button onClick={handleAuthSubmit} style={primaryButtonStyle(true)}>
-            Continua
+            {authSubmitting ? "Invio in corso..." : "Vai al tee"}
           </button>
 
           <div
@@ -1578,26 +1562,8 @@ function App() {
               textAlign: "center"
             }}
           >
-            Riceverai un link per accedere via email.
+            Ti invieremo un magic link solo al primo accesso. Dopo il primo ingresso resterai connesso.
           </div>
-
-          <button
-            onClick={() => {
-              setAuthMode((prev) => (prev === "login" ? "signup" : "login"));
-              setAuthError("");
-              setAuthMessage("");
-              setAuthForm((prev) => ({
-                ...prev,
-                firstName: "",
-                hcp: ""
-              }));
-            }}
-            style={secondaryButtonStyle}
-          >
-            {authMode === "login"
-              ? "Non hai un account? Continua"
-              : "Hai già un account? Accedi"}
-          </button>
         </div>
       </div>
     );
@@ -2542,13 +2508,24 @@ function App() {
               {userProfile.firstName}
             </div>
             <div
-              style={{
-                marginTop: "3px",
-                fontSize: "13px",
-                color: colors.subtext
-              }}
+              style={{ marginTop: "5px" }}
             >
-              HCP {userProfile.hcp}
+              <button
+                onClick={openHcpEditor}
+                style={{
+                  border: `1px solid ${colors.pillBorder}`,
+                  backgroundColor: colors.pillBg,
+                  color: colors.subtext,
+                  borderRadius: "999px",
+                  padding: "5px 10px",
+                  fontSize: "12px",
+                  fontFamily: appFont,
+                  cursor: "pointer",
+                  lineHeight: 1.2
+                }}
+              >
+                HCP {userProfile.hcp}
+              </button>
             </div>
           </div>
 
