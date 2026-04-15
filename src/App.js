@@ -101,11 +101,13 @@ function App() {
   const [session, setSession] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [authSubmitting, setAuthSubmitting] = useState(false);
+  const [authStep, setAuthStep] = useState("request");
   const [authForm, setAuthForm] = useState({
     email: "",
     firstName: "",
     hcp: ""
   });
+  const [otpCode, setOtpCode] = useState("");
   const [authError, setAuthError] = useState("");
   const [authMessage, setAuthMessage] = useState("");
 
@@ -328,8 +330,6 @@ function App() {
 
   const currentHole =
     holesData[currentHoleIndex] || { hole: 1, par: 4, strokeIndex: "" };
-  const authRedirectUrl =
-    typeof window !== "undefined" ? window.location.origin : undefined;
 
   const totalPar = useMemo(() => {
     return holesData.reduce((sum, hole) => sum + Number(hole.par || 0), 0);
@@ -846,6 +846,41 @@ function App() {
     setSavedRounds((prev) => prev.filter((round) => round.id !== roundId));
   };
 
+  const persistMissingUserProfile = async (activeUser) => {
+    if (!supabase || !activeUser) return;
+
+    const pendingFirstName = authForm.firstName.trim();
+    const pendingHcp =
+      authForm.hcp === "" ? null : Number(String(authForm.hcp).replace(",", "."));
+    const metadata = activeUser.user_metadata || {};
+    const nextData = {};
+
+    if (
+      pendingFirstName &&
+      (typeof metadata.firstName !== "string" || metadata.firstName.trim() === "")
+    ) {
+      nextData.firstName = pendingFirstName;
+    }
+
+    if (
+      pendingHcp !== null &&
+      !Number.isNaN(pendingHcp) &&
+      pendingHcp >= 0 &&
+      (typeof metadata.hcp !== "number" && typeof metadata.hcp !== "string")
+    ) {
+      nextData.hcp = Number(pendingHcp.toFixed(1));
+    }
+
+    if (Object.keys(nextData).length === 0) return;
+
+    await supabase.auth.updateUser({
+      data: {
+        ...metadata,
+        ...nextData
+      }
+    });
+  };
+
   const handleAuthSubmit = async () => {
     if (!supabase) {
       setAuthError("Configurazione Supabase mancante.");
@@ -886,8 +921,7 @@ function App() {
         data: {
           firstName,
           ...(hcpValue !== null ? { hcp: Number(hcpValue.toFixed(1)) } : {})
-        },
-        emailRedirectTo: authRedirectUrl
+        }
       }
     });
 
@@ -897,9 +931,55 @@ function App() {
       return;
     }
 
-    setAuthMessage("Birdie! Controlla la tua email");
-    setAuthForm({ email: "", firstName: "", hcp: "" });
+    setAuthMessage("");
+    setOtpCode("");
+    setAuthStep("verify");
     setAuthSubmitting(false);
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!supabase) {
+      setAuthError("Codice non valido o scaduto");
+      return;
+    }
+
+    const email = authForm.email.trim();
+    const token = otpCode.trim();
+
+    if (!token) {
+      setAuthError("Inserisci il codice.");
+      setAuthMessage("");
+      return;
+    }
+
+    setAuthError("");
+    setAuthMessage("");
+    setAuthSubmitting(true);
+
+    const {
+      data: { user },
+      error
+    } = await supabase.auth.verifyOtp({
+      email,
+      token,
+      type: "email"
+    });
+
+    if (error) {
+      setAuthError("Codice non valido o scaduto");
+      setAuthSubmitting(false);
+      return;
+    }
+
+    await persistMissingUserProfile(user);
+    setAuthMessage("Accesso completato");
+    setAuthSubmitting(false);
+  };
+
+  const handleResendOtp = async () => {
+    setAuthError("");
+    setAuthMessage("");
+    await handleAuthSubmit();
   };
 
   const handleLogout = async () => {
@@ -1425,7 +1505,9 @@ function App() {
               : "0 18px 36px rgba(0, 0, 0, 0.26)"
           }}
         >
-          <div style={{ fontSize: "28px", fontWeight: 700 }}>Entra in campo</div>
+          <div style={{ fontSize: "28px", fontWeight: 700 }}>
+            {authStep === "request" ? "Entra in campo" : "Inserisci il codice"}
+          </div>
           <div
             style={{
               marginTop: "8px",
@@ -1434,96 +1516,129 @@ function App() {
               lineHeight: 1.5
             }}
           >
-            La tua partita inizia qui
+            {authStep === "request"
+              ? "La tua partita inizia qui"
+              : "Controlla la tua email e inserisci il codice"}
           </div>
 
-          <div style={{ marginTop: "22px" }}>
-            <div style={{ fontSize: "14px", marginBottom: "8px" }}>Giocatore</div>
-            <input
-              type="text"
-              name="firstName"
-              autoComplete="given-name"
-              value={authForm.firstName}
-              onChange={(e) =>
-                setAuthForm((prev) => ({
-                  ...prev,
-                  firstName: e.target.value
-                }))
-              }
-              placeholder="Il tuo nome sullo scorecard"
-              style={{
-                width: "100%",
-                padding: "13px 14px",
-                backgroundColor: colors.inputBg,
-                border: `1px solid ${colors.inputBorder}`,
-                borderRadius: "12px",
-                color: colors.text,
-                boxSizing: "border-box",
-                outline: "none",
-                fontSize: "15px",
-                fontFamily: appFont
-              }}
-            />
-          </div>
+          {authStep === "request" ? (
+            <>
+              <div style={{ marginTop: "22px" }}>
+                <div style={{ fontSize: "14px", marginBottom: "8px" }}>Giocatore</div>
+                <input
+                  type="text"
+                  name="firstName"
+                  autoComplete="given-name"
+                  value={authForm.firstName}
+                  onChange={(e) =>
+                    setAuthForm((prev) => ({
+                      ...prev,
+                      firstName: e.target.value
+                    }))
+                  }
+                  placeholder="Il tuo nome sullo scorecard"
+                  style={{
+                    width: "100%",
+                    padding: "13px 14px",
+                    backgroundColor: colors.inputBg,
+                    border: `1px solid ${colors.inputBorder}`,
+                    borderRadius: "12px",
+                    color: colors.text,
+                    boxSizing: "border-box",
+                    outline: "none",
+                    fontSize: "15px",
+                    fontFamily: appFont
+                  }}
+                />
+              </div>
 
-          <div style={{ marginTop: "14px" }}>
-            <div style={{ fontSize: "14px", marginBottom: "8px" }}>HCP</div>
-            <input
-              type="text"
-              name="hcp"
-              autoComplete="off"
-              inputMode="decimal"
-              value={authForm.hcp}
-              onChange={(e) =>
-                setAuthForm((prev) => ({
-                  ...prev,
-                  hcp: e.target.value
-                }))
-              }
-              placeholder="Es. 36"
-              style={{
-                width: "100%",
-                padding: "13px 14px",
-                backgroundColor: colors.inputBg,
-                border: `1px solid ${colors.inputBorder}`,
-                borderRadius: "12px",
-                color: colors.text,
-                boxSizing: "border-box",
-                outline: "none",
-                fontSize: "15px",
-                fontFamily: appFont
-              }}
-            />
-          </div>
+              <div style={{ marginTop: "14px" }}>
+                <div style={{ fontSize: "14px", marginBottom: "8px" }}>HCP</div>
+                <input
+                  type="text"
+                  name="hcp"
+                  autoComplete="off"
+                  inputMode="decimal"
+                  value={authForm.hcp}
+                  onChange={(e) =>
+                    setAuthForm((prev) => ({
+                      ...prev,
+                      hcp: e.target.value
+                    }))
+                  }
+                  placeholder="Es. 36"
+                  style={{
+                    width: "100%",
+                    padding: "13px 14px",
+                    backgroundColor: colors.inputBg,
+                    border: `1px solid ${colors.inputBorder}`,
+                    borderRadius: "12px",
+                    color: colors.text,
+                    boxSizing: "border-box",
+                    outline: "none",
+                    fontSize: "15px",
+                    fontFamily: appFont
+                  }}
+                />
+              </div>
 
-          <div style={{ marginTop: "14px", marginBottom: "20px" }}>
-            <div style={{ fontSize: "14px", marginBottom: "8px" }}>Email</div>
-            <input
-              type="email"
-              name="email"
-              autoComplete="email"
-              value={authForm.email}
-              onChange={(e) =>
-                setAuthForm((prev) => ({
-                  ...prev,
-                  email: e.target.value
-                }))
-              }
-              placeholder="nome@email.com"
-              style={{
-                width: "100%",
-                padding: "13px 14px",
-                backgroundColor: colors.inputBg,
-                border: `1px solid ${colors.inputBorder}`,
-                borderRadius: "12px",
-                color: colors.text,
-                boxSizing: "border-box",
-                outline: "none",
-                fontSize: "15px",
-                fontFamily: appFont
-              }}
-            />
-          </div>
+              <div style={{ marginTop: "14px", marginBottom: "20px" }}>
+                <div style={{ fontSize: "14px", marginBottom: "8px" }}>Email</div>
+                <input
+                  type="email"
+                  name="email"
+                  autoComplete="email"
+                  value={authForm.email}
+                  onChange={(e) =>
+                    setAuthForm((prev) => ({
+                      ...prev,
+                      email: e.target.value
+                    }))
+                  }
+                  placeholder="nome@email.com"
+                  style={{
+                    width: "100%",
+                    padding: "13px 14px",
+                    backgroundColor: colors.inputBg,
+                    border: `1px solid ${colors.inputBorder}`,
+                    borderRadius: "12px",
+                    color: colors.text,
+                    boxSizing: "border-box",
+                    outline: "none",
+                    fontSize: "15px",
+                    fontFamily: appFont
+                  }}
+                />
+              </div>
+            </>
+          ) : (
+            <>
+              <div style={{ marginTop: "22px", marginBottom: "20px" }}>
+                <div style={{ fontSize: "14px", marginBottom: "8px" }}>Codice</div>
+                <input
+                  type="text"
+                  name="otpCode"
+                  autoComplete="one-time-code"
+                  inputMode="numeric"
+                  value={otpCode}
+                  onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
+                  placeholder="Es. 123456"
+                  style={{
+                    width: "100%",
+                    padding: "13px 14px",
+                    backgroundColor: colors.inputBg,
+                    border: `1px solid ${colors.inputBorder}`,
+                    borderRadius: "12px",
+                    color: colors.text,
+                    boxSizing: "border-box",
+                    outline: "none",
+                    fontSize: "15px",
+                    fontFamily: appFont
+                  }}
+                />
+              </div>
+            </>
+          )}
 
           {authError && (
             <div
@@ -1551,9 +1666,21 @@ function App() {
             </div>
           )}
 
-          <button onClick={handleAuthSubmit} style={primaryButtonStyle(true)}>
-            {authSubmitting ? "Invio in corso..." : "Inizia il giro"}
-          </button>
+          {authStep === "request" ? (
+            <button onClick={handleAuthSubmit} style={primaryButtonStyle(true)}>
+              {authSubmitting ? "Invio in corso..." : "Inizia il giro"}
+            </button>
+          ) : (
+            <>
+              <button onClick={handleVerifyOtp} style={primaryButtonStyle(true)}>
+                {authSubmitting ? "Verifica in corso..." : "Entra nel giro"}
+              </button>
+
+              <button onClick={handleResendOtp} style={secondaryButtonStyle}>
+                Invia di nuovo il codice
+              </button>
+            </>
+          )}
 
           <div
             style={{
@@ -1564,7 +1691,7 @@ function App() {
               textAlign: "center"
             }}
           >
-            Riceverai un link di accesso solo la prima volta e poi resterai connesso
+            Riceverai un codice di accesso solo la prima volta e poi resterai connesso
           </div>
         </div>
       </div>
