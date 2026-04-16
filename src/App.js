@@ -1700,8 +1700,8 @@ function App() {
 
   const homeHeaderStyle = {
     display: "grid",
-    gridTemplateColumns: `${HEADER_CIRCLE_SIZE} 1fr auto`,
-    alignItems: "center",
+    gridTemplateColumns: `${HEADER_CIRCLE_SIZE} 1fr auto ${HEADER_CIRCLE_SIZE}`,
+    alignItems: "start",
     columnGap: "12px",
     paddingLeft: HEADER_HORIZONTAL_INSET,
     paddingRight: HEADER_HORIZONTAL_INSET,
@@ -1781,11 +1781,8 @@ function App() {
   };
 
   const homeHeaderInfoWrapStyle = {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "flex-end",
-    gap: "12px",
-    minWidth: 0
+    minWidth: 0,
+    justifySelf: "end"
   };
 
   const homeHeaderIdentityStyle = {
@@ -2657,20 +2654,20 @@ function App() {
               </button>
             </div>
           </div>
-
-          <button
-            onClick={() => setShowAppMenu(true)}
-            style={headerCircleButtonStyle({ fontSize: "18px" })}
-            title="Apri menu"
-            aria-label="Apri menu"
-          >
-            <span
-              style={{ fontSize: "18px", lineHeight: 1, transform: "translateY(-1px)" }}
-            >
-              ≡
-            </span>
-          </button>
         </div>
+
+        <button
+          onClick={() => setShowAppMenu(true)}
+          style={headerCircleButtonStyle({ fontSize: "18px" })}
+          title="Apri menu"
+          aria-label="Apri menu"
+        >
+          <span
+            style={{ fontSize: "18px", lineHeight: 1, transform: "translateY(-1px)" }}
+          >
+            ≡
+          </span>
+        </button>
       </div>
 
       <h2 style={homeSectionTitleStyle}>Preferiti</h2>
