@@ -1916,7 +1916,7 @@ function App() {
 
   const roundSetupInputCardStyle = {
     ...cardStyle,
-    padding: "14px",
+    padding: "16px",
     borderRadius: "18px",
     boxShadow: isLight
       ? "0 4px 14px rgba(17, 24, 39, 0.03)"
