@@ -1751,13 +1751,24 @@ function App() {
     fontSize
   });
 
+  const headerButtonSlotBaseStyle = {
+    width: HEADER_CIRCLE_SIZE,
+    height: HEADER_CIRCLE_SIZE,
+    display: "flex",
+    alignItems: "center"
+  };
+
   const headerLeftButtonWrapStyle = {
+    ...headerButtonSlotBaseStyle,
     justifySelf: "start",
+    justifyContent: "flex-start",
     alignSelf: "center"
   };
 
   const headerRightButtonWrapStyle = {
+    ...headerButtonSlotBaseStyle,
     justifySelf: "end",
+    justifyContent: "flex-end",
     alignSelf: "center"
   };
 
@@ -1988,38 +1999,36 @@ function App() {
         }}
       >
         <div style={centeredHeaderStyle}>
-          <button
-            onClick={closeCourse}
-            style={{
-              ...headerCircleButtonStyle(),
-              ...headerLeftButtonWrapStyle
-            }}
-            aria-label="Torna indietro"
-          >
-            <span
-              style={{ fontSize: "21px", lineHeight: 1, transform: "translateX(-1px)" }}
+          <div style={headerLeftButtonWrapStyle}>
+            <button
+              onClick={closeCourse}
+              style={headerCircleButtonStyle()}
+              aria-label="Torna indietro"
             >
-              ←
-            </span>
-          </button>
+              <span
+                style={{ fontSize: "21px", lineHeight: 1, transform: "translateX(-1px)" }}
+              >
+                ←
+              </span>
+            </button>
+          </div>
 
           <div style={headerTitleTextStyle}>Imposta il giro</div>
 
-          <button
-            onClick={() => setShowAppMenu(true)}
-            style={{
-              ...headerCircleButtonStyle({ fontSize: "18px" }),
-              ...headerRightButtonWrapStyle
-            }}
-            title="Apri menu"
-            aria-label="Apri menu"
-          >
-            <span
-              style={{ fontSize: "18px", lineHeight: 1, transform: "translateY(-1px)" }}
+          <div style={headerRightButtonWrapStyle}>
+            <button
+              onClick={() => setShowAppMenu(true)}
+              style={headerCircleButtonStyle({ fontSize: "18px" })}
+              title="Apri menu"
+              aria-label="Apri menu"
             >
-              ≡
-            </span>
-          </button>
+              <span
+                style={{ fontSize: "18px", lineHeight: 1, transform: "translateY(-1px)" }}
+              >
+                ≡
+              </span>
+            </button>
+          </div>
         </div>
 
         <div style={roundSetupTopCardStyle}>
@@ -2156,38 +2165,36 @@ function App() {
         }}
       >
         <div style={centeredHeaderStyle}>
-          <button
-            onClick={closeCourse}
-            style={{
-              ...headerCircleButtonStyle(),
-              ...headerLeftButtonWrapStyle
-            }}
-            aria-label="Torna alla home"
-          >
-            <span
-              style={{ fontSize: "21px", lineHeight: 1, transform: "translateX(-1px)" }}
+          <div style={headerLeftButtonWrapStyle}>
+            <button
+              onClick={closeCourse}
+              style={headerCircleButtonStyle()}
+              aria-label="Torna alla home"
             >
-              ←
-            </span>
-          </button>
+              <span
+                style={{ fontSize: "21px", lineHeight: 1, transform: "translateX(-1px)" }}
+              >
+                ←
+              </span>
+            </button>
+          </div>
 
           <div style={headerTitleTextStyle}>Scorecard</div>
 
-          <button
-            onClick={() => setShowAppMenu(true)}
-            style={{
-              ...headerCircleButtonStyle({ fontSize: "18px" }),
-              ...headerRightButtonWrapStyle
-            }}
-            title="Apri menu"
-            aria-label="Apri menu"
-          >
-            <span
-              style={{ fontSize: "18px", lineHeight: 1, transform: "translateY(-1px)" }}
+          <div style={headerRightButtonWrapStyle}>
+            <button
+              onClick={() => setShowAppMenu(true)}
+              style={headerCircleButtonStyle({ fontSize: "18px" })}
+              title="Apri menu"
+              aria-label="Apri menu"
             >
-              ≡
-            </span>
-          </button>
+              <span
+                style={{ fontSize: "18px", lineHeight: 1, transform: "translateY(-1px)" }}
+              >
+                ≡
+              </span>
+            </button>
+          </div>
         </div>
 
         <div style={scorecardTopCardStyle}>
@@ -2629,21 +2636,20 @@ function App() {
       }}
     >
       <div style={homeHeaderStyle}>
-        <button
-          onClick={openDialog}
-          style={{
-            ...headerCircleButtonStyle({
+        <div style={headerLeftButtonWrapStyle}>
+          <button
+            onClick={openDialog}
+            style={headerCircleButtonStyle({
               borderColor: colors.green,
               fontSize: "24px"
-            }),
-            ...headerLeftButtonWrapStyle
-          }}
-          aria-label="Aggiungi campo"
-        >
-          <span style={{ fontSize: "24px", lineHeight: 1, transform: "translateY(-1px)" }}>
-            +
-          </span>
-        </button>
+            })}
+            aria-label="Aggiungi campo"
+          >
+            <span style={{ fontSize: "24px", lineHeight: 1, transform: "translateY(-1px)" }}>
+              +
+            </span>
+          </button>
+        </div>
 
         <div aria-hidden="true" />
 
@@ -2681,21 +2687,20 @@ function App() {
           </div>
         </div>
 
-        <button
-          onClick={() => setShowAppMenu(true)}
-          style={{
-            ...headerCircleButtonStyle({ fontSize: "18px" }),
-            ...headerRightButtonWrapStyle
-          }}
-          title="Apri menu"
-          aria-label="Apri menu"
-        >
-          <span
-            style={{ fontSize: "18px", lineHeight: 1, transform: "translateY(-1px)" }}
+        <div style={headerRightButtonWrapStyle}>
+          <button
+            onClick={() => setShowAppMenu(true)}
+            style={headerCircleButtonStyle({ fontSize: "18px" })}
+            title="Apri menu"
+            aria-label="Apri menu"
           >
-            ≡
-          </span>
-        </button>
+            <span
+              style={{ fontSize: "18px", lineHeight: 1, transform: "translateY(-1px)" }}
+            >
+              ≡
+            </span>
+          </button>
+        </div>
       </div>
 
       <h2 style={homeSectionTitleStyle}>Preferiti</h2>
