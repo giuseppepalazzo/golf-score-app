@@ -336,7 +336,7 @@ function App() {
     setSearchEmptyHintPulse(true);
     const timeoutId = window.setTimeout(() => {
       setSearchEmptyHintPulse(false);
-    }, 1400);
+    }, 700);
 
     return () => {
       window.clearTimeout(timeoutId);
@@ -1864,6 +1864,34 @@ function App() {
     marginRight: "2px"
   };
 
+  const homeSearchEmptyStateStyle = {
+    marginTop: "12px",
+    padding: "12px 4px 2px 4px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: "12px"
+  };
+
+  const homeSearchEmptyTextStyle = {
+    color: colors.subtext,
+    lineHeight: 1.45,
+    minWidth: 0
+  };
+
+  const homeSearchEmptyCtaStyle = {
+    border: "none",
+    background: "transparent",
+    color: colors.green,
+    fontSize: "14px",
+    fontWeight: 600,
+    fontFamily: appFont,
+    cursor: "pointer",
+    padding: 0,
+    whiteSpace: "nowrap",
+    flexShrink: 0
+  };
+
   const homePrimarySectionCardStyle = {
     ...homeSectionCardStyle,
     paddingTop: "6px",
@@ -2783,15 +2811,14 @@ function App() {
             {filteredCourses.length > 0 ? (
               filteredCourses.map((course) => renderCourseRow(course))
             ) : (
-              <div
-                style={{
-                  color: colors.subtext,
-                  lineHeight: 1.5,
-                  paddingTop: "8px"
-                }}
-              >
-                <div>Campo non trovato</div>
-                <div>Aggiungilo con +</div>
+              <div style={homeSearchEmptyStateStyle}>
+                <div style={homeSearchEmptyTextStyle}>
+                  <div>Campo non trovato</div>
+                </div>
+
+                <button onClick={openDialog} style={homeSearchEmptyCtaStyle}>
+                  Aggiungi campo
+                </button>
               </div>
             )}
           </div>
