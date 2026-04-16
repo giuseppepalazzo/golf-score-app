@@ -95,7 +95,7 @@ function App() {
   const [hcpDraft, setHcpDraft] = useState("");
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [showLatestAdded, setShowLatestAdded] = useState(false);
+  const [activeCourseCardId, setActiveCourseCardId] = useState(null);
   const [showAppMenu, setShowAppMenu] = useState(false);
   const [showGlobalRoundsHistory, setShowGlobalRoundsHistory] = useState(false);
   const [session, setSession] = useState(null);
@@ -319,10 +319,6 @@ function App() {
   }, [session]);
 
   const favorites = savedCourses.filter((course) => course.favorite);
-  const nearbyCourses = savedCourses.slice(0, 5);
-  const latestAddedCourses = [...savedCourses]
-    .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
-    .slice(0, 5);
 
   const filteredCourses = savedCourses.filter((course) =>
     course.name.toLowerCase().includes(searchQuery.trim().toLowerCase())
@@ -1063,17 +1059,6 @@ function App() {
         <div
           style={{
             padding: "14px 0",
-            borderBottom: `1px solid ${colors.border}`,
-            color: colors.subtext,
-            fontSize: "13px"
-          }}
-        >
-          {session?.user?.email || "Non autenticato"}
-        </div>
-
-        <div
-          style={{
-            padding: "14px 0",
             borderBottom: `1px solid ${colors.border}`
           }}
         >
@@ -1120,15 +1105,6 @@ function App() {
               Scuro
             </button>
           </div>
-        </div>
-
-        <div
-          style={{
-            padding: "14px 0",
-            color: colors.subtext
-          }}
-        >
-          Usa la mia posizione
         </div>
 
         <button
@@ -1700,14 +1676,14 @@ function App() {
 
   const homeHeaderStyle = {
     display: "grid",
-    gridTemplateColumns: `${HEADER_CIRCLE_SIZE} 1fr auto ${HEADER_CIRCLE_SIZE}`,
-    alignItems: "start",
+    gridTemplateColumns: `${HEADER_CIRCLE_SIZE} 1fr ${HEADER_CIRCLE_SIZE}`,
+    alignItems: "center",
     columnGap: "12px",
     paddingLeft: HEADER_HORIZONTAL_INSET,
     paddingRight: HEADER_HORIZONTAL_INSET,
     paddingTop: "10px",
     paddingBottom: "12px",
-    marginBottom: "18px"
+    marginBottom: "14px"
   };
 
   const centeredHeaderStyle = {
@@ -1801,19 +1777,39 @@ function App() {
     textAlign: "center"
   };
 
-  const homeHeaderInfoWrapStyle = {
+  const homeIdentityRowStyle = {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "flex-start",
+    flexWrap: "wrap",
+    gap: "10px",
     minWidth: 0,
-    justifySelf: "end"
+    marginLeft: HOME_SECTION_INSET,
+    marginRight: HOME_SECTION_INSET,
+    marginBottom: "26px"
   };
 
   const homeHeaderIdentityStyle = {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-end",
-    justifyContent: "center",
     minWidth: 0,
-    textAlign: "right",
-    lineHeight: 1.15
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: "10px",
+    justifyContent: "center",
+    lineHeight: 1.1
+  };
+
+  const homeHcpPillStyle = {
+    border: `1px solid ${colors.pillBorder}`,
+    backgroundColor: colors.pillBg,
+    color: colors.subtext,
+    borderRadius: "999px",
+    padding: "6px 11px",
+    fontSize: "12px",
+    fontFamily: appFont,
+    cursor: "pointer",
+    lineHeight: 1.2,
+    whiteSpace: "nowrap"
   };
 
   const cardStyle = {
@@ -1831,8 +1827,8 @@ function App() {
 
   const homeSectionTitleStyle = {
     ...titleStyle,
-    marginTop: "22px",
-    marginBottom: "12px",
+    marginTop: "28px",
+    marginBottom: "14px",
     marginLeft: HOME_SECTION_INSET,
     marginRight: HOME_SECTION_INSET
   };
@@ -1847,6 +1843,15 @@ function App() {
     padding: "12px 14px",
     marginLeft: "2px",
     marginRight: "2px"
+  };
+
+  const homePrimarySectionCardStyle = {
+    ...homeSectionCardStyle,
+    paddingTop: "6px",
+    paddingBottom: "6px",
+    boxShadow: isLight
+      ? "0 8px 24px rgba(17, 24, 39, 0.04)"
+      : "0 10px 24px rgba(0, 0, 0, 0.16)"
   };
 
   const scorecardTopCardStyle = {
@@ -1939,6 +1944,12 @@ function App() {
     <div
       key={course.id}
       onClick={() => prepareRoundSetup(course)}
+      onMouseDown={() => setActiveCourseCardId(course.id)}
+      onMouseUp={() => setActiveCourseCardId(null)}
+      onMouseLeave={() => setActiveCourseCardId(null)}
+      onTouchStart={() => setActiveCourseCardId(course.id)}
+      onTouchEnd={() => setActiveCourseCardId(null)}
+      onTouchCancel={() => setActiveCourseCardId(null)}
       style={{
         padding: `14px ${CARD_ROW_HORIZONTAL_PADDING}`,
         borderBottom: showDivider ? `1px solid ${colors.border}` : "none",
@@ -1947,7 +1958,12 @@ function App() {
         alignItems: "center",
         gap: "12px",
         fontFamily: appFont,
-        cursor: "pointer"
+        cursor: "pointer",
+        borderRadius: "14px",
+        backgroundColor:
+          activeCourseCardId === course.id ? colors.cardSecondary : "transparent",
+        transform: activeCourseCardId === course.id ? "scale(0.992)" : "scale(1)",
+        transition: "background-color 0.18s ease, transform 0.18s ease"
       }}
     >
       <div style={{ flex: 1 }}>
@@ -2653,40 +2669,6 @@ function App() {
 
         <div aria-hidden="true" />
 
-        <div style={homeHeaderInfoWrapStyle}>
-          <div style={homeHeaderIdentityStyle}>
-            <div
-              style={{
-                fontSize: "16px",
-                fontWeight: 700,
-                color: colors.text
-              }}
-            >
-              {userProfile.firstName}
-            </div>
-            <div
-              style={{ marginTop: "5px" }}
-            >
-              <button
-                onClick={openHcpEditor}
-                style={{
-                  border: `1px solid ${colors.pillBorder}`,
-                  backgroundColor: colors.pillBg,
-                  color: colors.subtext,
-                  borderRadius: "999px",
-                  padding: "5px 10px",
-                  fontSize: "12px",
-                  fontFamily: appFont,
-                  cursor: "pointer",
-                  lineHeight: 1.2
-                }}
-              >
-                HCP {userProfile.hcp}
-              </button>
-            </div>
-          </div>
-        </div>
-
         <div style={headerRightButtonWrapStyle}>
           <button
             onClick={() => setShowAppMenu(true)}
@@ -2703,26 +2685,43 @@ function App() {
         </div>
       </div>
 
+      <div style={homeIdentityRowStyle}>
+        <div style={homeHeaderIdentityStyle}>
+          <div
+            style={{
+              fontSize: "24px",
+              fontWeight: 700,
+              color: colors.text,
+              letterSpacing: "-0.01em",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap"
+            }}
+            title={userProfile.firstName}
+          >
+            {userProfile.firstName}
+          </div>
+        </div>
+
+        <button onClick={openHcpEditor} style={homeHcpPillStyle}>
+          HCP {userProfile.hcp}
+        </button>
+      </div>
+
       <h2 style={homeSectionTitleStyle}>Preferiti</h2>
-      <div style={homeSectionCardStyle}>
+      <div style={homePrimarySectionCardStyle}>
         {favorites.length === 0 ? (
-          <div style={{ color: colors.subtext }}>
-            Usa ⛳️ per salvare i campi
+          <div
+            style={{
+              color: colors.subtext,
+              lineHeight: 1.6,
+              padding: `14px ${CARD_ROW_HORIZONTAL_PADDING}`
+            }}
+          >
+            Nessun preferito salvato. Usa il pulsante + per aggiungere un campo e ritrovarlo subito qui.
           </div>
         ) : (
           favorites.map((course) => renderCourseRow(course, { showDivider: false }))
-        )}
-      </div>
-
-      <h2 style={homeSectionTitleStyle}>Vicino a te</h2>
-      <div style={homeSectionCardStyle}>
-        {nearbyCourses.length === 0 ? (
-          <div style={{ color: colors.subtext, lineHeight: 1.5 }}>
-            Quando aggiungerai i primi campi, li vedrai qui. Più avanti collegheremo
-            anche la geolocalizzazione.
-          </div>
-        ) : (
-          nearbyCourses.map((course) => renderCourseRow(course, { showDivider: false }))
         )}
       </div>
 
@@ -2736,7 +2735,7 @@ function App() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Cerca un campo"
+            placeholder="Cerca o aggiungi un campo"
             style={{
               flex: 1,
               background: "transparent",
@@ -2761,49 +2760,12 @@ function App() {
                   paddingTop: "8px"
                 }}
               >
-                Campo non trovato. Usa il pulsante + per aggiungerlo.
+                Campo non trovato? Aggiungilo
               </div>
             )}
           </div>
         )}
       </div>
-
-      <div
-        onClick={() => setShowLatestAdded((prev) => !prev)}
-        style={{
-          ...homeSectionTitleStyle,
-          display: "inline-flex",
-          alignItems: "center",
-          gap: "8px",
-          cursor: "pointer",
-          marginBottom: "12px"
-        }}
-      >
-        <span>Ultimi aggiunti</span>
-        <span
-          style={{
-            color: colors.subtext,
-            fontSize: "18px",
-            lineHeight: 1,
-            transform: showLatestAdded ? "rotate(180deg)" : "rotate(0deg)",
-            transition: "transform 0.2s ease"
-          }}
-        >
-          ▾
-        </span>
-      </div>
-
-      {showLatestAdded && (
-        <div style={homeSectionCardStyle}>
-          {latestAddedCourses.length === 0 ? (
-            <div style={{ color: colors.subtext }}>
-              Nessun campo aggiunto di recente.
-            </div>
-          ) : (
-            latestAddedCourses.map((course) => renderCourseRow(course))
-          )}
-        </div>
-      )}
 
       {appMenuModal}
       {globalRoundsHistoryModal}
