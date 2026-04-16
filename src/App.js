@@ -96,6 +96,7 @@ function App() {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCourseCardId, setActiveCourseCardId] = useState(null);
+  const [searchEmptyHintPulse, setSearchEmptyHintPulse] = useState(false);
   const [showAppMenu, setShowAppMenu] = useState(false);
   const [showGlobalRoundsHistory, setShowGlobalRoundsHistory] = useState(false);
   const [session, setSession] = useState(null);
@@ -323,6 +324,24 @@ function App() {
   const filteredCourses = savedCourses.filter((course) =>
     course.name.toLowerCase().includes(searchQuery.trim().toLowerCase())
   );
+  const showSearchEmptyState =
+    searchQuery.trim() !== "" && filteredCourses.length === 0;
+
+  useEffect(() => {
+    if (!showSearchEmptyState) {
+      setSearchEmptyHintPulse(false);
+      return;
+    }
+
+    setSearchEmptyHintPulse(true);
+    const timeoutId = window.setTimeout(() => {
+      setSearchEmptyHintPulse(false);
+    }, 1400);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [showSearchEmptyState]);
 
   const currentHole =
     holesData[currentHoleIndex] || { hole: 1, par: 4, strokeIndex: "" };
@@ -1897,6 +1916,8 @@ function App() {
 
   const roundSetupInputCardStyle = {
     ...cardStyle,
+    padding: "14px",
+    borderRadius: "18px",
     boxShadow: isLight
       ? "0 4px 14px rgba(17, 24, 39, 0.03)"
       : "0 6px 16px rgba(0, 0, 0, 0.12)"
@@ -2075,7 +2096,7 @@ function App() {
                 competitionName: e.target.value
               }))
             }
-            placeholder="Es. Stableford sabato, Gara sociale, Allenamento"
+            placeholder="Es. Stableford sabato, Allenamento"
             style={{
               width: "100%",
               padding: "13px 14px",
@@ -2655,10 +2676,19 @@ function App() {
         <div style={headerLeftButtonWrapStyle}>
           <button
             onClick={openDialog}
-            style={headerCircleButtonStyle({
-              borderColor: colors.green,
-              fontSize: "24px"
-            })}
+            style={{
+              ...headerCircleButtonStyle({
+                borderColor: colors.green,
+                fontSize: "24px"
+              }),
+              boxShadow: searchEmptyHintPulse
+                ? isLight
+                  ? "0 0 0 6px rgba(46, 204, 113, 0.10), 0 8px 20px rgba(17, 24, 39, 0.08)"
+                  : "0 0 0 6px rgba(46, 204, 113, 0.12), 0 10px 24px rgba(0, 0, 0, 0.34)"
+                : headerCircleButtonBaseStyle.boxShadow,
+              transform: searchEmptyHintPulse ? "scale(1.04)" : "scale(1)",
+              transition: "transform 0.35s ease, box-shadow 0.35s ease"
+            }}
             aria-label="Aggiungi campo"
           >
             <span style={{ fontSize: "24px", lineHeight: 1, transform: "translateY(-1px)" }}>
@@ -2760,7 +2790,8 @@ function App() {
                   paddingTop: "8px"
                 }}
               >
-                Campo non trovato? Aggiungilo
+                <div>Campo non trovato</div>
+                <div>Aggiungilo con +</div>
               </div>
             )}
           </div>
