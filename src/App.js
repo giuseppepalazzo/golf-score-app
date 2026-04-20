@@ -111,7 +111,9 @@ function App() {
   const [hcpEditorTouchStartY, setHcpEditorTouchStartY] = useState(null);
   const [pendingHcpEditorOpen, setPendingHcpEditorOpen] = useState(false);
   const [showGlobalRoundsHistory, setShowGlobalRoundsHistory] = useState(false);
+  const [globalRoundsHistoryTouchStartY, setGlobalRoundsHistoryTouchStartY] = useState(null);
   const [selectedHistoryRound, setSelectedHistoryRound] = useState(null);
+  const [historyRoundDetailTouchStartY, setHistoryRoundDetailTouchStartY] = useState(null);
   const [showPrivacyScreen, setShowPrivacyScreen] = useState(false);
   const [session, setSession] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -205,6 +207,22 @@ function App() {
       border: `1px solid ${colors.borderStrong}`,
       backgroundColor: colors.inputBg,
       color: colors.text
+    }),
+    [colors]
+  );
+
+  const modalCloseButtonStyle = useMemo(
+    () => ({
+      marginTop: "12px",
+      width: "100%",
+      padding: "13px",
+      backgroundColor: colors.cardSecondary,
+      border: `1px solid ${colors.border}`,
+      color: colors.text,
+      borderRadius: "12px",
+      cursor: "pointer",
+      fontFamily: appFont,
+      fontSize: "15px"
     }),
     [colors]
   );
@@ -917,6 +935,16 @@ function App() {
     setShowGlobalRoundsHistory(true);
   };
 
+  const closeGlobalRoundsHistory = () => {
+    setGlobalRoundsHistoryTouchStartY(null);
+    setShowGlobalRoundsHistory(false);
+  };
+
+  const closeHistoryRoundDetail = () => {
+    setHistoryRoundDetailTouchStartY(null);
+    setSelectedHistoryRound(null);
+  };
+
   const openPrivacyScreen = () => {
     closeAppMenu();
     window.setTimeout(() => {
@@ -1204,6 +1232,38 @@ function App() {
     }
   };
 
+  const handleGlobalRoundsHistoryTouchStart = (event) => {
+    setGlobalRoundsHistoryTouchStartY(event.touches[0]?.clientY ?? null);
+  };
+
+  const handleGlobalRoundsHistoryTouchEnd = (event) => {
+    if (globalRoundsHistoryTouchStartY === null) return;
+
+    const touchEndY =
+      event.changedTouches[0]?.clientY ?? globalRoundsHistoryTouchStartY;
+    if (touchEndY - globalRoundsHistoryTouchStartY > 70) {
+      closeGlobalRoundsHistory();
+    } else {
+      setGlobalRoundsHistoryTouchStartY(null);
+    }
+  };
+
+  const handleHistoryRoundDetailTouchStart = (event) => {
+    setHistoryRoundDetailTouchStartY(event.touches[0]?.clientY ?? null);
+  };
+
+  const handleHistoryRoundDetailTouchEnd = (event) => {
+    if (historyRoundDetailTouchStartY === null) return;
+
+    const touchEndY =
+      event.changedTouches[0]?.clientY ?? historyRoundDetailTouchStartY;
+    if (touchEndY - historyRoundDetailTouchStartY > 70) {
+      closeHistoryRoundDetail();
+    } else {
+      setHistoryRoundDetailTouchStartY(null);
+    }
+  };
+
   useEffect(() => {
     if (!pendingHcpEditorOpen || showAppMenu || appMenuClosing) return;
 
@@ -1454,6 +1514,10 @@ function App() {
             Esci
           </button>
         </div>
+
+        <button onClick={closeAppMenu} style={modalCloseButtonStyle}>
+          Chiudi
+        </button>
       </div>
     </div>
   ) : null;
@@ -1593,13 +1657,17 @@ function App() {
         >
           Salva
         </button>
+
+        <button onClick={closeHcpEditor} style={modalCloseButtonStyle}>
+          Chiudi
+        </button>
       </div>
     </div>
   ) : null;
 
   const globalRoundsHistoryModal = showGlobalRoundsHistory ? (
     <div
-      onClick={() => setShowGlobalRoundsHistory(false)}
+      onClick={closeGlobalRoundsHistory}
       style={{
         position: "fixed",
         inset: 0,
@@ -1614,6 +1682,8 @@ function App() {
     >
       <div
         onClick={(e) => e.stopPropagation()}
+        onTouchStart={handleGlobalRoundsHistoryTouchStart}
+        onTouchEnd={handleGlobalRoundsHistoryTouchEnd}
         style={{
           backgroundColor: colors.card,
           padding: "18px",
@@ -1707,28 +1777,6 @@ function App() {
                   style={{
                     padding: "8px 12px",
                     borderRadius: "999px",
-                    backgroundColor: colors.pillBg,
-                    border: `1px solid ${colors.pillBorder}`,
-                    fontSize: "13px"
-                  }}
-                >
-                  Lordo {round.grossTotal}
-                </div>
-                <div
-                  style={{
-                    padding: "8px 12px",
-                    borderRadius: "999px",
-                    backgroundColor: colors.pillBg,
-                    border: `1px solid ${colors.pillBorder}`,
-                    fontSize: "13px"
-                  }}
-                >
-                  Netto {round.netTotal}
-                </div>
-                <div
-                  style={{
-                    padding: "8px 12px",
-                    borderRadius: "999px",
                     backgroundColor: colors.greenDark,
                     border: `1px solid ${colors.greenBorder}`,
                     color: colors.green,
@@ -1742,21 +1790,7 @@ function App() {
           ))
         )}
 
-        <button
-          onClick={() => setShowGlobalRoundsHistory(false)}
-          style={{
-            marginTop: "10px",
-            width: "100%",
-            padding: "13px",
-            backgroundColor: colors.cardSecondary,
-            border: `1px solid ${colors.border}`,
-            color: colors.text,
-            borderRadius: "12px",
-            cursor: "pointer",
-            fontFamily: appFont,
-            fontSize: "15px"
-          }}
-        >
+        <button onClick={closeGlobalRoundsHistory} style={modalCloseButtonStyle}>
           Chiudi
         </button>
       </div>
@@ -1765,7 +1799,7 @@ function App() {
 
   const historyRoundDetailModal = selectedHistoryRound ? (
     <div
-      onClick={() => setSelectedHistoryRound(null)}
+      onClick={closeHistoryRoundDetail}
       style={{
         position: "fixed",
         inset: 0,
@@ -1780,6 +1814,8 @@ function App() {
     >
       <div
         onClick={(e) => e.stopPropagation()}
+        onTouchStart={handleHistoryRoundDetailTouchStart}
+        onTouchEnd={handleHistoryRoundDetailTouchEnd}
         style={{
           backgroundColor: colors.card,
           padding: "18px",
@@ -1914,21 +1950,7 @@ function App() {
           </table>
         </div>
 
-        <button
-          onClick={() => setSelectedHistoryRound(null)}
-          style={{
-            marginTop: "12px",
-            width: "100%",
-            padding: "13px",
-            backgroundColor: colors.cardSecondary,
-            border: `1px solid ${colors.border}`,
-            color: colors.text,
-            borderRadius: "12px",
-            cursor: "pointer",
-            fontFamily: appFont,
-            fontSize: "15px"
-          }}
-        >
+        <button onClick={closeHistoryRoundDetail} style={modalCloseButtonStyle}>
           Chiudi
         </button>
       </div>
