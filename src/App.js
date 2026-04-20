@@ -293,34 +293,23 @@ function App() {
   useEffect(() => {
     if (!hasActiveOverlay) return undefined;
 
-    const scrollY = window.scrollY;
     const previousBodyOverflow = document.body.style.overflow;
-    const previousBodyPosition = document.body.style.position;
-    const previousBodyTop = document.body.style.top;
-    const previousBodyWidth = document.body.style.width;
     const previousBodyTouchAction = document.body.style.touchAction;
     const previousBodyOverscrollBehavior = document.body.style.overscrollBehavior;
     const previousDocumentOverscrollBehavior =
       document.documentElement.style.overscrollBehavior;
 
     document.body.style.overflow = "hidden";
-    document.body.style.position = "fixed";
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.width = "100%";
     document.body.style.touchAction = "none";
     document.body.style.overscrollBehavior = "none";
     document.documentElement.style.overscrollBehavior = "none";
 
     return () => {
       document.body.style.overflow = previousBodyOverflow;
-      document.body.style.position = previousBodyPosition;
-      document.body.style.top = previousBodyTop;
-      document.body.style.width = previousBodyWidth;
       document.body.style.touchAction = previousBodyTouchAction;
       document.body.style.overscrollBehavior = previousBodyOverscrollBehavior;
       document.documentElement.style.overscrollBehavior =
         previousDocumentOverscrollBehavior;
-      window.scrollTo(0, scrollY);
     };
   }, [hasActiveOverlay]);
 
