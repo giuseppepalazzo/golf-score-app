@@ -196,7 +196,7 @@ function App() {
       greenBorder: isLight ? "#b8e7c8" : "#244233",
       greenManualBg: isLight ? "#e6f8ec" : "#1b3022",
       greenManualBorder: isLight ? "#7cdb9f" : "#52d88b",
-      overlay: "rgba(0,0,0,0.62)"
+      overlay: isLight ? "rgba(245, 245, 243, 0.58)" : "rgba(0, 0, 0, 0.46)"
     }),
     [isLight]
   );
