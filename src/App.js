@@ -1793,7 +1793,7 @@ function App() {
                     fontSize: "13px"
                   }}
                 >
-                  {round.grossTotal}
+                  L {round.grossTotal}
                 </div>
                 <div
                   style={{
@@ -1804,7 +1804,7 @@ function App() {
                     fontSize: "13px"
                   }}
                 >
-                  {round.netTotal}
+                  N {round.netTotal}
                 </div>
                 <div
                   style={{
@@ -1816,7 +1816,7 @@ function App() {
                     fontSize: "13px"
                   }}
                 >
-                  {round.stablefordTotal}
+                  S {round.stablefordTotal}
                 </div>
               </div>
             </div>
