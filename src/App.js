@@ -1644,7 +1644,10 @@ function App() {
           savedRounds.map((round) => (
             <div
               key={round.id}
-              onClick={() => setSelectedHistoryRound(round)}
+              onClick={() => {
+                setShowGlobalRoundsHistory(false);
+                setSelectedHistoryRound(round);
+              }}
               style={{
                 backgroundColor: colors.card,
                 border: `1px solid ${colors.border}`,
