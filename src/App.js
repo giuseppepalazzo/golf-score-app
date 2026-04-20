@@ -1697,6 +1697,17 @@ function App() {
           fontFamily: appFont
         }}
       >
+        <div
+          style={{
+            width: "38px",
+            height: "4px",
+            borderRadius: "999px",
+            backgroundColor: colors.borderStrong,
+            opacity: 0.7,
+            margin: "0 auto 12px auto"
+          }}
+        />
+
         {savedRounds.length === 0 ? (
           <div
             style={{
@@ -1829,6 +1840,17 @@ function App() {
           fontFamily: appFont
         }}
       >
+        <div
+          style={{
+            width: "38px",
+            height: "4px",
+            borderRadius: "999px",
+            backgroundColor: colors.borderStrong,
+            opacity: 0.7,
+            margin: "0 auto 12px auto"
+          }}
+        />
+
         <div style={{ fontSize: "18px", fontWeight: 700 }}>
           {selectedHistoryRound.savedName}
         </div>
