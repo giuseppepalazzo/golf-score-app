@@ -106,7 +106,6 @@ function App() {
   const [showAppMenu, setShowAppMenu] = useState(false);
   const [appMenuClosing, setAppMenuClosing] = useState(false);
   const [appMenuTouchStartY, setAppMenuTouchStartY] = useState(null);
-  const [hcpEditorOpening, setHcpEditorOpening] = useState(false);
   const [hcpEditorClosing, setHcpEditorClosing] = useState(false);
   const [hcpEditorTouchStartY, setHcpEditorTouchStartY] = useState(null);
   const [pendingHcpEditorOpen, setPendingHcpEditorOpen] = useState(false);
@@ -196,7 +195,7 @@ function App() {
       greenBorder: isLight ? "#b8e7c8" : "#244233",
       greenManualBg: isLight ? "#e6f8ec" : "#1b3022",
       greenManualBorder: isLight ? "#7cdb9f" : "#52d88b",
-      overlay: isLight ? "rgba(245, 245, 243, 0.58)" : "rgba(0, 0, 0, 0.46)"
+      overlay: isLight ? "rgba(245, 245, 243, 0.64)" : "rgba(0, 0, 0, 0.52)"
     }),
     [isLight]
   );
@@ -1029,7 +1028,6 @@ function App() {
     }
 
     setHcpEditorClosing(false);
-    setHcpEditorOpening(true);
     setShowHcpEditor(true);
   };
 
@@ -1228,7 +1226,6 @@ function App() {
     }
 
     setHcpEditorClosing(true);
-    setHcpEditorOpening(false);
     setHcpEditorTouchStartY(null);
 
     window.setTimeout(() => {
@@ -1342,7 +1339,6 @@ function App() {
 
     const timeoutId = window.setTimeout(() => {
       setHcpEditorClosing(false);
-      setHcpEditorOpening(false);
       setShowHcpEditor(true);
       setPendingHcpEditorOpen(false);
     }, SHEET_SWAP_DELAY);
@@ -1351,18 +1347,6 @@ function App() {
       window.clearTimeout(timeoutId);
     };
   }, [pendingHcpEditorOpen, showAppMenu, appMenuClosing]);
-
-  useEffect(() => {
-    if (!showHcpEditor) return;
-
-    const frameId = window.requestAnimationFrame(() => {
-      setHcpEditorOpening(true);
-    });
-
-    return () => {
-      window.cancelAnimationFrame(frameId);
-    };
-  }, [showHcpEditor]);
 
   const appMenuModal = showAppMenu ? (
     <div
@@ -1396,7 +1380,9 @@ function App() {
             ? "translateY(18px) scale(0.985)"
             : "translateY(0) scale(1)",
           opacity: appMenuClosing ? 0 : 1,
-          transition: `transform ${SHEET_CLOSE_DURATION}ms cubic-bezier(0.4, 0, 1, 1), opacity ${SHEET_CLOSE_DURATION}ms cubic-bezier(0.4, 0, 1, 1)`,
+          transition: appMenuClosing
+            ? `transform ${SHEET_CLOSE_DURATION}ms cubic-bezier(0.4, 0, 1, 1), opacity ${SHEET_CLOSE_DURATION}ms cubic-bezier(0.4, 0, 1, 1)`
+            : "none",
           willChange: "transform, opacity",
           touchAction: "pan-y"
         }}
@@ -1609,7 +1595,7 @@ function App() {
         boxSizing: "border-box",
         zIndex: 50,
         opacity: hcpEditorClosing ? 0 : 1,
-        transition: "opacity 240ms ease-out"
+        transition: hcpEditorClosing ? "opacity 240ms ease-out" : "none"
       }}
     >
       <div
@@ -1625,14 +1611,13 @@ function App() {
           border: `1px solid ${colors.border}`,
           boxSizing: "border-box",
           fontFamily: appFont,
-          transform:
-            hcpEditorOpening && !hcpEditorClosing
-              ? "translateY(0) scale(1)"
-              : hcpEditorClosing
-                ? "translateY(18px) scale(0.985)"
-                : "translateY(18px) scale(0.985)",
+          transform: hcpEditorClosing
+            ? "translateY(18px) scale(0.985)"
+            : "translateY(0) scale(1)",
           opacity: hcpEditorClosing ? 0 : 1,
-          transition: `transform ${SHEET_OPEN_DURATION}ms cubic-bezier(0.22, 1, 0.36, 1), opacity ${SHEET_CLOSE_DURATION}ms ease-out`,
+          transition: hcpEditorClosing
+            ? `transform ${SHEET_OPEN_DURATION}ms cubic-bezier(0.22, 1, 0.36, 1), opacity ${SHEET_CLOSE_DURATION}ms ease-out`
+            : "none",
           willChange: "transform, opacity",
           touchAction: "pan-y"
         }}
