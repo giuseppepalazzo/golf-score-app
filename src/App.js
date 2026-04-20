@@ -18,6 +18,9 @@ const HEADER_CIRCLE_SIZE = "44px";
 const HEADER_CIRCLE_RADIUS = "22px";
 const CARD_FAVORITE_SIZE = "40px";
 const CARD_FAVORITE_RADIUS = "20px";
+const SHEET_CLOSE_DURATION = 220;
+const SHEET_OPEN_DURATION = 280;
+const SHEET_SWAP_DELAY = 56;
 
 const stepperButtonStyle = {
   width: "44px",
@@ -1128,7 +1131,7 @@ function App() {
     window.setTimeout(() => {
       setShowAppMenu(false);
       setAppMenuClosing(false);
-    }, 220);
+    }, SHEET_CLOSE_DURATION);
   };
 
   const handleAppMenuTouchStart = (event) => {
@@ -1169,7 +1172,7 @@ function App() {
       setHcpEditorOpening(false);
       setShowHcpEditor(true);
       setPendingHcpEditorOpen(false);
-    }, 80);
+    }, SHEET_SWAP_DELAY);
 
     return () => {
       window.clearTimeout(timeoutId);
@@ -1209,21 +1212,36 @@ function App() {
         onTouchEnd={handleAppMenuTouchEnd}
         style={{
           backgroundColor: colors.card,
-          padding: "18px",
+          padding: "16px",
           borderRadius: "18px",
           width: "100%",
-          maxWidth: "390px",
+          maxWidth: "382px",
           border: `1px solid ${colors.border}`,
           boxSizing: "border-box",
           fontFamily: appFont,
-          transform: appMenuClosing ? "translateY(28px)" : "translateY(0)",
+          transform: appMenuClosing
+            ? "translateY(18px) scale(0.985)"
+            : "translateY(0) scale(1)",
           opacity: appMenuClosing ? 0 : 1,
-          transition: "transform 220ms ease-in, opacity 220ms ease-in"
+          transition: `transform ${SHEET_CLOSE_DURATION}ms cubic-bezier(0.4, 0, 1, 1), opacity ${SHEET_CLOSE_DURATION}ms cubic-bezier(0.4, 0, 1, 1)`,
+          willChange: "transform, opacity",
+          touchAction: "pan-y"
         }}
       >
         <div
           style={{
-            paddingTop: "4px"
+            width: "38px",
+            height: "4px",
+            borderRadius: "999px",
+            backgroundColor: colors.borderStrong,
+            opacity: 0.7,
+            margin: "0 auto 12px auto"
+          }}
+        />
+
+        <div
+          style={{
+            paddingTop: "2px"
           }}
         >
           <button
@@ -1231,7 +1249,7 @@ function App() {
             style={{
               width: "100%",
               textAlign: "left",
-              padding: "14px 0",
+              padding: "12px 0",
               border: "none",
               background: "transparent",
               color: colors.text,
@@ -1248,7 +1266,7 @@ function App() {
             style={{
               width: "100%",
               textAlign: "left",
-              padding: "14px 0 4px 0",
+              padding: "12px 0 2px 0",
               border: "none",
               background: "transparent",
               color: colors.text,
@@ -1263,18 +1281,18 @@ function App() {
 
         <div
           style={{
-            paddingTop: "18px",
-            paddingBottom: "6px"
+            paddingTop: "16px",
+            paddingBottom: "4px"
           }}
         >
-          <div style={{ fontSize: "15px", marginBottom: "10px" }}>Tema</div>
+          <div style={{ fontSize: "15px", marginBottom: "8px" }}>Tema</div>
 
           <div style={{ display: "flex", gap: "8px", marginLeft: "1px" }}>
             <button
               onClick={() => setTheme("light")}
               style={{
                 flex: 1,
-                padding: "9px",
+                padding: "8px",
                 borderRadius: "10px",
                 border:
                   theme === "light"
@@ -1294,7 +1312,7 @@ function App() {
               onClick={() => setTheme("dark")}
               style={{
                 flex: 1,
-                padding: "9px",
+                padding: "8px",
                 borderRadius: "10px",
                 border:
                   theme === "dark"
@@ -1313,7 +1331,7 @@ function App() {
 
           <div
             style={{
-              marginTop: "12px",
+              marginTop: "10px",
               display: "flex",
               gap: "8px",
               marginLeft: "1px"
@@ -1322,7 +1340,7 @@ function App() {
             <button
               style={{
                 flex: 1,
-                padding: "9px",
+                padding: "8px",
                 borderRadius: "10px",
                 border: `1px solid ${colors.green}`,
                 backgroundColor: colors.greenDark,
@@ -1338,7 +1356,7 @@ function App() {
               disabled
               style={{
                 flex: 1,
-                padding: "9px",
+                padding: "8px",
                 borderRadius: "10px",
                 border: `1px solid ${colors.borderStrong}`,
                 backgroundColor: colors.inputBg,
@@ -1355,7 +1373,7 @@ function App() {
 
         <div
           style={{
-            paddingTop: "18px",
+            paddingTop: "16px",
             paddingBottom: "2px"
           }}
         >
@@ -1378,13 +1396,13 @@ function App() {
           </button>
         </div>
 
-        <div style={{ paddingTop: "32px" }}>
+        <div style={{ paddingTop: "34px" }}>
           <button
             onClick={handleLogout}
             style={{
               width: "100%",
               textAlign: "left",
-              padding: "14px 0 4px 0",
+              padding: "12px 0 2px 0",
               border: "none",
               background: "transparent",
               color: colors.text,
@@ -1396,6 +1414,145 @@ function App() {
             Esci
           </button>
         </div>
+      </div>
+    </div>
+  ) : null;
+
+  const hcpEditorModal = showHcpEditor ? (
+    <div
+      onClick={closeHcpEditor}
+      style={{
+        position: "fixed",
+        inset: 0,
+        backgroundColor: colors.overlay,
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        padding: "20px",
+        boxSizing: "border-box",
+        zIndex: 50,
+        opacity: hcpEditorClosing ? 0 : 1,
+        transition: "opacity 240ms ease-out"
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        onTouchStart={handleHcpEditorTouchStart}
+        onTouchEnd={handleHcpEditorTouchEnd}
+        style={{
+          backgroundColor: colors.card,
+          padding: "16px",
+          borderRadius: "18px",
+          width: "100%",
+          maxWidth: "382px",
+          border: `1px solid ${colors.border}`,
+          boxSizing: "border-box",
+          fontFamily: appFont,
+          transform:
+            hcpEditorOpening && !hcpEditorClosing
+              ? "translateY(0) scale(1)"
+              : hcpEditorClosing
+                ? "translateY(18px) scale(0.985)"
+                : "translateY(18px) scale(0.985)",
+          opacity: hcpEditorClosing ? 0 : 1,
+          transition: `transform ${SHEET_OPEN_DURATION}ms cubic-bezier(0.22, 1, 0.36, 1), opacity ${SHEET_CLOSE_DURATION}ms ease-out`,
+          willChange: "transform, opacity",
+          touchAction: "pan-y"
+        }}
+      >
+        <div
+          style={{
+            width: "38px",
+            height: "4px",
+            borderRadius: "999px",
+            backgroundColor: colors.borderStrong,
+            opacity: 0.7,
+            margin: "0 auto 12px auto"
+          }}
+        />
+
+        <h3
+          style={{
+            marginTop: 0,
+            marginBottom: "8px",
+            fontSize: "22px",
+            fontWeight: 700
+          }}
+        >
+          Modifica profilo
+        </h3>
+
+        <p
+          style={{
+            color: colors.subtext,
+            fontSize: "14px",
+            marginTop: 0,
+            marginBottom: "14px",
+            lineHeight: 1.4
+          }}
+        >
+          Aggiorna il nome e il tuo HCP.
+        </p>
+
+        <input
+          type="text"
+          value={firstNameDraft}
+          onChange={(e) => setFirstNameDraft(e.target.value)}
+          placeholder="Il tuo nome"
+          style={{
+            width: "100%",
+            padding: "13px 14px",
+            backgroundColor: colors.inputBg,
+            border: `1px solid ${colors.inputBorder}`,
+            borderRadius: "12px",
+            color: colors.text,
+            boxSizing: "border-box",
+            outline: "none",
+            fontSize: "15px",
+            fontFamily: appFont,
+            marginBottom: "12px"
+          }}
+        />
+
+        <input
+          type="text"
+          inputMode="decimal"
+          value={hcpDraft}
+          onChange={(e) => setHcpDraft(e.target.value)}
+          placeholder="Es. 36"
+          style={{
+            width: "100%",
+            padding: "13px 14px",
+            backgroundColor: colors.inputBg,
+            border: `1px solid ${colors.inputBorder}`,
+            borderRadius: "12px",
+            color: colors.text,
+            boxSizing: "border-box",
+            outline: "none",
+            fontSize: "15px",
+            fontFamily: appFont
+          }}
+        />
+
+        <button
+          onClick={saveHcp}
+          style={{
+            marginTop: "20px",
+            width: "100%",
+            padding: "13px",
+            backgroundColor: colors.green,
+            border: "none",
+            color: isLight ? "#08351c" : "black",
+            fontWeight: 700,
+            borderRadius: "12px",
+            cursor: "pointer",
+            opacity: 1,
+            fontFamily: appFont,
+            fontSize: "15px"
+          }}
+        >
+          Salva
+        </button>
       </div>
     </div>
   ) : null;
@@ -2442,6 +2599,7 @@ function App() {
 
         {appMenuModal}
         {globalRoundsHistoryModal}
+        {hcpEditorModal}
       </div>
     );
   }
@@ -2517,7 +2675,7 @@ function App() {
               lineHeight: 1.5
             }}
           >
-            {roundSetup.totalCompetitionHoles} buche di gara • partenza dalla {roundSetup.startHole}
+            {roundSetup.totalCompetitionHoles} buche • partenza dalla {roundSetup.startHole}
           </div>
 
           <div
@@ -2918,6 +3076,7 @@ function App() {
 
         {appMenuModal}
         {globalRoundsHistoryModal}
+        {hcpEditorModal}
 
       </div>
     );
@@ -3034,6 +3193,7 @@ function App() {
         </div>
 
         {appMenuModal}
+        {hcpEditorModal}
       </div>
     );
   }
@@ -3180,116 +3340,7 @@ function App() {
 
       {appMenuModal}
       {globalRoundsHistoryModal}
-
-      {showHcpEditor && (
-        <div
-          onClick={closeHcpEditor}
-          style={{
-            position: "fixed",
-            inset: 0,
-            backgroundColor: colors.overlay,
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            padding: "20px",
-            boxSizing: "border-box",
-            zIndex: 50,
-            opacity: hcpEditorClosing ? 0 : 1,
-            transition: "opacity 240ms ease-out"
-          }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            onTouchStart={handleHcpEditorTouchStart}
-            onTouchEnd={handleHcpEditorTouchEnd}
-            style={{
-              backgroundColor: colors.card,
-              padding: "18px",
-              borderRadius: "18px",
-              width: "100%",
-              maxWidth: "390px",
-              border: `1px solid ${colors.border}`,
-              boxSizing: "border-box",
-              fontFamily: appFont,
-              transform:
-                hcpEditorOpening && !hcpEditorClosing
-                  ? "translateY(0) scale(1)"
-                  : hcpEditorClosing
-                    ? "translateY(10px) scale(0.985)"
-                    : "translateY(10px) scale(0.985)",
-              opacity: hcpEditorClosing ? 0 : 1,
-              transition: "transform 280ms ease-out, opacity 240ms ease-out"
-            }}
-          >
-            <h3
-              style={{
-                marginTop: 0,
-                marginBottom: "8px",
-                fontSize: "24px",
-                fontWeight: 700
-              }}
-            >
-              Modifica profilo
-            </h3>
-
-            <p
-              style={{
-                color: colors.subtext,
-                fontSize: "14px",
-                marginTop: 0,
-                marginBottom: "16px",
-                lineHeight: 1.4
-              }}
-            >
-              Aggiorna il nome visualizzato e il tuo HCP.
-            </p>
-
-            <input
-              type="text"
-              value={firstNameDraft}
-              onChange={(e) => setFirstNameDraft(e.target.value)}
-              placeholder="Il tuo nome"
-              style={{
-                width: "100%",
-                padding: "13px 14px",
-                backgroundColor: colors.inputBg,
-                border: `1px solid ${colors.inputBorder}`,
-                borderRadius: "12px",
-                color: colors.text,
-                boxSizing: "border-box",
-                outline: "none",
-                fontSize: "15px",
-                fontFamily: appFont,
-                marginBottom: "12px"
-              }}
-            />
-
-            <input
-              type="text"
-              inputMode="decimal"
-              value={hcpDraft}
-              onChange={(e) => setHcpDraft(e.target.value)}
-              placeholder="Es. 36"
-              style={{
-                width: "100%",
-                padding: "13px 14px",
-                backgroundColor: colors.inputBg,
-                border: `1px solid ${colors.inputBorder}`,
-                borderRadius: "12px",
-                color: colors.text,
-                boxSizing: "border-box",
-                outline: "none",
-                fontSize: "15px",
-                fontFamily: appFont
-              }}
-            />
-
-            <button onClick={saveHcp} style={primaryButtonStyle(true)}>
-              Salva
-            </button>
-          </div>
-        </div>
-      )}
+      {hcpEditorModal}
 
       {showDialog && (
         <div
