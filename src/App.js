@@ -1806,45 +1806,51 @@ function App() {
 
         <div
           style={{
-            display: "flex",
+            display: "grid",
+            gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
             gap: "8px",
-            flexWrap: "wrap",
             marginTop: "14px"
           }}
         >
           <div
             style={{
-              padding: "8px 12px",
-              borderRadius: "999px",
+              padding: "9px 10px",
+              borderRadius: "12px",
               backgroundColor: colors.pillBg,
               border: `1px solid ${colors.pillBorder}`,
-              fontSize: "13px"
+              fontSize: "12px",
+              textAlign: "center",
+              whiteSpace: "nowrap"
             }}
           >
             Lordo {selectedHistoryRound.grossTotal}
           </div>
           <div
             style={{
-              padding: "8px 12px",
-              borderRadius: "999px",
+              padding: "9px 10px",
+              borderRadius: "12px",
               backgroundColor: colors.pillBg,
               border: `1px solid ${colors.pillBorder}`,
-              fontSize: "13px"
+              fontSize: "12px",
+              textAlign: "center",
+              whiteSpace: "nowrap"
             }}
           >
             Netto {selectedHistoryRound.netTotal}
           </div>
           <div
             style={{
-              padding: "8px 12px",
-              borderRadius: "999px",
+              padding: "9px 10px",
+              borderRadius: "12px",
               backgroundColor: colors.greenDark,
               border: `1px solid ${colors.greenBorder}`,
               color: colors.green,
-              fontSize: "13px"
+              fontSize: "12px",
+              textAlign: "center",
+              whiteSpace: "nowrap"
             }}
           >
-            Stableford {selectedHistoryRound.stablefordTotal}
+            Stblf {selectedHistoryRound.stablefordTotal}
           </div>
         </div>
 
@@ -1860,14 +1866,13 @@ function App() {
             style={{
               width: "100%",
               borderCollapse: "collapse",
-              minWidth: "560px",
+              minWidth: "472px",
               fontSize: "13px"
             }}
           >
             <thead>
               <tr style={{ backgroundColor: colors.cardSecondary, color: colors.subtext }}>
                 <th style={{ textAlign: "left", padding: "12px" }}>Buca</th>
-                <th style={{ textAlign: "left", padding: "12px" }}>Campo</th>
                 <th style={{ textAlign: "left", padding: "12px" }}>Par</th>
                 <th style={{ textAlign: "left", padding: "12px" }}>SI</th>
                 <th style={{ textAlign: "left", padding: "12px" }}>Colpi</th>
@@ -1894,7 +1899,6 @@ function App() {
                     }}
                   >
                     <td style={{ padding: "12px" }}>{hole.competitionHoleNumber}</td>
-                    <td style={{ padding: "12px" }}>{hole.courseHoleNumber}</td>
                     <td style={{ padding: "12px" }}>{hole.par}</td>
                     <td style={{ padding: "12px" }}>{hole.strokeIndex}</td>
                     <td style={{ padding: "12px" }}>{strokes || "—"}</td>
