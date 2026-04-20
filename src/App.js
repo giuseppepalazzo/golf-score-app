@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { hasSupabaseConfig, supabase } from "./lib/supabase";
 
 const appFont =
@@ -92,13 +92,23 @@ function App() {
   const [manualReceivedShots, setManualReceivedShots] = useState({});
 
   const [showHcpEditor, setShowHcpEditor] = useState(false);
+  const [firstNameDraft, setFirstNameDraft] = useState("");
   const [hcpDraft, setHcpDraft] = useState("");
 
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCourseCardId, setActiveCourseCardId] = useState(null);
   const [searchEmptyHintPulse, setSearchEmptyHintPulse] = useState(false);
+  const [hcpHighlightActive, setHcpHighlightActive] = useState(false);
+  const [estimatedHcpHighlightActive, setEstimatedHcpHighlightActive] = useState(false);
   const [showAppMenu, setShowAppMenu] = useState(false);
+  const [appMenuClosing, setAppMenuClosing] = useState(false);
+  const [appMenuTouchStartY, setAppMenuTouchStartY] = useState(null);
+  const [hcpEditorOpening, setHcpEditorOpening] = useState(false);
+  const [hcpEditorClosing, setHcpEditorClosing] = useState(false);
+  const [hcpEditorTouchStartY, setHcpEditorTouchStartY] = useState(null);
+  const [pendingHcpEditorOpen, setPendingHcpEditorOpen] = useState(false);
   const [showGlobalRoundsHistory, setShowGlobalRoundsHistory] = useState(false);
+  const [showPrivacyScreen, setShowPrivacyScreen] = useState(false);
   const [session, setSession] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [authSubmitting, setAuthSubmitting] = useState(false);
@@ -111,6 +121,8 @@ function App() {
   const [otpCode, setOtpCode] = useState("");
   const [authError, setAuthError] = useState("");
   const [authMessage, setAuthMessage] = useState("");
+  const previousHcpRef = useRef(null);
+  const previousEstimatedHcpRef = useRef(null);
 
   const [theme, setTheme] = useState(() => {
     try {
@@ -747,6 +759,44 @@ function App() {
     return Number(next.toFixed(1));
   }, [competitionHoles.length, stablefordTotal, userProfile.hcp]);
 
+  useEffect(() => {
+    if (previousHcpRef.current === null) {
+      previousHcpRef.current = userProfile.hcp;
+      return;
+    }
+
+    if (previousHcpRef.current !== userProfile.hcp) {
+      setHcpHighlightActive(true);
+      const timeoutId = window.setTimeout(() => {
+        setHcpHighlightActive(false);
+      }, 320);
+      previousHcpRef.current = userProfile.hcp;
+
+      return () => {
+        window.clearTimeout(timeoutId);
+      };
+    }
+  }, [userProfile.hcp]);
+
+  useEffect(() => {
+    if (previousEstimatedHcpRef.current === null) {
+      previousEstimatedHcpRef.current = estimatedHcpAfterRound;
+      return;
+    }
+
+    if (previousEstimatedHcpRef.current !== estimatedHcpAfterRound) {
+      setEstimatedHcpHighlightActive(true);
+      const timeoutId = window.setTimeout(() => {
+        setEstimatedHcpHighlightActive(false);
+      }, 320);
+      previousEstimatedHcpRef.current = estimatedHcpAfterRound;
+
+      return () => {
+        window.clearTimeout(timeoutId);
+      };
+    }
+  }, [estimatedHcpAfterRound]);
+
   const updateRoundScore = (index, value) => {
     const updated = [...roundScores];
     updated[index] = value;
@@ -851,9 +901,25 @@ function App() {
     setShowAppMenu(false);
   };
 
+  const openPrivacyScreen = () => {
+    closeAppMenu();
+    window.setTimeout(() => {
+      setShowPrivacyScreen(true);
+    }, 220);
+  };
+
   const openHcpEditor = () => {
+    setFirstNameDraft(String(userProfile.firstName || ""));
     setHcpDraft(String(userProfile.hcp));
-    setShowAppMenu(false);
+
+    if (showAppMenu) {
+      setPendingHcpEditorOpen(true);
+      closeAppMenu();
+      return;
+    }
+
+    setHcpEditorClosing(false);
+    setHcpEditorOpening(true);
     setShowHcpEditor(true);
   };
 
@@ -999,30 +1065,128 @@ function App() {
 
   const handleLogout = async () => {
     if (!supabase) return;
+    const emailToKeep = session?.user?.email || authForm.email || "";
     await supabase.auth.signOut();
+    setAuthForm((prev) => ({
+      ...prev,
+      email: emailToKeep
+    }));
+    setAuthStep("request");
+    setOtpCode("");
+    setAuthError("");
+    setAuthMessage("");
     setShowAppMenu(false);
   };
 
   const closeHcpEditor = () => {
-    setShowHcpEditor(false);
-    setHcpDraft("");
+    setHcpEditorClosing(true);
+    setHcpEditorOpening(false);
+    setHcpEditorTouchStartY(null);
+
+    window.setTimeout(() => {
+      setShowHcpEditor(false);
+      setFirstNameDraft("");
+      setHcpDraft("");
+      setHcpEditorClosing(false);
+    }, 220);
   };
 
-  const saveHcp = () => {
+  const saveHcp = async () => {
+    const cleanName = firstNameDraft.trim();
     const cleanValue = String(hcpDraft).replace(",", ".").trim();
     const numeric = Number(cleanValue);
 
-    if (Number.isNaN(numeric) || numeric < 0) return;
+    if (!cleanName || Number.isNaN(numeric) || numeric < 0) return;
 
     setUserProfile((prev) => ({
       ...prev,
+      firstName: cleanName,
       hcp: Number(numeric.toFixed(1))
     }));
+
+    if (supabase && session?.user) {
+      await supabase.auth.updateUser({
+        data: {
+          ...(session.user.user_metadata || {}),
+          firstName: cleanName,
+          hcp: Number(numeric.toFixed(1))
+        }
+      });
+    }
+
     closeHcpEditor();
   };
 
+  const closeAppMenu = () => {
+    setAppMenuClosing(true);
+    setAppMenuTouchStartY(null);
+
+    window.setTimeout(() => {
+      setShowAppMenu(false);
+      setAppMenuClosing(false);
+    }, 220);
+  };
+
+  const handleAppMenuTouchStart = (event) => {
+    setAppMenuTouchStartY(event.touches[0]?.clientY ?? null);
+  };
+
+  const handleAppMenuTouchEnd = (event) => {
+    if (appMenuTouchStartY === null) return;
+
+    const touchEndY = event.changedTouches[0]?.clientY ?? appMenuTouchStartY;
+    if (touchEndY - appMenuTouchStartY > 70) {
+      closeAppMenu();
+    } else {
+      setAppMenuTouchStartY(null);
+    }
+  };
+
+  const handleHcpEditorTouchStart = (event) => {
+    setHcpEditorTouchStartY(event.touches[0]?.clientY ?? null);
+  };
+
+  const handleHcpEditorTouchEnd = (event) => {
+    if (hcpEditorTouchStartY === null) return;
+
+    const touchEndY = event.changedTouches[0]?.clientY ?? hcpEditorTouchStartY;
+    if (touchEndY - hcpEditorTouchStartY > 70) {
+      closeHcpEditor();
+    } else {
+      setHcpEditorTouchStartY(null);
+    }
+  };
+
+  useEffect(() => {
+    if (!pendingHcpEditorOpen || showAppMenu || appMenuClosing) return;
+
+    const timeoutId = window.setTimeout(() => {
+      setHcpEditorClosing(false);
+      setHcpEditorOpening(false);
+      setShowHcpEditor(true);
+      setPendingHcpEditorOpen(false);
+    }, 80);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [pendingHcpEditorOpen, showAppMenu, appMenuClosing]);
+
+  useEffect(() => {
+    if (!showHcpEditor) return;
+
+    const frameId = window.requestAnimationFrame(() => {
+      setHcpEditorOpening(true);
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+    };
+  }, [showHcpEditor]);
+
   const appMenuModal = showAppMenu ? (
     <div
+      onClick={closeAppMenu}
       style={{
         position: "fixed",
         inset: 0,
@@ -1036,6 +1200,9 @@ function App() {
       }}
     >
       <div
+        onClick={(e) => e.stopPropagation()}
+        onTouchStart={handleAppMenuTouchStart}
+        onTouchEnd={handleAppMenuTouchEnd}
         style={{
           backgroundColor: colors.card,
           padding: "18px",
@@ -1044,51 +1211,66 @@ function App() {
           maxWidth: "390px",
           border: `1px solid ${colors.border}`,
           boxSizing: "border-box",
-          fontFamily: appFont
+          fontFamily: appFont,
+          transform: appMenuClosing ? "translateY(28px)" : "translateY(0)",
+          opacity: appMenuClosing ? 0 : 1,
+          transition: "transform 220ms ease-in, opacity 220ms ease-in"
         }}
       >
-        <h3
+        <div
           style={{
-            marginTop: 0,
-            marginBottom: "16px",
-            fontSize: "24px",
-            fontWeight: 700
+            paddingTop: "4px"
           }}
         >
-          Menu
-        </h3>
+          <button
+            onClick={openHcpEditor}
+            style={{
+              width: "100%",
+              textAlign: "left",
+              padding: "14px 0",
+              border: "none",
+              background: "transparent",
+              color: colors.text,
+              fontSize: "15px",
+              cursor: "pointer",
+              fontFamily: appFont
+            }}
+          >
+            Giocatore
+          </button>
 
-        <button
-          onClick={openHcpEditor}
-          style={{
-            width: "100%",
-            textAlign: "left",
-            padding: "14px 0",
-            border: "none",
-            background: "transparent",
-            color: colors.text,
-            fontSize: "15px",
-            cursor: "pointer",
-            borderBottom: `1px solid ${colors.border}`
-          }}
-        >
-          Aggiorna HCP
-        </button>
+          <button
+            onClick={openHistoryFromMenu}
+            style={{
+              width: "100%",
+              textAlign: "left",
+              padding: "14px 0 4px 0",
+              border: "none",
+              background: "transparent",
+              color: colors.text,
+              fontSize: "15px",
+              cursor: "pointer",
+              fontFamily: appFont
+            }}
+          >
+            I tuoi giri
+          </button>
+        </div>
 
         <div
           style={{
-            padding: "14px 0",
-            borderBottom: `1px solid ${colors.border}`
+            paddingTop: "18px",
+            paddingBottom: "6px"
           }}
         >
           <div style={{ fontSize: "15px", marginBottom: "10px" }}>Tema</div>
 
-          <div style={{ display: "flex", gap: "8px" }}>
+          <div style={{ display: "flex", gap: "8px", marginLeft: "1px" }}>
             <button
               onClick={() => setTheme("light")}
               style={{
                 flex: 1,
-                padding: "10px",
+                padding: "9px",
                 borderRadius: "10px",
                 border:
                   theme === "light"
@@ -1108,7 +1290,7 @@ function App() {
               onClick={() => setTheme("dark")}
               style={{
                 flex: 1,
-                padding: "10px",
+                padding: "9px",
                 borderRadius: "10px",
                 border:
                   theme === "dark"
@@ -1124,70 +1306,92 @@ function App() {
               Scuro
             </button>
           </div>
-        </div>
 
-        <button
-          onClick={openHistoryFromMenu}
-          style={{
-            width: "100%",
-            textAlign: "left",
-            padding: "14px 0",
-            border: "none",
-            background: "transparent",
-            color: colors.text,
-            fontSize: "15px",
-            cursor: "pointer",
-            borderTop: `1px solid ${colors.border}`,
-            borderBottom: `1px solid ${colors.border}`
-          }}
-        >
-          Storico
-        </button>
+          <div
+            style={{
+              marginTop: "12px",
+              display: "flex",
+              gap: "8px",
+              marginLeft: "1px"
+            }}
+          >
+            <button
+              style={{
+                flex: 1,
+                padding: "9px",
+                borderRadius: "10px",
+                border: `1px solid ${colors.green}`,
+                backgroundColor: colors.greenDark,
+                color: colors.text,
+                cursor: "default",
+                fontFamily: appFont
+              }}
+            >
+              Italiano
+            </button>
+
+            <button
+              disabled
+              style={{
+                flex: 1,
+                padding: "9px",
+                borderRadius: "10px",
+                border: `1px solid ${colors.borderStrong}`,
+                backgroundColor: colors.inputBg,
+                color: colors.subtext,
+                cursor: "not-allowed",
+                fontFamily: appFont,
+                opacity: 0.8
+              }}
+            >
+              English
+            </button>
+          </div>
+        </div>
 
         <div
           style={{
-            padding: "14px 0",
-            color: colors.subtext
+            paddingTop: "18px",
+            paddingBottom: "2px"
           }}
         >
-          Privacy Policy
+          <button
+            onClick={openPrivacyScreen}
+            style={{
+              width: "100%",
+              textAlign: "left",
+              padding: 0,
+              border: "none",
+              background: "transparent",
+              color: colors.subtext,
+              opacity: 0.78,
+              fontSize: "14px",
+              cursor: "pointer",
+              fontFamily: appFont
+            }}
+          >
+            Privacy Policy
+          </button>
         </div>
 
-        <button
-          onClick={() => setShowAppMenu(false)}
-          style={{
-            marginTop: "10px",
-            width: "100%",
-            padding: "13px",
-            backgroundColor: colors.cardSecondary,
-            border: `1px solid ${colors.border}`,
-            color: colors.text,
-            borderRadius: "12px",
-            cursor: "pointer",
-            fontFamily: appFont,
-            fontSize: "15px"
-          }}
-        >
-          Chiudi
-        </button>
-
-        <button
-          onClick={handleLogout}
-          style={{
-            marginTop: "10px",
-            width: "100%",
-            padding: "13px",
-            backgroundColor: colors.cardSecondary,
-            border: `1px solid ${colors.borderStrong}`,
-            color: colors.subtext,
-            borderRadius: "12px",
-            cursor: "pointer",
-            fontFamily: appFont,
-            fontSize: "15px"
-          }}
-        >
-          Logout
-        </button>
+        <div style={{ paddingTop: "32px" }}>
+          <button
+            onClick={handleLogout}
+            style={{
+              width: "100%",
+              textAlign: "left",
+              padding: "14px 0 4px 0",
+              border: "none",
+              background: "transparent",
+              color: colors.text,
+              fontSize: "15px",
+              cursor: "pointer",
+              fontFamily: appFont
+            }}
+          >
+            Esci
+          </button>
+        </div>
       </div>
     </div>
   ) : null;
@@ -1831,6 +2035,27 @@ function App() {
     whiteSpace: "nowrap"
   };
 
+  const getHcpValueFeedbackStyle = (active, baseColor = colors.text) => ({
+    display: "inline-block",
+    color: active ? colors.green : baseColor,
+    opacity: active ? 0.92 : 1,
+    transform: active ? "scale(1.04)" : "scale(1)",
+    transition:
+      "color 0.28s ease-in-out, opacity 0.28s ease-in-out, transform 0.28s ease-in-out"
+  });
+
+  const homeNameButtonStyle = {
+    border: "none",
+    background: "transparent",
+    padding: 0,
+    margin: 0,
+    color: colors.text,
+    fontFamily: appFont,
+    cursor: "pointer",
+    textAlign: "left",
+    minWidth: 0
+  };
+
   const cardStyle = {
     backgroundColor: colors.card,
     border: `1px solid ${colors.border}`,
@@ -2298,7 +2523,10 @@ function App() {
               fontSize: "13px"
             }}
           >
-            {userProfile.firstName} • HCP {userProfile.hcp}
+            {userProfile.firstName} • HCP{" "}
+            <span style={getHcpValueFeedbackStyle(hcpHighlightActive, colors.subtext)}>
+              {userProfile.hcp}
+            </span>
           </div>
         </div>
 
@@ -2349,7 +2577,9 @@ function App() {
               color: colors.green
             }}
           >
-            {estimatedHcpAfterRound}
+            <span style={getHcpValueFeedbackStyle(estimatedHcpHighlightActive, colors.green)}>
+              {estimatedHcpAfterRound}
+            </span>
           </div>
           <div
             style={{
@@ -2689,6 +2919,121 @@ function App() {
     );
   }
 
+  if (showPrivacyScreen) {
+    return (
+      <div
+        style={{
+          backgroundColor: colors.bg,
+          color: colors.text,
+          minHeight: "100vh",
+          padding: `20px ${SCREEN_HORIZONTAL_PADDING}`,
+          boxSizing: "border-box",
+          fontFamily: appFont
+        }}
+      >
+        <div style={centeredHeaderStyle}>
+          <div style={headerLeftButtonWrapStyle}>
+            <button
+              onClick={() => setShowPrivacyScreen(false)}
+              style={headerCircleButtonStyle()}
+              aria-label="Torna indietro"
+            >
+              <span
+                style={{ fontSize: "21px", lineHeight: 1, transform: "translateX(-1px)" }}
+              >
+                ←
+              </span>
+            </button>
+          </div>
+
+          <div style={headerTitleTextStyle}>Privacy</div>
+
+          <div style={headerRightButtonWrapStyle}>
+            <button
+              onClick={() => setShowAppMenu(true)}
+              style={headerCircleButtonStyle({ fontSize: "18px" })}
+              title="Apri menu"
+              aria-label="Apri menu"
+            >
+              <span
+                style={{ fontSize: "18px", lineHeight: 1, transform: "translateY(-1px)" }}
+              >
+                ≡
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <div
+          style={{
+            backgroundColor: colors.card,
+            border: `1px solid ${colors.border}`,
+            borderRadius: "20px",
+            padding: "22px 20px",
+            lineHeight: 1.6
+          }}
+        >
+          <div style={{ fontSize: "28px", fontWeight: 700, marginBottom: "18px" }}>
+            Privacy
+          </div>
+
+          <p style={{ margin: "0 0 18px 0", color: colors.subtext }}>
+            Raccogliamo solo le informazioni necessarie per far funzionare l’app.
+          </p>
+
+          <div style={{ fontSize: "18px", fontWeight: 700, marginBottom: "10px" }}>
+            Dati utilizzati
+          </div>
+          <p style={{ margin: "0 0 8px 0", color: colors.subtext }}>
+            - Email per l’accesso.
+          </p>
+          <p style={{ margin: "0 0 8px 0", color: colors.subtext }}>
+            - Nome giocatore e HCP per gestire i tuoi giri.
+          </p>
+          <p style={{ margin: "0 0 18px 0", color: colors.subtext }}>
+            - Dati dei giri salvati nel tuo account.
+          </p>
+
+          <div style={{ fontSize: "18px", fontWeight: 700, marginBottom: "10px" }}>
+            Come usiamo i dati
+          </div>
+          <p style={{ margin: "0 0 8px 0", color: colors.subtext }}>
+            I dati vengono utilizzati solo per:
+          </p>
+          <p style={{ margin: "0 0 8px 0", color: colors.subtext }}>
+            - permetterti di accedere,
+          </p>
+          <p style={{ margin: "0 0 8px 0", color: colors.subtext }}>
+            - salvare i tuoi giri,
+          </p>
+          <p style={{ margin: "0 0 18px 0", color: colors.subtext }}>
+            - migliorare l’esperienza di gioco.
+          </p>
+
+          <p style={{ margin: "0 0 18px 0", color: colors.subtext }}>
+            Non vendiamo né condividiamo i tuoi dati con terze parti.
+          </p>
+
+          <div style={{ fontSize: "18px", fontWeight: 700, marginBottom: "10px" }}>
+            Accesso e controllo
+          </div>
+          <p style={{ margin: "0 0 18px 0", color: colors.subtext }}>
+            Puoi modificare i tuoi dati in qualsiasi momento dalla sezione Giocatore.
+          </p>
+
+          <div style={{ fontSize: "18px", fontWeight: 700, marginBottom: "10px" }}>
+            Contatto
+          </div>
+          <p style={{ margin: 0, color: colors.subtext }}>
+            Per qualsiasi domanda puoi contattarci via email.
+          </p>
+        </div>
+
+        {appMenuModal}
+      </div>
+    );
+  }
+
   return (
     <div
       style={{
@@ -2745,24 +3090,28 @@ function App() {
 
       <div style={homeIdentityRowStyle}>
         <div style={homeHeaderIdentityStyle}>
-          <div
-            style={{
-              fontSize: "24px",
-              fontWeight: 700,
-              color: colors.text,
-              letterSpacing: "-0.01em",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap"
-            }}
-            title={userProfile.firstName}
-          >
-            {userProfile.firstName}
-          </div>
+          <button onClick={openHcpEditor} style={homeNameButtonStyle} title={userProfile.firstName}>
+            <div
+              style={{
+                fontSize: "24px",
+                fontWeight: 700,
+                color: colors.text,
+                letterSpacing: "-0.01em",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap"
+              }}
+            >
+              {userProfile.firstName}
+            </div>
+          </button>
         </div>
 
         <button onClick={openHcpEditor} style={homeHcpPillStyle}>
-          HCP {userProfile.hcp}
+          HCP{" "}
+          <span style={getHcpValueFeedbackStyle(hcpHighlightActive, colors.subtext)}>
+            {userProfile.hcp}
+          </span>
         </button>
       </div>
 
@@ -2830,6 +3179,7 @@ function App() {
 
       {showHcpEditor && (
         <div
+          onClick={closeHcpEditor}
           style={{
             position: "fixed",
             inset: 0,
@@ -2839,10 +3189,15 @@ function App() {
             alignItems: "center",
             padding: "20px",
             boxSizing: "border-box",
-            zIndex: 50
+            zIndex: 50,
+            opacity: hcpEditorClosing ? 0 : 1,
+            transition: "opacity 240ms ease-out"
           }}
         >
           <div
+            onClick={(e) => e.stopPropagation()}
+            onTouchStart={handleHcpEditorTouchStart}
+            onTouchEnd={handleHcpEditorTouchEnd}
             style={{
               backgroundColor: colors.card,
               padding: "18px",
@@ -2851,7 +3206,15 @@ function App() {
               maxWidth: "390px",
               border: `1px solid ${colors.border}`,
               boxSizing: "border-box",
-              fontFamily: appFont
+              fontFamily: appFont,
+              transform:
+                hcpEditorOpening && !hcpEditorClosing
+                  ? "translateY(0) scale(1)"
+                  : hcpEditorClosing
+                    ? "translateY(10px) scale(0.985)"
+                    : "translateY(10px) scale(0.985)",
+              opacity: hcpEditorClosing ? 0 : 1,
+              transition: "transform 280ms ease-out, opacity 240ms ease-out"
             }}
           >
             <h3
@@ -2862,7 +3225,7 @@ function App() {
                 fontWeight: 700
               }}
             >
-              Aggiorna HCP
+              Modifica profilo
             </h3>
 
             <p
@@ -2874,8 +3237,28 @@ function App() {
                 lineHeight: 1.4
               }}
             >
-              Inserisci il tuo HCP attuale.
+              Aggiorna il nome visualizzato e il tuo HCP.
             </p>
+
+            <input
+              type="text"
+              value={firstNameDraft}
+              onChange={(e) => setFirstNameDraft(e.target.value)}
+              placeholder="Il tuo nome"
+              style={{
+                width: "100%",
+                padding: "13px 14px",
+                backgroundColor: colors.inputBg,
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: "12px",
+                color: colors.text,
+                boxSizing: "border-box",
+                outline: "none",
+                fontSize: "15px",
+                fontFamily: appFont,
+                marginBottom: "12px"
+              }}
+            />
 
             <input
               type="text"
@@ -2898,11 +3281,7 @@ function App() {
             />
 
             <button onClick={saveHcp} style={primaryButtonStyle(true)}>
-              Salva HCP
-            </button>
-
-            <button onClick={closeHcpEditor} style={secondaryButtonStyle}>
-              Annulla
+              Salva
             </button>
           </div>
         </div>
