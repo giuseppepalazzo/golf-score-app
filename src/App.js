@@ -277,16 +277,32 @@ function App() {
     Boolean(selectedHistoryRound);
 
   useEffect(() => {
+    const rootElement = document.getElementById("root");
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+
     document.body.style.margin = "0";
     document.body.style.backgroundColor = colors.bg;
     document.body.style.color = colors.text;
     document.body.style.fontFamily = appFont;
+    document.documentElement.style.backgroundColor = colors.bg;
+    document.documentElement.style.color = colors.text;
+    if (rootElement) {
+      rootElement.style.backgroundColor = colors.bg;
+    }
+    if (themeColorMeta) {
+      themeColorMeta.setAttribute("content", colors.bg);
+    }
 
     return () => {
       document.body.style.margin = "";
       document.body.style.backgroundColor = "";
       document.body.style.color = "";
       document.body.style.fontFamily = "";
+      document.documentElement.style.backgroundColor = "";
+      document.documentElement.style.color = "";
+      if (rootElement) {
+        rootElement.style.backgroundColor = "";
+      }
     };
   }, [colors.bg, colors.text]);
 
