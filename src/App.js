@@ -1788,13 +1788,35 @@ function App() {
                   style={{
                     padding: "8px 12px",
                     borderRadius: "999px",
+                    backgroundColor: colors.pillBg,
+                    border: `1px solid ${colors.pillBorder}`,
+                    fontSize: "13px"
+                  }}
+                >
+                  {round.grossTotal}
+                </div>
+                <div
+                  style={{
+                    padding: "8px 12px",
+                    borderRadius: "999px",
+                    backgroundColor: colors.pillBg,
+                    border: `1px solid ${colors.pillBorder}`,
+                    fontSize: "13px"
+                  }}
+                >
+                  {round.netTotal}
+                </div>
+                <div
+                  style={{
+                    padding: "8px 12px",
+                    borderRadius: "999px",
                     backgroundColor: colors.greenDark,
                     border: `1px solid ${colors.greenBorder}`,
                     color: colors.green,
                     fontSize: "13px"
                   }}
                 >
-                  Stableford {round.stablefordTotal}
+                  {round.stablefordTotal}
                 </div>
               </div>
             </div>
