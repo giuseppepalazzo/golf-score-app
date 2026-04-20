@@ -227,6 +227,24 @@ function App() {
     [colors]
   );
 
+  const topSafeAreaBackdrop = (
+    <div
+      aria-hidden="true"
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        height: "calc(env(safe-area-inset-top, 0px) + 20px)",
+        backgroundColor: colors.bg,
+        pointerEvents: "none",
+        zIndex: 6,
+        transform: "translateZ(0)",
+        willChange: "transform"
+      }}
+    />
+  );
+
   const stepperValueStyle = useMemo(
     () => ({
       flex: 1,
@@ -2792,6 +2810,8 @@ function App() {
           fontFamily: appFont
         }}
       >
+        {topSafeAreaBackdrop}
+
         <div style={centeredHeaderStyle}>
           <div style={headerLeftButtonWrapStyle}>
             <button
@@ -2960,6 +2980,8 @@ function App() {
           fontFamily: appFont
         }}
       >
+        {topSafeAreaBackdrop}
+
         <div style={centeredHeaderStyle}>
           <div style={headerLeftButtonWrapStyle}>
             <button
@@ -3439,6 +3461,8 @@ function App() {
           fontFamily: appFont
         }}
       >
+        {topSafeAreaBackdrop}
+
         <div style={centeredHeaderStyle}>
           <div style={headerLeftButtonWrapStyle}>
             <button
@@ -3555,6 +3579,8 @@ function App() {
         fontFamily: appFont
       }}
     >
+      {topSafeAreaBackdrop}
+
       <div style={homeHeaderStyle}>
         <div style={headerLeftButtonWrapStyle}>
           <button
