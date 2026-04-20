@@ -1651,7 +1651,7 @@ function App() {
             color: colors.text,
             boxSizing: "border-box",
             outline: "none",
-            fontSize: "15px",
+            fontSize: "16px",
             fontFamily: appFont,
             marginBottom: "12px"
           }}
@@ -1672,7 +1672,7 @@ function App() {
             color: colors.text,
             boxSizing: "border-box",
             outline: "none",
-            fontSize: "15px",
+            fontSize: "16px",
             fontFamily: appFont
           }}
         />
