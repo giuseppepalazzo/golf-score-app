@@ -1197,6 +1197,13 @@ function App() {
   };
 
   const closeHcpEditor = () => {
+    if (
+      document.activeElement &&
+      typeof document.activeElement.blur === "function"
+    ) {
+      document.activeElement.blur();
+    }
+
     setHcpEditorClosing(true);
     setHcpEditorOpening(false);
     setHcpEditorTouchStartY(null);
