@@ -804,6 +804,14 @@ function App() {
     setRoundAlreadySaved(false);
   };
 
+  const getRoundScoreBounds = (index) => {
+    const holePar = Number(competitionHoles[index]?.par || 0);
+    const min = 1;
+    const max = Math.max(min, holePar + 4);
+
+    return { min, max };
+  };
+
   const handleScoreInputChange = (index, value) => {
     if (value === "") {
       updateRoundScore(index, "");
@@ -816,44 +824,40 @@ function App() {
 
   const normalizeScoreInput = (index) => {
     const rawValue = roundScores[index];
-    if (rawValue === "") return;
+    const { min, max } = getRoundScoreBounds(index);
+
+    if (rawValue === "") {
+      updateRoundScore(index, min);
+      return;
+    }
 
     let value = Number(rawValue);
 
     if (Number.isNaN(value)) {
-      updateRoundScore(index, "");
+      updateRoundScore(index, min);
       return;
     }
 
-    if (value < 1) value = 1;
-    if (value > 15) value = 15;
+    if (value < min) value = min;
+    if (value > max) value = max;
 
     updateRoundScore(index, value);
   };
 
   const adjustRoundScore = (index, delta) => {
+    const { min, max } = getRoundScoreBounds(index);
     const rawValue = roundScores[index];
     const isEmpty =
       rawValue === "" || rawValue === null || typeof rawValue === "undefined";
-    const currentValue = isEmpty ? 0 : Number(rawValue);
+    const currentValue = isEmpty ? min : Number(rawValue);
 
     if (delta < 0) {
-      if (isEmpty || currentValue <= 1) {
-        updateRoundScore(index, "");
-        return;
-      }
-
-      updateRoundScore(index, currentValue - 1);
+      updateRoundScore(index, currentValue <= min ? max : currentValue - 1);
       return;
     }
 
     if (delta > 0) {
-      if (isEmpty || currentValue === 0) {
-        updateRoundScore(index, 1);
-        return;
-      }
-
-      updateRoundScore(index, Math.min(15, currentValue + 1));
+      updateRoundScore(index, currentValue >= max ? min : currentValue + 1);
     }
   };
 
