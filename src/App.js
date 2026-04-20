@@ -1850,7 +1850,7 @@ function App() {
               whiteSpace: "nowrap"
             }}
           >
-            Stblf {selectedHistoryRound.stablefordTotal}
+            Stableford {selectedHistoryRound.stablefordTotal}
           </div>
         </div>
 
@@ -1874,7 +1874,6 @@ function App() {
               <tr style={{ backgroundColor: colors.cardSecondary, color: colors.subtext }}>
                 <th style={{ textAlign: "left", padding: "12px" }}>Buca</th>
                 <th style={{ textAlign: "left", padding: "12px" }}>Par</th>
-                <th style={{ textAlign: "left", padding: "12px" }}>SI</th>
                 <th style={{ textAlign: "left", padding: "12px" }}>Colpi</th>
                 <th style={{ textAlign: "left", padding: "12px" }}>Netto</th>
                 <th style={{ textAlign: "left", padding: "12px" }}>Pt</th>
@@ -1900,7 +1899,6 @@ function App() {
                   >
                     <td style={{ padding: "12px" }}>{hole.competitionHoleNumber}</td>
                     <td style={{ padding: "12px" }}>{hole.par}</td>
-                    <td style={{ padding: "12px" }}>{hole.strokeIndex}</td>
                     <td style={{ padding: "12px" }}>{strokes || "—"}</td>
                     <td style={{ padding: "12px" }}>{netScore}</td>
                     <td style={{ padding: "12px", color: colors.green, fontWeight: 600 }}>
