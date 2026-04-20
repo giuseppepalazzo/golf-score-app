@@ -111,6 +111,7 @@ function App() {
   const [hcpEditorTouchStartY, setHcpEditorTouchStartY] = useState(null);
   const [pendingHcpEditorOpen, setPendingHcpEditorOpen] = useState(false);
   const [showGlobalRoundsHistory, setShowGlobalRoundsHistory] = useState(false);
+  const [selectedHistoryRound, setSelectedHistoryRound] = useState(null);
   const [showPrivacyScreen, setShowPrivacyScreen] = useState(false);
   const [session, setSession] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -904,8 +905,16 @@ function App() {
 
   const openHistoryFromMenu = () => {
     setShowRoundsHistory(false);
+
+    if (showAppMenu) {
+      closeAppMenu();
+      window.setTimeout(() => {
+        setShowGlobalRoundsHistory(true);
+      }, SHEET_SWAP_DELAY);
+      return;
+    }
+
     setShowGlobalRoundsHistory(true);
-    setShowAppMenu(false);
   };
 
   const openPrivacyScreen = () => {
@@ -932,7 +941,38 @@ function App() {
 
   const deleteRound = (roundId) => {
     setSavedRounds((prev) => prev.filter((round) => round.id !== roundId));
+    setSelectedHistoryRound((prev) => (prev?.id === roundId ? null : prev));
   };
+
+  const getHistoryRoundCompetitionHoles = useCallback(
+    (round) => {
+      if (!round) return [];
+
+      const relatedCourse = savedCourses.find((course) => course.id === round.courseId);
+      if (!relatedCourse) return [];
+
+      return getCompetitionSequence(
+        relatedCourse,
+        Number(round.totalCompetitionHoles),
+        Number(round.startHole)
+      );
+    },
+    [savedCourses]
+  );
+
+  const getHistoryRoundReceivedShots = useCallback(
+    (round, hole, index) => {
+      if (!round || !hole) return 0;
+
+      const manualValue = round.manualReceivedShots?.[index];
+      if (manualValue !== undefined && manualValue !== null && manualValue !== "") {
+        return Number(manualValue);
+      }
+
+      return getAutomaticReceivedShots(round.playerHcp, hole.strokeIndex);
+    },
+    [getAutomaticReceivedShots]
+  );
 
   const persistMissingUserProfile = async (activeUser) => {
     if (!supabase || !activeUser) return;
@@ -1559,6 +1599,7 @@ function App() {
 
   const globalRoundsHistoryModal = showGlobalRoundsHistory ? (
     <div
+      onClick={() => setShowGlobalRoundsHistory(false)}
       style={{
         position: "fixed",
         inset: 0,
@@ -1572,6 +1613,7 @@ function App() {
       }}
     >
       <div
+        onClick={(e) => e.stopPropagation()}
         style={{
           backgroundColor: colors.card,
           padding: "18px",
@@ -1585,17 +1627,6 @@ function App() {
           fontFamily: appFont
         }}
       >
-        <h3
-          style={{
-            marginTop: 0,
-            marginBottom: "16px",
-            fontSize: "24px",
-            fontWeight: 700
-          }}
-        >
-          Storico
-        </h3>
-
         {savedRounds.length === 0 ? (
           <div
             style={{
@@ -1613,12 +1644,14 @@ function App() {
           savedRounds.map((round) => (
             <div
               key={round.id}
+              onClick={() => setSelectedHistoryRound(round)}
               style={{
                 backgroundColor: colors.card,
                 border: `1px solid ${colors.border}`,
                 borderRadius: "16px",
                 padding: "18px",
-                marginBottom: "12px"
+                marginBottom: "12px",
+                cursor: "pointer"
               }}
             >
               <div
@@ -1633,7 +1666,10 @@ function App() {
                   {round.savedName}
                 </div>
                 <button
-                  onClick={() => deleteRound(round.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteRound(round.id);
+                  }}
                   style={{
                     border: "none",
                     background: "transparent",
@@ -1679,6 +1715,17 @@ function App() {
                   style={{
                     padding: "8px 12px",
                     borderRadius: "999px",
+                    backgroundColor: colors.pillBg,
+                    border: `1px solid ${colors.pillBorder}`,
+                    fontSize: "13px"
+                  }}
+                >
+                  Netto {round.netTotal}
+                </div>
+                <div
+                  style={{
+                    padding: "8px 12px",
+                    borderRadius: "999px",
                     backgroundColor: colors.greenDark,
                     border: `1px solid ${colors.greenBorder}`,
                     color: colors.green,
@@ -1696,6 +1743,176 @@ function App() {
           onClick={() => setShowGlobalRoundsHistory(false)}
           style={{
             marginTop: "10px",
+            width: "100%",
+            padding: "13px",
+            backgroundColor: colors.cardSecondary,
+            border: `1px solid ${colors.border}`,
+            color: colors.text,
+            borderRadius: "12px",
+            cursor: "pointer",
+            fontFamily: appFont,
+            fontSize: "15px"
+          }}
+        >
+          Chiudi
+        </button>
+      </div>
+    </div>
+  ) : null;
+
+  const historyRoundDetailModal = selectedHistoryRound ? (
+    <div
+      onClick={() => setSelectedHistoryRound(null)}
+      style={{
+        position: "fixed",
+        inset: 0,
+        backgroundColor: colors.overlay,
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        padding: "20px",
+        boxSizing: "border-box",
+        zIndex: 42
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          backgroundColor: colors.card,
+          padding: "18px",
+          borderRadius: "18px",
+          width: "100%",
+          maxWidth: "390px",
+          maxHeight: "85vh",
+          overflowY: "auto",
+          border: `1px solid ${colors.border}`,
+          boxSizing: "border-box",
+          fontFamily: appFont
+        }}
+      >
+        <div style={{ fontSize: "18px", fontWeight: 700 }}>
+          {selectedHistoryRound.savedName}
+        </div>
+        <div
+          style={{
+            marginTop: "4px",
+            color: colors.subtext,
+            fontSize: "13px",
+            lineHeight: 1.5
+          }}
+        >
+          {selectedHistoryRound.courseName} • {selectedHistoryRound.formattedDate}
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            gap: "8px",
+            flexWrap: "wrap",
+            marginTop: "14px"
+          }}
+        >
+          <div
+            style={{
+              padding: "8px 12px",
+              borderRadius: "999px",
+              backgroundColor: colors.pillBg,
+              border: `1px solid ${colors.pillBorder}`,
+              fontSize: "13px"
+            }}
+          >
+            Lordo {selectedHistoryRound.grossTotal}
+          </div>
+          <div
+            style={{
+              padding: "8px 12px",
+              borderRadius: "999px",
+              backgroundColor: colors.pillBg,
+              border: `1px solid ${colors.pillBorder}`,
+              fontSize: "13px"
+            }}
+          >
+            Netto {selectedHistoryRound.netTotal}
+          </div>
+          <div
+            style={{
+              padding: "8px 12px",
+              borderRadius: "999px",
+              backgroundColor: colors.greenDark,
+              border: `1px solid ${colors.greenBorder}`,
+              color: colors.green,
+              fontSize: "13px"
+            }}
+          >
+            Stableford {selectedHistoryRound.stablefordTotal}
+          </div>
+        </div>
+
+        <div
+          style={{
+            marginTop: "16px",
+            overflowX: "auto",
+            border: `1px solid ${colors.border}`,
+            borderRadius: "14px"
+          }}
+        >
+          <table
+            style={{
+              width: "100%",
+              borderCollapse: "collapse",
+              minWidth: "560px",
+              fontSize: "13px"
+            }}
+          >
+            <thead>
+              <tr style={{ backgroundColor: colors.cardSecondary, color: colors.subtext }}>
+                <th style={{ textAlign: "left", padding: "12px" }}>Buca</th>
+                <th style={{ textAlign: "left", padding: "12px" }}>Campo</th>
+                <th style={{ textAlign: "left", padding: "12px" }}>Par</th>
+                <th style={{ textAlign: "left", padding: "12px" }}>SI</th>
+                <th style={{ textAlign: "left", padding: "12px" }}>Colpi</th>
+                <th style={{ textAlign: "left", padding: "12px" }}>Netto</th>
+                <th style={{ textAlign: "left", padding: "12px" }}>Pt</th>
+              </tr>
+            </thead>
+            <tbody>
+              {getHistoryRoundCompetitionHoles(selectedHistoryRound).map((hole, index) => {
+                const receivedShots = getHistoryRoundReceivedShots(
+                  selectedHistoryRound,
+                  hole,
+                  index
+                );
+                const strokes = Number(selectedHistoryRound.scores?.[index] || 0);
+                const netScore = strokes ? strokes - receivedShots : "—";
+                const points = getStablefordPoints(hole.par, strokes, receivedShots);
+
+                return (
+                  <tr
+                    key={`${selectedHistoryRound.id}-${hole.competitionHoleNumber}-${index}`}
+                    style={{
+                      borderTop: `1px solid ${colors.border}`
+                    }}
+                  >
+                    <td style={{ padding: "12px" }}>{hole.competitionHoleNumber}</td>
+                    <td style={{ padding: "12px" }}>{hole.courseHoleNumber}</td>
+                    <td style={{ padding: "12px" }}>{hole.par}</td>
+                    <td style={{ padding: "12px" }}>{hole.strokeIndex}</td>
+                    <td style={{ padding: "12px" }}>{strokes || "—"}</td>
+                    <td style={{ padding: "12px" }}>{netScore}</td>
+                    <td style={{ padding: "12px", color: colors.green, fontWeight: 600 }}>
+                      {points}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        <button
+          onClick={() => setSelectedHistoryRound(null)}
+          style={{
+            marginTop: "12px",
             width: "100%",
             padding: "13px",
             backgroundColor: colors.cardSecondary,
@@ -2599,6 +2816,7 @@ function App() {
 
         {appMenuModal}
         {globalRoundsHistoryModal}
+        {historyRoundDetailModal}
         {hcpEditorModal}
       </div>
     );
@@ -3076,6 +3294,7 @@ function App() {
 
         {appMenuModal}
         {globalRoundsHistoryModal}
+        {historyRoundDetailModal}
         {hcpEditorModal}
 
       </div>
@@ -3193,6 +3412,7 @@ function App() {
         </div>
 
         {appMenuModal}
+        {historyRoundDetailModal}
         {hcpEditorModal}
       </div>
     );
@@ -3340,6 +3560,7 @@ function App() {
 
       {appMenuModal}
       {globalRoundsHistoryModal}
+      {historyRoundDetailModal}
       {hcpEditorModal}
 
       {showDialog && (
