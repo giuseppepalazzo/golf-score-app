@@ -1025,18 +1025,6 @@ function App() {
   });
   };
 
-  const handleThemeSelection = (nextTheme) => {
-    if (theme === nextTheme) {
-      closeActiveSheet();
-      return;
-    }
-
-    flushSync(() => {
-      setTheme(nextTheme);
-    });
-    closeActiveSheet();
-  };
-
   const deleteRound = (roundId) => {
     setSavedRounds((prev) => prev.filter((round) => round.id !== roundId));
     setSelectedHistoryRound((prev) => (prev?.id === roundId ? null : prev));
@@ -1406,7 +1394,7 @@ function App() {
 
               <div style={{ display: "flex", gap: "8px", marginLeft: "1px" }}>
                 <button
-                  onClick={() => handleThemeSelection("light")}
+                  onClick={() => setTheme("light")}
                   style={{
                     flex: 1,
                     padding: "8px",
@@ -1426,7 +1414,7 @@ function App() {
                 </button>
 
                 <button
-                  onClick={() => handleThemeSelection("dark")}
+                  onClick={() => setTheme("dark")}
                   style={{
                     flex: 1,
                     padding: "8px",
