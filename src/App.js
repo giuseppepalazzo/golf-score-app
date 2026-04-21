@@ -1,14 +1,19 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal, flushSync } from "react-dom";
 import { hasSupabaseConfig, supabase } from "./lib/supabase";
+import {
+  buildCourseStructurePayload,
+  createCourseStructureHash,
+  normalizeCourseName,
+  normalizeWhitespace
+} from "./lib/course-utils";
 
 const appFont =
   "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
 
 const STORAGE_KEY = "golf-score-app-courses-v1";
-const ROUNDS_STORAGE_KEY = "golf-score-app-rounds-v1";
-const USER_PROFILE_STORAGE_KEY = "golf-score-app-user-profile-v1";
 const THEME_STORAGE_KEY = "golf-score-app-theme-v1";
+const COURSES_MIGRATION_KEY = "golf-score-app-courses-migrated-v1";
 const MAX_SAVED_ROUNDS = 100;
 const SCREEN_HORIZONTAL_PADDING = "16px";
 const CARD_ROW_HORIZONTAL_PADDING = "12px";
@@ -78,16 +83,7 @@ function App() {
   });
 
   const [roundScores, setRoundScores] = useState([]);
-  const [savedRounds, setSavedRounds] = useState(() => {
-    try {
-      const stored = localStorage.getItem(ROUNDS_STORAGE_KEY);
-      if (!stored) return [];
-      const parsed = JSON.parse(stored);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch (error) {
-      return [];
-    }
-  });
+  const [savedRounds, setSavedRounds] = useState([]);
   const [showRoundsHistory, setShowRoundsHistory] = useState(false);
   const [roundAlreadySaved, setRoundAlreadySaved] = useState(false);
 
@@ -109,16 +105,28 @@ function App() {
   const [showPrivacyScreen, setShowPrivacyScreen] = useState(false);
   const [session, setSession] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [appReady, setAppReady] = useState(false);
+  const [needsOnboarding, setNeedsOnboarding] = useState(false);
   const [authSubmitting, setAuthSubmitting] = useState(false);
   const [authStep, setAuthStep] = useState("request");
   const [authForm, setAuthForm] = useState({
-    email: "",
+    email: ""
+  });
+  const [onboardingForm, setOnboardingForm] = useState({
     firstName: "",
     hcp: ""
   });
   const [otpCode, setOtpCode] = useState("");
   const [authError, setAuthError] = useState("");
   const [authMessage, setAuthMessage] = useState("");
+  const [courseSaveError, setCourseSaveError] = useState("");
+  const [courseSaveLoading, setCourseSaveLoading] = useState(false);
+  const [courseReportTarget, setCourseReportTarget] = useState(null);
+  const [courseReportMessage, setCourseReportMessage] = useState("");
+  const [courseReportSubmitting, setCourseReportSubmitting] = useState(false);
+  const [courseReportFeedback, setCourseReportFeedback] = useState("");
+  const [favoriteCourseIds, setFavoriteCourseIds] = useState([]);
   const previousHcpRef = useRef(null);
   const previousEstimatedHcpRef = useRef(null);
 
@@ -131,42 +139,13 @@ function App() {
     }
   });
 
-  const [userProfile, setUserProfile] = useState(() => {
-    try {
-      const stored = localStorage.getItem(USER_PROFILE_STORAGE_KEY);
-      if (!stored) {
-        return {
-          firstName: "Giuseppe",
-          hcp: 36
-        };
-      }
-
-      const parsed = JSON.parse(stored);
-      return {
-        firstName: parsed.firstName || "Giuseppe",
-        hcp:
-          typeof parsed.hcp === "number" || typeof parsed.hcp === "string"
-            ? parsed.hcp
-            : 36
-      };
-    } catch (error) {
-      return {
-        firstName: "Giuseppe",
-        hcp: 36
-      };
-    }
+  const [userProfile, setUserProfile] = useState({
+    firstName: "",
+    hcp: 36,
+    role: "user"
   });
 
-  const [savedCourses, setSavedCourses] = useState(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (!stored) return [];
-      const parsed = JSON.parse(stored);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch (error) {
-      return [];
-    }
-  });
+  const [savedCourses, setSavedCourses] = useState([]);
 
   const isLight = theme === "light";
 
@@ -277,7 +256,12 @@ function App() {
     [colors]
   );
 
-  const hasActiveOverlay = showDialog || Boolean(activeSheet) || sheetClosing || Boolean(selectedHistoryRound);
+  const hasActiveOverlay =
+    showDialog ||
+    Boolean(activeSheet) ||
+    sheetClosing ||
+    Boolean(selectedHistoryRound) ||
+    Boolean(courseReportTarget);
 
   useLayoutEffect(() => {
     const rootElement = document.getElementById("root");
@@ -355,18 +339,6 @@ function App() {
   }, [hasActiveOverlay]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(savedCourses));
-  }, [savedCourses]);
-
-  useEffect(() => {
-    localStorage.setItem(ROUNDS_STORAGE_KEY, JSON.stringify(savedRounds));
-  }, [savedRounds]);
-
-  useEffect(() => {
-    localStorage.setItem(USER_PROFILE_STORAGE_KEY, JSON.stringify(userProfile));
-  }, [userProfile]);
-
-  useEffect(() => {
     localStorage.setItem(THEME_STORAGE_KEY, theme);
   }, [theme]);
 
@@ -404,31 +376,226 @@ function App() {
     };
   }, []);
 
-  useEffect(() => {
-    if (!session?.user) return;
+  const loadCourses = useCallback(async () => {
+    if (!supabase) return [];
 
-    const metadata = session.user.user_metadata || {};
-    const metadataFirstName =
-      typeof metadata.firstName === "string" && metadata.firstName.trim() !== ""
-        ? metadata.firstName.trim()
-        : null;
-    const metadataHcp =
-      typeof metadata.hcp === "number" || typeof metadata.hcp === "string"
-        ? Number(metadata.hcp)
-        : null;
+    const { data, error } = await supabase
+      .from("courses")
+      .select("*")
+      .eq("is_active", true)
+      .order("created_at", { ascending: false });
 
-    setUserProfile((prev) => ({
-      firstName: metadataFirstName || prev.firstName || "Giuseppe",
-      hcp:
-        metadataHcp !== null && !Number.isNaN(metadataHcp)
-          ? Number(metadataHcp.toFixed(1))
-          : prev.hcp
+    if (error) throw error;
+
+    const normalizedCourses = (data || []).map((course) => ({
+      id: course.id,
+      name: course.name,
+      nameNormalized: course.name_normalized,
+      favorite: false,
+      totalPar: course.total_par,
+      holesCount: course.holes_count,
+      holes: Array.isArray(course.holes_json) ? course.holes_json : [],
+      structureHash: course.structure_hash,
+      createdAt: course.created_at,
+      createdBy: course.created_by
     }));
+
+    setSavedCourses(normalizedCourses);
+    return normalizedCourses;
+  }, []);
+
+  const loadFavorites = useCallback(async () => {
+    if (!supabase || !session?.user) return [];
+
+    const { data, error } = await supabase
+      .from("favorite_courses")
+      .select("course_id")
+      .eq("user_id", session.user.id);
+
+    if (error) throw error;
+
+    const ids = (data || []).map((item) => item.course_id);
+    setFavoriteCourseIds(ids);
+    return ids;
   }, [session]);
 
-  const favorites = savedCourses.filter((course) => course.favorite);
+  const loadRounds = useCallback(async () => {
+    if (!supabase || !session?.user) return [];
 
-  const filteredCourses = savedCourses.filter((course) =>
+    const { data, error } = await supabase
+      .from("rounds")
+      .select("*")
+      .eq("user_id", session.user.id)
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    const nextRounds = (data || []).map((round) => ({
+      id: round.id,
+      savedName: round.saved_name,
+      competitionName: round.competition_name,
+      courseId: round.course_id,
+      courseName: savedCourses.find((course) => course.id === round.course_id)?.name || "",
+      createdAt: round.created_at,
+      formattedDate: round.formatted_date,
+      playerHcp: round.player_hcp,
+      totalCompetitionHoles: round.total_competition_holes,
+      startHole: round.start_hole,
+      grossTotal: round.gross_total,
+      netTotal: round.net_total,
+      stablefordTotal: round.stableford_total,
+      estimatedHcpAfterRound: round.estimated_hcp_after_round,
+      scores: Array.isArray(round.scores) ? round.scores : round.scores || [],
+      manualReceivedShots: round.manual_received_shots || {}
+    }));
+
+    setSavedRounds(nextRounds);
+    return nextRounds;
+  }, [savedCourses, session]);
+
+  const loadProfile = useCallback(async () => {
+    if (!supabase || !session?.user) return null;
+
+    setProfileLoading(true);
+
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", session.user.id)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (!data) {
+      setNeedsOnboarding(true);
+      setUserProfile({
+        firstName: "",
+        hcp: 36,
+        role: "user"
+      });
+      setProfileLoading(false);
+      return null;
+    }
+
+    setUserProfile({
+      firstName: data.first_name || "",
+      hcp:
+        typeof data.hcp === "number" || typeof data.hcp === "string"
+          ? Number(Number(data.hcp).toFixed(1))
+          : 36,
+      role: data.role || "user"
+    });
+    setNeedsOnboarding(false);
+    setProfileLoading(false);
+    return data;
+  }, [session]);
+
+  const migrateLocalCoursesIfNeeded = useCallback(async () => {
+    if (!supabase || !session?.user) return;
+
+    const migrationKey = `${COURSES_MIGRATION_KEY}-${session.user.id}`;
+    if (localStorage.getItem(migrationKey)) return;
+
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      const parsed = stored ? JSON.parse(stored) : [];
+      const localCourses = Array.isArray(parsed) ? parsed : [];
+
+      for (const localCourse of localCourses) {
+        const nameNormalized = normalizeCourseName(localCourse.name);
+        const structureHash = createCourseStructureHash(localCourse);
+
+        const { data: existingByName } = await supabase
+          .from("courses")
+          .select("id")
+          .or(`name_normalized.eq.${nameNormalized},structure_hash.eq.${structureHash}`)
+          .limit(1);
+
+        if (existingByName && existingByName.length > 0) continue;
+
+        const structurePayload = buildCourseStructurePayload(localCourse);
+
+        await supabase.from("courses").insert({
+          name: normalizeWhitespace(localCourse.name),
+          name_normalized: nameNormalized,
+          holes_count: structurePayload.holesCount,
+          total_par: structurePayload.totalPar,
+          holes_json: structurePayload.holes,
+          structure_hash: structureHash,
+          created_by: session.user.id
+        });
+      }
+
+      localStorage.setItem(migrationKey, "done");
+    } catch (error) {
+      console.error("Course migration failed", error);
+    }
+  }, [session]);
+
+  useEffect(() => {
+    if (!session?.user) {
+      setAppReady(false);
+      setNeedsOnboarding(false);
+      setSavedRounds([]);
+      setFavoriteCourseIds([]);
+      setUserProfile({
+        firstName: "",
+        hcp: 36,
+        role: "user"
+      });
+      return;
+    }
+
+    let cancelled = false;
+
+    const bootstrapAuthenticatedApp = async () => {
+      try {
+        await loadCourses();
+        await migrateLocalCoursesIfNeeded();
+        await loadCourses();
+        await loadFavorites();
+        const profile = await loadProfile();
+
+        if (profile) {
+          await loadRounds();
+        } else {
+          setSavedRounds([]);
+        }
+
+        if (!cancelled) {
+          setAppReady(true);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setAuthError(error.message || "Errore nel caricamento dei dati.");
+          setAppReady(false);
+        }
+      } finally {
+        if (!cancelled) {
+          setProfileLoading(false);
+        }
+      }
+    };
+
+    bootstrapAuthenticatedApp();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [session, loadCourses, loadFavorites, loadProfile, loadRounds, migrateLocalCoursesIfNeeded]);
+
+  const coursesWithFavorites = useMemo(
+    () =>
+      savedCourses.map((course) => ({
+        ...course,
+        favorite: favoriteCourseIds.includes(course.id)
+      })),
+    [savedCourses, favoriteCourseIds]
+  );
+
+  const favorites = coursesWithFavorites.filter((course) => course.favorite);
+
+  const filteredCourses = coursesWithFavorites.filter((course) =>
     course.name.toLowerCase().includes(searchQuery.trim().toLowerCase())
   );
   const showSearchEmptyState =
@@ -469,6 +636,8 @@ function App() {
     setCurrentHoleIndex(0);
     setShowStrokeInfo(false);
     setSelectedStepper("par");
+    setCourseSaveError("");
+    setCourseSaveLoading(false);
   };
 
   const openDialog = () => {
@@ -612,34 +781,122 @@ function App() {
     setSelectedStepper("par");
   };
 
-  const saveCourse = () => {
-    const newCourse = {
-      id: Date.now(),
-      name: courseName.trim(),
-      favorite: false,
-      totalPar,
-      holesCount,
-      holes: holesData,
-      createdAt: Date.now()
-    };
+  const saveCourse = async () => {
+    if (!supabase || !session?.user) return;
 
-    setSavedCourses((prev) => [newCourse, ...prev]);
-    closeDialog();
+    const cleanName = normalizeWhitespace(courseName);
+    const structurePayload = buildCourseStructurePayload({
+      holesCount,
+      totalPar,
+      holes: holesData
+    });
+    const nameNormalized = normalizeCourseName(cleanName);
+    const structureHash = createCourseStructureHash({
+      holesCount,
+      totalPar,
+      holes: holesData
+    });
+
+    setCourseSaveError("");
+    setCourseSaveLoading(true);
+
+    try {
+      const { data: existingCourses, error: duplicateError } = await supabase
+        .from("courses")
+        .select("id,name,name_normalized,structure_hash")
+        .or(`name_normalized.eq.${nameNormalized},structure_hash.eq.${structureHash}`)
+        .limit(5);
+
+      if (duplicateError) throw duplicateError;
+
+      const duplicateByName = (existingCourses || []).find(
+        (course) => course.name_normalized === nameNormalized
+      );
+      if (duplicateByName) {
+        setCourseSaveError("Esiste già un campo con questo nome.");
+        setCourseSaveLoading(false);
+        return;
+      }
+
+      const duplicateByStructure = (existingCourses || []).find(
+        (course) => course.structure_hash === structureHash
+      );
+      if (duplicateByStructure) {
+        setCourseSaveError("Esiste già un campo con questa configurazione.");
+        setCourseSaveLoading(false);
+        return;
+      }
+
+      const { data: insertedCourse, error: insertError } = await supabase
+        .from("courses")
+        .insert({
+          name: cleanName,
+          name_normalized: nameNormalized,
+          holes_count: structurePayload.holesCount,
+          total_par: structurePayload.totalPar,
+          holes_json: structurePayload.holes,
+          structure_hash: structureHash,
+          created_by: session.user.id
+        })
+        .select("*")
+        .single();
+
+      if (insertError) {
+        if (String(insertError.message || "").toLowerCase().includes("name_normalized")) {
+          setCourseSaveError("Esiste già un campo con questo nome.");
+        } else if (String(insertError.message || "").toLowerCase().includes("structure_hash")) {
+          setCourseSaveError("Esiste già un campo con questa configurazione.");
+        } else {
+          throw insertError;
+        }
+        setCourseSaveLoading(false);
+        return;
+      }
+
+      if (insertedCourse) {
+        setSavedCourses((prev) => [
+          {
+            id: insertedCourse.id,
+            name: insertedCourse.name,
+            nameNormalized: insertedCourse.name_normalized,
+            favorite: false,
+            totalPar: insertedCourse.total_par,
+            holesCount: insertedCourse.holes_count,
+            holes: insertedCourse.holes_json || [],
+            structureHash: insertedCourse.structure_hash,
+            createdAt: insertedCourse.created_at,
+            createdBy: insertedCourse.created_by
+          },
+          ...prev
+        ]);
+      }
+
+      closeDialog();
+    } catch (error) {
+      setCourseSaveError(error.message || "Errore nel salvataggio del campo.");
+    } finally {
+      setCourseSaveLoading(false);
+    }
   };
 
-  const toggleFavorite = (courseId) => {
-    setSavedCourses((prev) =>
-      prev.map((course) =>
-        course.id === courseId
-          ? { ...course, favorite: !course.favorite }
-          : course
-      )
-    );
+  const toggleFavorite = async (courseId) => {
+    if (!supabase || !session?.user) return;
 
-    if (openedCourse && openedCourse.id === courseId) {
-      setOpenedCourse((prev) =>
-        prev ? { ...prev, favorite: !prev.favorite } : prev
-      );
+    const isFavorite = favoriteCourseIds.includes(courseId);
+
+    if (isFavorite) {
+      await supabase
+        .from("favorite_courses")
+        .delete()
+        .eq("user_id", session.user.id)
+        .eq("course_id", courseId);
+      setFavoriteCourseIds((prev) => prev.filter((id) => id !== courseId));
+    } else {
+      await supabase.from("favorite_courses").insert({
+        user_id: session.user.id,
+        course_id: courseId
+      });
+      setFavoriteCourseIds((prev) => [...prev, courseId]);
     }
   };
 
@@ -958,8 +1215,8 @@ function App() {
     }
   };
 
-  const saveRound = () => {
-    if (!openedCourse || !competitionHoles.length || roundAlreadySaved) return;
+  const saveRound = async () => {
+    if (!supabase || !session?.user || !openedCourse || !competitionHoles.length || roundAlreadySaved) return;
 
     const formattedDate = formatDateItalian(Date.now());
     const cleanCompetitionName = sanitizeRoundName(roundSetup.competitionName);
@@ -968,23 +1225,49 @@ function App() {
         ? `${cleanCompetitionName}_${formattedDate}`
         : `Giro_${formattedDate}`;
 
+    const { data, error } = await supabase
+      .from("rounds")
+      .insert({
+        user_id: session.user.id,
+        course_id: openedCourse.id,
+        saved_name: savedName,
+        competition_name: cleanCompetitionName || "Giro",
+        formatted_date: formattedDate,
+        gross_total: grossTotal,
+        net_total: netTotal,
+        stableford_total: stablefordTotal,
+        estimated_hcp_after_round: estimatedHcpAfterRound,
+        scores: roundScores,
+        manual_received_shots: manualReceivedShots,
+        total_competition_holes: roundSetup.totalCompetitionHoles,
+        start_hole: roundSetup.startHole,
+        player_hcp: userProfile.hcp
+      })
+      .select("*")
+      .single();
+
+    if (error) {
+      setAuthError(error.message || "Errore nel salvataggio del giro.");
+      return;
+    }
+
     const newRound = {
-      id: Date.now(),
-      savedName,
-      competitionName: cleanCompetitionName || "Giro",
-      courseId: openedCourse.id,
+      id: data.id,
+      savedName: data.saved_name,
+      competitionName: data.competition_name,
+      courseId: data.course_id,
       courseName: openedCourse.name,
-      createdAt: Date.now(),
-      formattedDate,
-      playerHcp: userProfile.hcp,
-      totalCompetitionHoles: roundSetup.totalCompetitionHoles,
-      startHole: roundSetup.startHole,
-      grossTotal,
-      netTotal,
-      stablefordTotal,
-      estimatedHcpAfterRound,
-      scores: roundScores,
-      manualReceivedShots
+      createdAt: data.created_at,
+      formattedDate: data.formatted_date,
+      playerHcp: data.player_hcp,
+      totalCompetitionHoles: data.total_competition_holes,
+      startHole: data.start_hole,
+      grossTotal: data.gross_total,
+      netTotal: data.net_total,
+      stablefordTotal: data.stableford_total,
+      estimatedHcpAfterRound: data.estimated_hcp_after_round,
+      scores: data.scores || [],
+      manualReceivedShots: data.manual_received_shots || {}
     };
 
     setSavedRounds((prev) => [newRound, ...prev].slice(0, MAX_SAVED_ROUNDS));
@@ -1025,7 +1308,11 @@ function App() {
   });
   };
 
-  const deleteRound = (roundId) => {
+  const deleteRound = async (roundId) => {
+    if (supabase && session?.user) {
+      await supabase.from("rounds").delete().eq("id", roundId).eq("user_id", session.user.id);
+    }
+
     setSavedRounds((prev) => prev.filter((round) => round.id !== roundId));
     setSelectedHistoryRound((prev) => (prev?.id === roundId ? null : prev));
   };
@@ -1060,41 +1347,6 @@ function App() {
     [getAutomaticReceivedShots]
   );
 
-  const persistMissingUserProfile = async (activeUser) => {
-    if (!supabase || !activeUser) return;
-
-    const pendingFirstName = authForm.firstName.trim();
-    const pendingHcp =
-      authForm.hcp === "" ? null : Number(String(authForm.hcp).replace(",", "."));
-    const metadata = activeUser.user_metadata || {};
-    const nextData = {};
-
-    if (
-      pendingFirstName &&
-      (typeof metadata.firstName !== "string" || metadata.firstName.trim() === "")
-    ) {
-      nextData.firstName = pendingFirstName;
-    }
-
-    if (
-      pendingHcp !== null &&
-      !Number.isNaN(pendingHcp) &&
-      pendingHcp >= 0 &&
-      (typeof metadata.hcp !== "number" && typeof metadata.hcp !== "string")
-    ) {
-      nextData.hcp = Number(pendingHcp.toFixed(1));
-    }
-
-    if (Object.keys(nextData).length === 0) return;
-
-    await supabase.auth.updateUser({
-      data: {
-        ...metadata,
-        ...nextData
-      }
-    });
-  };
-
   const handleAuthSubmit = async () => {
     if (!supabase) {
       setAuthError("Configurazione Supabase mancante.");
@@ -1102,24 +1354,9 @@ function App() {
     }
 
     const email = authForm.email.trim();
-    const firstName = authForm.firstName.trim();
-    const hcpValue =
-      authForm.hcp === "" ? null : Number(String(authForm.hcp).replace(",", "."));
 
     if (!email) {
       setAuthError("Inserisci l'email.");
-      setAuthMessage("");
-      return;
-    }
-
-    if (!firstName) {
-      setAuthError("Inserisci il nome del giocatore.");
-      setAuthMessage("");
-      return;
-    }
-
-    if (hcpValue !== null && (Number.isNaN(hcpValue) || hcpValue < 0)) {
-      setAuthError("Inserisci un HCP valido.");
       setAuthMessage("");
       return;
     }
@@ -1131,11 +1368,7 @@ function App() {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        shouldCreateUser: true,
-        data: {
-          firstName,
-          ...(hcpValue !== null ? { hcp: Number(hcpValue.toFixed(1)) } : {})
-        }
+        shouldCreateUser: true
       }
     });
 
@@ -1185,8 +1418,12 @@ function App() {
       return;
     }
 
-    await persistMissingUserProfile(user);
     setAuthMessage("Accesso completato");
+    if (user?.email) {
+      setAuthForm({
+        email: user.email
+      });
+    }
     setAuthSubmitting(false);
   };
 
@@ -1200,14 +1437,19 @@ function App() {
     if (!supabase) return;
     const emailToKeep = session?.user?.email || authForm.email || "";
     await supabase.auth.signOut();
-    setAuthForm((prev) => ({
-      ...prev,
+    setAuthForm({
       email: emailToKeep
-    }));
+    });
+    setOnboardingForm({
+      firstName: "",
+      hcp: ""
+    });
     setAuthStep("request");
     setOtpCode("");
     setAuthError("");
     setAuthMessage("");
+    setAppReady(false);
+    setNeedsOnboarding(false);
     setActiveSheet(null);
     setSheetClosing(false);
   };
@@ -1223,23 +1465,126 @@ function App() {
 
     if (!cleanName || Number.isNaN(numeric) || numeric < 0) return;
 
-    setUserProfile((prev) => ({
-      ...prev,
-      firstName: cleanName,
-      hcp: Number(numeric.toFixed(1))
-    }));
-
     if (supabase && session?.user) {
+      const nextProfile = {
+        first_name: cleanName,
+        hcp: Number(numeric.toFixed(1)),
+        updated_at: new Date().toISOString()
+      };
+
+      const { error } = await supabase
+        .from("profiles")
+        .update(nextProfile)
+        .eq("id", session.user.id);
+
+      if (error) {
+        setAuthError(error.message || "Errore nel salvataggio del profilo.");
+        return;
+      }
+
+      setUserProfile((prev) => ({
+        ...prev,
+        firstName: cleanName,
+        hcp: Number(numeric.toFixed(1))
+      }));
+
       await supabase.auth.updateUser({
         data: {
           ...(session.user.user_metadata || {}),
-          firstName: cleanName,
-          hcp: Number(numeric.toFixed(1))
+          firstName: cleanName
         }
       });
     }
 
     closeHcpEditor();
+  };
+
+  const handleOnboardingSubmit = async () => {
+    if (!supabase || !session?.user) return;
+
+    const cleanName = onboardingForm.firstName.trim();
+    const cleanHcpValue = String(onboardingForm.hcp).replace(",", ".").trim();
+    const numericHcp = cleanHcpValue === "" ? null : Number(cleanHcpValue);
+
+    if (!cleanName) {
+      setAuthError("Inserisci il nome del giocatore.");
+      return;
+    }
+
+    if (numericHcp !== null && (Number.isNaN(numericHcp) || numericHcp < 0)) {
+      setAuthError("Inserisci un HCP valido.");
+      return;
+    }
+
+    setAuthSubmitting(true);
+    setAuthError("");
+
+    const nextHcp = numericHcp === null ? 36 : Number(numericHcp.toFixed(1));
+    const { error } = await supabase.from("profiles").insert({
+      id: session.user.id,
+      first_name: cleanName,
+      hcp: nextHcp,
+      role: "user"
+    });
+
+    if (error) {
+      setAuthError(error.message || "Errore nel salvataggio del profilo.");
+      setAuthSubmitting(false);
+      return;
+    }
+
+    setUserProfile({
+      firstName: cleanName,
+      hcp: nextHcp,
+      role: "user"
+    });
+    setNeedsOnboarding(false);
+    setAppReady(true);
+    setAuthSubmitting(false);
+  };
+
+  const openCourseReport = (course) => {
+    setCourseReportTarget(course);
+    setCourseReportMessage("");
+    setCourseReportFeedback("");
+  };
+
+  const closeCourseReport = () => {
+    setCourseReportTarget(null);
+    setCourseReportMessage("");
+    setCourseReportSubmitting(false);
+    setCourseReportFeedback("");
+  };
+
+  const submitCourseReport = async () => {
+    if (!supabase || !session?.user || !courseReportTarget) return;
+
+    const cleanMessage = normalizeWhitespace(courseReportMessage);
+    if (!cleanMessage) {
+      setCourseReportFeedback("Inserisci una breve descrizione dell'anomalia.");
+      return;
+    }
+
+    setCourseReportSubmitting(true);
+    setCourseReportFeedback("");
+
+    const { error } = await supabase.from("course_reports").insert({
+      course_id: courseReportTarget.id,
+      reported_by: session.user.id,
+      message: cleanMessage
+    });
+
+    if (error) {
+      setCourseReportFeedback(error.message || "Errore nell'invio della segnalazione.");
+      setCourseReportSubmitting(false);
+      return;
+    }
+
+    setCourseReportSubmitting(false);
+    setCourseReportFeedback("Segnalazione inviata.");
+    window.setTimeout(() => {
+      closeCourseReport();
+    }, 700);
   };
 
   const closeActiveSheet = () => {
@@ -1913,6 +2258,117 @@ function App() {
     </div>
   ) : null;
 
+  const courseReportModal = courseReportTarget ? (
+    <div
+      onClick={closeCourseReport}
+      style={{
+        position: "fixed",
+        inset: 0,
+        backgroundColor: colors.overlay,
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        padding: "20px",
+        boxSizing: "border-box",
+        zIndex: 43
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          backgroundColor: colors.card,
+          padding: "18px",
+          borderRadius: "18px",
+          width: "100%",
+          maxWidth: "390px",
+          border: `1px solid ${colors.border}`,
+          boxSizing: "border-box",
+          fontFamily: appFont
+        }}
+      >
+        <div
+          style={{
+            fontSize: "20px",
+            fontWeight: 700
+          }}
+        >
+          Segnala anomalia
+        </div>
+        <div
+          style={{
+            marginTop: "6px",
+            color: colors.subtext,
+            fontSize: "14px",
+            lineHeight: 1.5
+          }}
+        >
+          {courseReportTarget.name}
+        </div>
+
+        <textarea
+          value={courseReportMessage}
+          onChange={(e) => setCourseReportMessage(e.target.value)}
+          placeholder="Descrivi brevemente cosa non torna"
+          style={{
+            width: "100%",
+            minHeight: "120px",
+            marginTop: "16px",
+            padding: "13px 14px",
+            backgroundColor: colors.inputBg,
+            border: `1px solid ${colors.inputBorder}`,
+            borderRadius: "12px",
+            color: colors.text,
+            boxSizing: "border-box",
+            outline: "none",
+            fontSize: "15px",
+            fontFamily: appFont,
+            resize: "vertical"
+          }}
+        />
+
+        {courseReportFeedback && (
+          <div
+            style={{
+              marginTop: "12px",
+              color:
+                courseReportFeedback === "Segnalazione inviata."
+                  ? colors.green
+                  : "#d64545",
+              fontSize: "13px",
+              lineHeight: 1.5
+            }}
+          >
+            {courseReportFeedback}
+          </div>
+        )}
+
+        <button
+          onClick={submitCourseReport}
+          style={{
+            marginTop: "20px",
+            width: "100%",
+            padding: "13px",
+            backgroundColor: colors.green,
+            border: "none",
+            color: isLight ? "#08351c" : "black",
+            fontWeight: 700,
+            borderRadius: "12px",
+            cursor: "pointer",
+            opacity: 1,
+            fontFamily: appFont,
+            fontSize: "15px"
+          }}
+        >
+          {courseReportSubmitting ? "Invio in corso..." : "Invia segnalazione"}
+        </button>
+
+        <button onClick={closeCourseReport} style={modalCloseButtonStyle}>
+          Chiudi
+        </button>
+      </div>
+    </div>
+  ) : null;
+
   const overlayPortal =
     typeof document !== "undefined"
       ? createPortal(
@@ -1921,6 +2377,7 @@ function App() {
             {globalRoundsHistoryModal}
             {historyRoundDetailModal}
             {hcpEditorModal}
+            {courseReportModal}
           </>,
           document.body
         )
@@ -2096,65 +2553,6 @@ function App() {
 
           {authStep === "request" ? (
             <>
-              <div style={{ marginTop: "22px" }}>
-                <div style={{ fontSize: "14px", marginBottom: "8px" }}>Giocatore</div>
-                <input
-                  type="text"
-                  name="firstName"
-                  autoComplete="given-name"
-                  value={authForm.firstName}
-                  onChange={(e) =>
-                    setAuthForm((prev) => ({
-                      ...prev,
-                      firstName: e.target.value
-                    }))
-                  }
-                  placeholder="Il tuo nome sullo scorecard"
-                  style={{
-                    width: "100%",
-                    padding: "13px 14px",
-                    backgroundColor: colors.inputBg,
-                    border: `1px solid ${colors.inputBorder}`,
-                    borderRadius: "12px",
-                    color: colors.text,
-                    boxSizing: "border-box",
-                    outline: "none",
-                    fontSize: "15px",
-                    fontFamily: appFont
-                  }}
-                />
-              </div>
-
-              <div style={{ marginTop: "14px" }}>
-                <div style={{ fontSize: "14px", marginBottom: "8px" }}>HCP</div>
-                <input
-                  type="text"
-                  name="hcp"
-                  autoComplete="off"
-                  inputMode="decimal"
-                  value={authForm.hcp}
-                  onChange={(e) =>
-                    setAuthForm((prev) => ({
-                      ...prev,
-                      hcp: e.target.value
-                    }))
-                  }
-                  placeholder="Es. 36"
-                  style={{
-                    width: "100%",
-                    padding: "13px 14px",
-                    backgroundColor: colors.inputBg,
-                    border: `1px solid ${colors.inputBorder}`,
-                    borderRadius: "12px",
-                    color: colors.text,
-                    boxSizing: "border-box",
-                    outline: "none",
-                    fontSize: "15px",
-                    fontFamily: appFont
-                  }}
-                />
-              </div>
-
               <div style={{ marginTop: "14px", marginBottom: "20px" }}>
                 <div style={{ fontSize: "14px", marginBottom: "8px" }}>Email</div>
                 <input
@@ -2266,6 +2664,169 @@ function App() {
           >
             Riceverai un codice di accesso solo la prima volta e poi resterai connesso
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (session && (profileLoading || !appReady) && !needsOnboarding) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          backgroundColor: colors.bg,
+          color: colors.text,
+          fontFamily: appFont,
+          padding: "24px",
+          boxSizing: "border-box",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center"
+        }}
+      >
+        <div
+          style={{
+            width: "100%",
+            maxWidth: "380px",
+            backgroundColor: colors.card,
+            border: `1px solid ${colors.border}`,
+            borderRadius: "24px",
+            padding: "24px",
+            boxSizing: "border-box",
+            boxShadow: isLight
+              ? "0 18px 36px rgba(17, 24, 39, 0.08)"
+              : "0 18px 36px rgba(0, 0, 0, 0.26)"
+          }}
+        >
+          <div style={{ fontSize: "24px", fontWeight: 700 }}>Prepariamo il profilo</div>
+          <div
+            style={{
+              marginTop: "8px",
+              color: colors.subtext,
+              fontSize: "14px",
+              lineHeight: 1.5
+            }}
+          >
+            Caricamento in corso...
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (session && needsOnboarding) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          backgroundColor: colors.bg,
+          color: colors.text,
+          fontFamily: appFont,
+          padding: "24px",
+          boxSizing: "border-box",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center"
+        }}
+      >
+        <div
+          style={{
+            width: "100%",
+            maxWidth: "380px",
+            backgroundColor: colors.card,
+            border: `1px solid ${colors.border}`,
+            borderRadius: "24px",
+            padding: "24px",
+            boxSizing: "border-box",
+            boxShadow: isLight
+              ? "0 18px 36px rgba(17, 24, 39, 0.08)"
+              : "0 18px 36px rgba(0, 0, 0, 0.26)"
+          }}
+        >
+          <div style={{ fontSize: "28px", fontWeight: 700 }}>Completa il profilo</div>
+          <div
+            style={{
+              marginTop: "8px",
+              color: colors.subtext,
+              fontSize: "14px",
+              lineHeight: 1.5
+            }}
+          >
+            Inserisci il nome giocatore e il tuo HCP per iniziare.
+          </div>
+
+          <div style={{ marginTop: "22px" }}>
+            <div style={{ fontSize: "14px", marginBottom: "8px" }}>Giocatore</div>
+            <input
+              type="text"
+              autoComplete="given-name"
+              value={onboardingForm.firstName}
+              onChange={(e) =>
+                setOnboardingForm((prev) => ({
+                  ...prev,
+                  firstName: e.target.value
+                }))
+              }
+              placeholder="Il tuo nome sullo scorecard"
+              style={{
+                width: "100%",
+                padding: "13px 14px",
+                backgroundColor: colors.inputBg,
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: "12px",
+                color: colors.text,
+                boxSizing: "border-box",
+                outline: "none",
+                fontSize: "15px",
+                fontFamily: appFont
+              }}
+            />
+          </div>
+
+          <div style={{ marginTop: "14px" }}>
+            <div style={{ fontSize: "14px", marginBottom: "8px" }}>HCP</div>
+            <input
+              type="text"
+              inputMode="decimal"
+              value={onboardingForm.hcp}
+              onChange={(e) =>
+                setOnboardingForm((prev) => ({
+                  ...prev,
+                  hcp: e.target.value
+                }))
+              }
+              placeholder="Es. 36"
+              style={{
+                width: "100%",
+                padding: "13px 14px",
+                backgroundColor: colors.inputBg,
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: "12px",
+                color: colors.text,
+                boxSizing: "border-box",
+                outline: "none",
+                fontSize: "15px",
+                fontFamily: appFont
+              }}
+            />
+          </div>
+
+          {authError && (
+            <div
+              style={{
+                marginTop: "14px",
+                color: "#d64545",
+                fontSize: "13px",
+                lineHeight: 1.5
+              }}
+            >
+              {authError}
+            </div>
+          )}
+
+          <button onClick={handleOnboardingSubmit} style={primaryButtonStyle(true)}>
+            {authSubmitting ? "Salvataggio in corso..." : "Continua"}
+          </button>
         </div>
       </div>
     );
@@ -2625,6 +3186,25 @@ function App() {
         >
           {course.holesCount} buche • Par {course.totalPar}
         </div>
+
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            openCourseReport(course);
+          }}
+          style={{
+            marginTop: "8px",
+            border: "none",
+            background: "transparent",
+            color: colors.subtext,
+            fontSize: "12px",
+            padding: 0,
+            cursor: "pointer",
+            fontFamily: appFont
+          }}
+        >
+          Segnala anomalia
+        </button>
       </div>
 
       <div
@@ -2715,6 +3295,22 @@ function App() {
           >
             Campo da {openedCourse.holesCount} buche
           </div>
+
+          <button
+            onClick={() => openCourseReport(openedCourse)}
+            style={{
+              marginTop: "12px",
+              border: "none",
+              background: "transparent",
+              color: colors.subtext,
+              fontSize: "12px",
+              padding: 0,
+              cursor: "pointer",
+              fontFamily: appFont
+            }}
+          >
+            Segnala anomalia
+          </button>
         </div>
 
         <h2 style={roundSetupSectionTitleStyle}>Nome gara</h2>
@@ -2911,6 +3507,22 @@ function App() {
               {userProfile.hcp}
             </span>
           </div>
+
+          <button
+            onClick={() => openCourseReport(openedCourse)}
+            style={{
+              marginTop: "12px",
+              border: "none",
+              background: "transparent",
+              color: colors.subtext,
+              fontSize: "12px",
+              padding: 0,
+              cursor: "pointer",
+              fontFamily: appFont
+            }}
+          >
+            Segnala anomalia
+          </button>
         </div>
 
         <div
@@ -4177,8 +4789,21 @@ function App() {
                   richiamato senza rimappatura.
                 </div>
 
+                {courseSaveError && (
+                  <div
+                    style={{
+                      marginTop: "14px",
+                      color: "#d64545",
+                      fontSize: "13px",
+                      lineHeight: 1.5
+                    }}
+                  >
+                    {courseSaveError}
+                  </div>
+                )}
+
                 <button onClick={saveCourse} style={primaryButtonStyle(true)}>
-                  Salva campo
+                  {courseSaveLoading ? "Salvataggio in corso..." : "Salva campo"}
                 </button>
 
                 <button onClick={goBackFromSummary} style={secondaryButtonStyle}>
