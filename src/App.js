@@ -282,21 +282,30 @@ function App() {
   useLayoutEffect(() => {
     const rootElement = document.getElementById("root");
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+    const colorSchemeMeta = document.querySelector('meta[name="color-scheme"]');
     const appleStatusBarMeta = document.querySelector(
       'meta[name="apple-mobile-web-app-status-bar-style"]'
     );
+    const runtimeColorScheme = isLight ? "light" : "dark";
 
     document.body.style.margin = "0";
     document.body.style.backgroundColor = colors.bg;
     document.body.style.color = colors.text;
     document.body.style.fontFamily = appFont;
+    document.body.style.colorScheme = runtimeColorScheme;
     document.documentElement.style.backgroundColor = colors.bg;
     document.documentElement.style.color = colors.text;
+    document.documentElement.style.colorScheme = runtimeColorScheme;
     if (rootElement) {
       rootElement.style.backgroundColor = colors.bg;
+      rootElement.style.color = colors.text;
+      rootElement.style.colorScheme = runtimeColorScheme;
     }
     if (themeColorMeta) {
       themeColorMeta.setAttribute("content", colors.bg);
+    }
+    if (colorSchemeMeta) {
+      colorSchemeMeta.setAttribute("content", runtimeColorScheme);
     }
     if (appleStatusBarMeta) {
       appleStatusBarMeta.setAttribute(
@@ -310,10 +319,14 @@ function App() {
       document.body.style.backgroundColor = "";
       document.body.style.color = "";
       document.body.style.fontFamily = "";
+      document.body.style.colorScheme = "";
       document.documentElement.style.backgroundColor = "";
       document.documentElement.style.color = "";
+      document.documentElement.style.colorScheme = "";
       if (rootElement) {
         rootElement.style.backgroundColor = "";
+        rootElement.style.color = "";
+        rootElement.style.colorScheme = "";
       }
     };
   }, [colors.bg, colors.text, isLight]);
