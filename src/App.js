@@ -61,6 +61,24 @@ function receivedShotsToSymbols(value) {
   return "—";
 }
 
+function getFriendlyAuthErrorMessage(message) {
+  const normalizedMessage = String(message || "").toLowerCase();
+
+  if (normalizedMessage.includes("rate limit")) {
+    return "Hai richiesto troppi codici in poco tempo. Attendi un attimo e riprova.";
+  }
+
+  if (normalizedMessage.includes("email address not authorized")) {
+    return "Questa email non e' ancora abilitata. Per la beta conviene configurare un SMTP personalizzato in Supabase.";
+  }
+
+  if (normalizedMessage.includes("expired") || normalizedMessage.includes("invalid")) {
+    return "Codice non valido o scaduto";
+  }
+
+  return message || "Si e' verificato un problema. Riprova.";
+}
+
 function App() {
   const [showDialog, setShowDialog] = useState(false);
   const [dialogStep, setDialogStep] = useState(1);
@@ -110,6 +128,7 @@ function App() {
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
   const [authSubmitting, setAuthSubmitting] = useState(false);
   const [authStep, setAuthStep] = useState("request");
+  const [otpCooldownSeconds, setOtpCooldownSeconds] = useState(0);
   const [authForm, setAuthForm] = useState({
     email: ""
   });
@@ -343,6 +362,18 @@ function App() {
   useEffect(() => {
     localStorage.setItem(THEME_STORAGE_KEY, theme);
   }, [theme]);
+
+  useEffect(() => {
+    if (otpCooldownSeconds <= 0) return undefined;
+
+    const timeoutId = window.setTimeout(() => {
+      setOtpCooldownSeconds((prev) => Math.max(0, prev - 1));
+    }, 1000);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [otpCooldownSeconds]);
 
   useEffect(() => {
     if (!hasSupabaseConfig || !supabase) {
@@ -1357,6 +1388,14 @@ function App() {
       return;
     }
 
+    if (otpCooldownSeconds > 0) {
+      setAuthError(
+        `Attendi ${otpCooldownSeconds}s prima di richiedere un nuovo codice.`
+      );
+      setAuthMessage("");
+      return;
+    }
+
     const email = authForm.email.trim();
 
     if (!email) {
@@ -1377,14 +1416,15 @@ function App() {
     });
 
     if (error) {
-      setAuthError(error.message);
+      setAuthError(getFriendlyAuthErrorMessage(error.message));
       setAuthSubmitting(false);
       return;
     }
 
-    setAuthMessage("");
+    setAuthMessage("Controlla la tua email e inserisci il codice ricevuto.");
     setOtpCode("");
     setAuthStep("verify");
+    setOtpCooldownSeconds(60);
     setAuthSubmitting(false);
   };
 
@@ -1454,6 +1494,7 @@ function App() {
     setAuthMessage("");
     setAppReady(false);
     setNeedsOnboarding(false);
+    setOtpCooldownSeconds(0);
     setActiveSheet(null);
     setSheetClosing(false);
   };
@@ -2642,7 +2683,11 @@ function App() {
           )}
 
           {authStep === "request" ? (
-            <button onClick={handleAuthSubmit} style={primaryButtonStyle(true)}>
+            <button
+              onClick={handleAuthSubmit}
+              disabled={authSubmitting || otpCooldownSeconds > 0}
+              style={primaryButtonStyle(!(authSubmitting || otpCooldownSeconds > 0))}
+            >
               {authSubmitting ? "Invio in corso..." : "Inizia il giro"}
             </button>
           ) : (
@@ -2651,8 +2696,21 @@ function App() {
                 {authSubmitting ? "Verifica in corso..." : "Entra nel giro"}
               </button>
 
-              <button onClick={handleResendOtp} style={secondaryButtonStyle}>
-                Invia di nuovo il codice
+              <button
+                onClick={handleResendOtp}
+                disabled={authSubmitting || otpCooldownSeconds > 0}
+                style={{
+                  ...secondaryButtonStyle,
+                  opacity: authSubmitting || otpCooldownSeconds > 0 ? 0.65 : 1,
+                  cursor:
+                    authSubmitting || otpCooldownSeconds > 0
+                      ? "not-allowed"
+                      : "pointer"
+                }}
+              >
+                {otpCooldownSeconds > 0
+                  ? `Invia di nuovo il codice tra ${otpCooldownSeconds}s`
+                  : "Invia di nuovo il codice"}
               </button>
             </>
           )}
