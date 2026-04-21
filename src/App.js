@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal, flushSync } from "react-dom";
 import { hasSupabaseConfig, supabase } from "./lib/supabase";
 
@@ -279,7 +279,7 @@ function App() {
 
   const hasActiveOverlay = showDialog || Boolean(activeSheet) || sheetClosing || Boolean(selectedHistoryRound);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const rootElement = document.getElementById("root");
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
     const appleStatusBarMeta = document.querySelector(
