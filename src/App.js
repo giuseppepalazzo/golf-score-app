@@ -20,7 +20,6 @@ const HEADER_CIRCLE_RADIUS = "22px";
 const CARD_FAVORITE_SIZE = "40px";
 const CARD_FAVORITE_RADIUS = "20px";
 const SHEET_CLOSE_DURATION = 220;
-const SHEET_OPEN_DURATION = 280;
 
 const stepperButtonStyle = {
   width: "44px",
@@ -94,7 +93,6 @@ function App() {
 
   const [manualReceivedShots, setManualReceivedShots] = useState({});
 
-  const [showHcpEditor, setShowHcpEditor] = useState(false);
   const [firstNameDraft, setFirstNameDraft] = useState("");
   const [hcpDraft, setHcpDraft] = useState("");
 
@@ -103,13 +101,9 @@ function App() {
   const [searchEmptyHintPulse, setSearchEmptyHintPulse] = useState(false);
   const [hcpHighlightActive, setHcpHighlightActive] = useState(false);
   const [estimatedHcpHighlightActive, setEstimatedHcpHighlightActive] = useState(false);
-  const [showAppMenu, setShowAppMenu] = useState(false);
-  const [appMenuClosing, setAppMenuClosing] = useState(false);
-  const [appMenuTouchStartY, setAppMenuTouchStartY] = useState(null);
-  const [hcpEditorClosing, setHcpEditorClosing] = useState(false);
-  const [hcpEditorTouchStartY, setHcpEditorTouchStartY] = useState(null);
-  const [showGlobalRoundsHistory, setShowGlobalRoundsHistory] = useState(false);
-  const [globalRoundsHistoryTouchStartY, setGlobalRoundsHistoryTouchStartY] = useState(null);
+  const [activeSheet, setActiveSheet] = useState(null);
+  const [sheetClosing, setSheetClosing] = useState(false);
+  const [sheetTouchStartY, setSheetTouchStartY] = useState(null);
   const [selectedHistoryRound, setSelectedHistoryRound] = useState(null);
   const [historyRoundDetailTouchStartY, setHistoryRoundDetailTouchStartY] = useState(null);
   const [showPrivacyScreen, setShowPrivacyScreen] = useState(false);
@@ -283,14 +277,7 @@ function App() {
     [colors]
   );
 
-  const hasActiveOverlay =
-    showDialog ||
-    showAppMenu ||
-    appMenuClosing ||
-    showHcpEditor ||
-    hcpEditorClosing ||
-    showGlobalRoundsHistory ||
-    Boolean(selectedHistoryRound);
+  const hasActiveOverlay = showDialog || Boolean(activeSheet) || sheetClosing || Boolean(selectedHistoryRound);
 
   useEffect(() => {
     const rootElement = document.getElementById("root");
@@ -646,7 +633,8 @@ function App() {
   const prepareRoundSetup = (course) => {
     setOpenedCourse(course);
     setShowRoundSetup(true);
-    setShowAppMenu(false);
+    setActiveSheet(null);
+    setSheetClosing(false);
     setShowRoundsHistory(false);
     setRoundAlreadySaved(false);
     setManualReceivedShots({});
@@ -703,7 +691,8 @@ function App() {
   const closeCourse = () => {
     setOpenedCourse(null);
     setShowRoundSetup(false);
-    setShowAppMenu(false);
+    setActiveSheet(null);
+    setSheetClosing(false);
     setRoundScores([]);
     setShowRoundsHistory(false);
     setRoundAlreadySaved(false);
@@ -996,21 +985,10 @@ function App() {
 
   const openHistoryFromMenu = () => {
     setShowRoundsHistory(false);
-
-    if (showAppMenu) {
-      flushSync(() => {
-        setShowGlobalRoundsHistory(true);
-      });
-      closeAppMenu();
-      return;
-    }
-
-    setShowGlobalRoundsHistory(true);
-  };
-
-  const closeGlobalRoundsHistory = () => {
-    setGlobalRoundsHistoryTouchStartY(null);
-    setShowGlobalRoundsHistory(false);
+    setSheetClosing(false);
+    flushSync(() => {
+      setActiveSheet("history");
+    });
   };
 
   const closeHistoryRoundDetail = () => {
@@ -1019,7 +997,7 @@ function App() {
   };
 
   const openPrivacyScreen = () => {
-    closeAppMenu();
+    closeActiveSheet();
     window.setTimeout(() => {
       setShowPrivacyScreen(true);
     }, 220);
@@ -1028,18 +1006,10 @@ function App() {
   const openHcpEditor = () => {
     setFirstNameDraft(String(userProfile.firstName || ""));
     setHcpDraft(String(userProfile.hcp));
-
-    if (showAppMenu) {
-      flushSync(() => {
-        setHcpEditorClosing(false);
-        setShowHcpEditor(true);
-      });
-      closeAppMenu();
-      return;
-    }
-
-    setHcpEditorClosing(false);
-    setShowHcpEditor(true);
+    setSheetClosing(false);
+    flushSync(() => {
+      setActiveSheet("hcp");
+    });
   };
 
   const deleteRound = (roundId) => {
@@ -1225,26 +1195,12 @@ function App() {
     setOtpCode("");
     setAuthError("");
     setAuthMessage("");
-    setShowAppMenu(false);
+    setActiveSheet(null);
+    setSheetClosing(false);
   };
 
   const closeHcpEditor = () => {
-    if (
-      document.activeElement &&
-      typeof document.activeElement.blur === "function"
-    ) {
-      document.activeElement.blur();
-    }
-
-    setHcpEditorClosing(true);
-    setHcpEditorTouchStartY(null);
-
-    window.setTimeout(() => {
-      setShowHcpEditor(false);
-      setFirstNameDraft("");
-      setHcpDraft("");
-      setHcpEditorClosing(false);
-    }, 220);
+    closeActiveSheet();
   };
 
   const saveHcp = async () => {
@@ -1273,59 +1229,37 @@ function App() {
     closeHcpEditor();
   };
 
-  const closeAppMenu = () => {
-    setAppMenuClosing(true);
-    setAppMenuTouchStartY(null);
+  const closeActiveSheet = () => {
+    if (
+      document.activeElement &&
+      typeof document.activeElement.blur === "function"
+    ) {
+      document.activeElement.blur();
+    }
+
+    setSheetClosing(true);
+    setSheetTouchStartY(null);
 
     window.setTimeout(() => {
-      setShowAppMenu(false);
-      setAppMenuClosing(false);
+      setActiveSheet(null);
+      setSheetClosing(false);
+      setFirstNameDraft("");
+      setHcpDraft("");
     }, SHEET_CLOSE_DURATION);
   };
 
-  const handleAppMenuTouchStart = (event) => {
-    setAppMenuTouchStartY(event.touches[0]?.clientY ?? null);
+  const handleSheetTouchStart = (event) => {
+    setSheetTouchStartY(event.touches[0]?.clientY ?? null);
   };
 
-  const handleAppMenuTouchEnd = (event) => {
-    if (appMenuTouchStartY === null) return;
+  const handleSheetTouchEnd = (event) => {
+    if (sheetTouchStartY === null) return;
 
-    const touchEndY = event.changedTouches[0]?.clientY ?? appMenuTouchStartY;
-    if (touchEndY - appMenuTouchStartY > 70) {
-      closeAppMenu();
+    const touchEndY = event.changedTouches[0]?.clientY ?? sheetTouchStartY;
+    if (touchEndY - sheetTouchStartY > 70) {
+      closeActiveSheet();
     } else {
-      setAppMenuTouchStartY(null);
-    }
-  };
-
-  const handleHcpEditorTouchStart = (event) => {
-    setHcpEditorTouchStartY(event.touches[0]?.clientY ?? null);
-  };
-
-  const handleHcpEditorTouchEnd = (event) => {
-    if (hcpEditorTouchStartY === null) return;
-
-    const touchEndY = event.changedTouches[0]?.clientY ?? hcpEditorTouchStartY;
-    if (touchEndY - hcpEditorTouchStartY > 70) {
-      closeHcpEditor();
-    } else {
-      setHcpEditorTouchStartY(null);
-    }
-  };
-
-  const handleGlobalRoundsHistoryTouchStart = (event) => {
-    setGlobalRoundsHistoryTouchStartY(event.touches[0]?.clientY ?? null);
-  };
-
-  const handleGlobalRoundsHistoryTouchEnd = (event) => {
-    if (globalRoundsHistoryTouchStartY === null) return;
-
-    const touchEndY =
-      event.changedTouches[0]?.clientY ?? globalRoundsHistoryTouchStartY;
-    if (touchEndY - globalRoundsHistoryTouchStartY > 70) {
-      closeGlobalRoundsHistory();
-    } else {
-      setGlobalRoundsHistoryTouchStartY(null);
+      setSheetTouchStartY(null);
     }
   };
 
@@ -1345,9 +1279,9 @@ function App() {
     }
   };
 
-  const appMenuModal = showAppMenu ? (
+  const sheetModal = activeSheet ? (
     <div
-      onClick={closeAppMenu}
+      onClick={closeActiveSheet}
       style={{
         position: "fixed",
         inset: 0,
@@ -1362,8 +1296,8 @@ function App() {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        onTouchStart={handleAppMenuTouchStart}
-        onTouchEnd={handleAppMenuTouchEnd}
+        onTouchStart={handleSheetTouchStart}
+        onTouchEnd={handleSheetTouchEnd}
         style={{
           backgroundColor: colors.card,
           padding: "16px",
@@ -1373,11 +1307,11 @@ function App() {
           border: `1px solid ${colors.border}`,
           boxSizing: "border-box",
           fontFamily: appFont,
-          transform: appMenuClosing
+          transform: sheetClosing
             ? "translateY(18px) scale(0.985)"
             : "translateY(0) scale(1)",
-          opacity: appMenuClosing ? 0 : 1,
-          transition: appMenuClosing
+          opacity: sheetClosing ? 0 : 1,
+          transition: sheetClosing
             ? `transform ${SHEET_CLOSE_DURATION}ms cubic-bezier(0.4, 0, 1, 1), opacity ${SHEET_CLOSE_DURATION}ms cubic-bezier(0.4, 0, 1, 1)`
             : "none",
           willChange: "transform, opacity",
@@ -1395,495 +1329,405 @@ function App() {
           }}
         />
 
-        <div
-          style={{
-            paddingTop: "2px"
-          }}
-        >
-          <button
-            onClick={openHcpEditor}
-            style={{
-              width: "100%",
-              textAlign: "left",
-              padding: "12px 0",
-              border: "none",
-              background: "transparent",
-              color: colors.text,
-              fontSize: "15px",
-              cursor: "pointer",
-              fontFamily: appFont
-            }}
-          >
-            Giocatore
-          </button>
-
-          <button
-            onClick={openHistoryFromMenu}
-            style={{
-              width: "100%",
-              textAlign: "left",
-              padding: "12px 0 2px 0",
-              border: "none",
-              background: "transparent",
-              color: colors.text,
-              fontSize: "15px",
-              cursor: "pointer",
-              fontFamily: appFont
-            }}
-          >
-            I tuoi giri
-          </button>
-        </div>
-
-        <div
-          style={{
-            paddingTop: "16px",
-            paddingBottom: "4px"
-          }}
-        >
-          <div style={{ fontSize: "15px", marginBottom: "8px" }}>Tema</div>
-
-          <div style={{ display: "flex", gap: "8px", marginLeft: "1px" }}>
-            <button
-              onClick={() => setTheme("light")}
-              style={{
-                flex: 1,
-                padding: "8px",
-                borderRadius: "10px",
-                border:
-                  theme === "light"
-                    ? `1px solid ${colors.green}`
-                    : `1px solid ${colors.borderStrong}`,
-                backgroundColor:
-                  theme === "light" ? colors.greenDark : colors.inputBg,
-                color: colors.text,
-                cursor: "pointer",
-                fontFamily: appFont
-              }}
-            >
-              Chiaro
-            </button>
-
-            <button
-              onClick={() => setTheme("dark")}
-              style={{
-                flex: 1,
-                padding: "8px",
-                borderRadius: "10px",
-                border:
-                  theme === "dark"
-                    ? `1px solid ${colors.green}`
-                    : `1px solid ${colors.borderStrong}`,
-                backgroundColor:
-                  theme === "dark" ? colors.greenDark : colors.inputBg,
-                color: colors.text,
-                cursor: "pointer",
-                fontFamily: appFont
-              }}
-            >
-              Scuro
-            </button>
-          </div>
-
-          <div
-            style={{
-              marginTop: "10px",
-              display: "flex",
-              gap: "8px",
-              marginLeft: "1px"
-            }}
-          >
-            <button
-              style={{
-                flex: 1,
-                padding: "8px",
-                borderRadius: "10px",
-                border: `1px solid ${colors.green}`,
-                backgroundColor: colors.greenDark,
-                color: colors.text,
-                cursor: "default",
-                fontFamily: appFont
-              }}
-            >
-              Italiano
-            </button>
-
-            <button
-              disabled
-              style={{
-                flex: 1,
-                padding: "8px",
-                borderRadius: "10px",
-                border: `1px solid ${colors.borderStrong}`,
-                backgroundColor: colors.inputBg,
-                color: colors.subtext,
-                cursor: "not-allowed",
-                fontFamily: appFont,
-                opacity: 0.8
-              }}
-            >
-              English
-            </button>
-          </div>
-        </div>
-
-        <div
-          style={{
-            paddingTop: "16px",
-            paddingBottom: "2px"
-          }}
-        >
-          <button
-            onClick={openPrivacyScreen}
-            style={{
-              width: "100%",
-              textAlign: "left",
-              padding: 0,
-              border: "none",
-              background: "transparent",
-              color: colors.subtext,
-              opacity: 0.78,
-              fontSize: "14px",
-              cursor: "pointer",
-              fontFamily: appFont
-            }}
-          >
-            Privacy Policy
-          </button>
-        </div>
-
-        <div style={{ paddingTop: "34px" }}>
-          <button
-            onClick={handleLogout}
-            style={{
-              width: "100%",
-              textAlign: "left",
-              padding: "12px 0 2px 0",
-              border: "none",
-              background: "transparent",
-              color: colors.text,
-              fontSize: "15px",
-              cursor: "pointer",
-              fontFamily: appFont
-            }}
-          >
-            Esci
-          </button>
-        </div>
-
-        <button onClick={closeAppMenu} style={modalCloseButtonStyle}>
-          Chiudi
-        </button>
-      </div>
-    </div>
-  ) : null;
-
-  const hcpEditorModal = showHcpEditor ? (
-    <div
-      onClick={closeHcpEditor}
-      style={{
-        position: "fixed",
-        inset: 0,
-        backgroundColor: colors.overlay,
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        padding: "20px",
-        boxSizing: "border-box",
-        zIndex: 50,
-        opacity: hcpEditorClosing ? 0 : 1,
-        transition: hcpEditorClosing ? "opacity 240ms ease-out" : "none"
-      }}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        onTouchStart={handleHcpEditorTouchStart}
-        onTouchEnd={handleHcpEditorTouchEnd}
-        style={{
-          backgroundColor: colors.card,
-          padding: "16px",
-          borderRadius: "18px",
-          width: "100%",
-          maxWidth: "382px",
-          border: `1px solid ${colors.border}`,
-          boxSizing: "border-box",
-          fontFamily: appFont,
-          transform: hcpEditorClosing
-            ? "translateY(18px) scale(0.985)"
-            : "translateY(0) scale(1)",
-          opacity: hcpEditorClosing ? 0 : 1,
-          transition: hcpEditorClosing
-            ? `transform ${SHEET_OPEN_DURATION}ms cubic-bezier(0.22, 1, 0.36, 1), opacity ${SHEET_CLOSE_DURATION}ms ease-out`
-            : "none",
-          willChange: "transform, opacity",
-          touchAction: "pan-y"
-        }}
-      >
-        <div
-          style={{
-            width: "38px",
-            height: "4px",
-            borderRadius: "999px",
-            backgroundColor: colors.borderStrong,
-            opacity: 0.7,
-            margin: "0 auto 12px auto"
-          }}
-        />
-
-        <h3
-          style={{
-            marginTop: 0,
-            marginBottom: "8px",
-            fontSize: "22px",
-            fontWeight: 700
-          }}
-        >
-          Modifica profilo
-        </h3>
-
-        <p
-          style={{
-            color: colors.subtext,
-            fontSize: "14px",
-            marginTop: 0,
-            marginBottom: "14px",
-            lineHeight: 1.4
-          }}
-        >
-          Aggiorna il nome e il tuo HCP.
-        </p>
-
-        <input
-          type="text"
-          value={firstNameDraft}
-          onChange={(e) => setFirstNameDraft(e.target.value)}
-          placeholder="Il tuo nome"
-          style={{
-            width: "100%",
-            padding: "13px 14px",
-            backgroundColor: colors.inputBg,
-            border: `1px solid ${colors.inputBorder}`,
-            borderRadius: "12px",
-            color: colors.text,
-            boxSizing: "border-box",
-            outline: "none",
-            fontSize: "16px",
-            fontFamily: appFont,
-            marginBottom: "12px"
-          }}
-        />
-
-        <input
-          type="text"
-          inputMode="decimal"
-          value={hcpDraft}
-          onChange={(e) => setHcpDraft(e.target.value)}
-          placeholder="Es. 36"
-          style={{
-            width: "100%",
-            padding: "13px 14px",
-            backgroundColor: colors.inputBg,
-            border: `1px solid ${colors.inputBorder}`,
-            borderRadius: "12px",
-            color: colors.text,
-            boxSizing: "border-box",
-            outline: "none",
-            fontSize: "16px",
-            fontFamily: appFont
-          }}
-        />
-
-        <button
-          onClick={saveHcp}
-          style={{
-            marginTop: "20px",
-            width: "100%",
-            padding: "13px",
-            backgroundColor: colors.green,
-            border: "none",
-            color: isLight ? "#08351c" : "black",
-            fontWeight: 700,
-            borderRadius: "12px",
-            cursor: "pointer",
-            opacity: 1,
-            fontFamily: appFont,
-            fontSize: "15px"
-          }}
-        >
-          Salva
-        </button>
-
-        <button onClick={closeHcpEditor} style={modalCloseButtonStyle}>
-          Chiudi
-        </button>
-      </div>
-    </div>
-  ) : null;
-
-  const globalRoundsHistoryModal = showGlobalRoundsHistory ? (
-    <div
-      onClick={closeGlobalRoundsHistory}
-      style={{
-        position: "fixed",
-        inset: 0,
-        backgroundColor: colors.overlay,
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        padding: "20px",
-        boxSizing: "border-box",
-        zIndex: 41
-      }}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        onTouchStart={handleGlobalRoundsHistoryTouchStart}
-        onTouchEnd={handleGlobalRoundsHistoryTouchEnd}
-        style={{
-          backgroundColor: colors.card,
-          padding: "18px",
-          borderRadius: "18px",
-          width: "100%",
-          maxWidth: "390px",
-          maxHeight: "85vh",
-          overflowY: "auto",
-          border: `1px solid ${colors.border}`,
-          boxSizing: "border-box",
-          fontFamily: appFont
-        }}
-      >
-        <div
-          style={{
-            width: "38px",
-            height: "4px",
-            borderRadius: "999px",
-            backgroundColor: colors.borderStrong,
-            opacity: 0.7,
-            margin: "0 auto 12px auto"
-          }}
-        />
-
-        {savedRounds.length === 0 ? (
-          <div
-            style={{
-              color: colors.subtext,
-              lineHeight: 1.5,
-              backgroundColor: colors.cardSecondary,
-              border: `1px solid ${colors.border}`,
-              borderRadius: "14px",
-              padding: "16px"
-            }}
-          >
-            Nessun giro salvato per ora.
-          </div>
-        ) : (
-          savedRounds.map((round) => (
+        {activeSheet === "menu" && (
+          <>
             <div
-              key={round.id}
-              onClick={() => {
-                setShowGlobalRoundsHistory(false);
-                setSelectedHistoryRound(round);
-              }}
               style={{
-                backgroundColor: colors.card,
-                border: `1px solid ${colors.border}`,
-                borderRadius: "16px",
-                padding: "18px",
-                marginBottom: "12px",
-                cursor: "pointer"
+                paddingTop: "2px"
               }}
             >
-              <div
+              <button
+                onClick={openHcpEditor}
                 style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
-                  gap: "12px"
+                  width: "100%",
+                  textAlign: "left",
+                  padding: "12px 0",
+                  border: "none",
+                  background: "transparent",
+                  color: colors.text,
+                  fontSize: "15px",
+                  cursor: "pointer",
+                  fontFamily: appFont
                 }}
               >
-                <div style={{ fontSize: "14px", fontWeight: 700 }}>
-                  {round.savedName}
-                </div>
+                Giocatore
+              </button>
+
+              <button
+                onClick={openHistoryFromMenu}
+                style={{
+                  width: "100%",
+                  textAlign: "left",
+                  padding: "12px 0 2px 0",
+                  border: "none",
+                  background: "transparent",
+                  color: colors.text,
+                  fontSize: "15px",
+                  cursor: "pointer",
+                  fontFamily: appFont
+                }}
+              >
+                I tuoi giri
+              </button>
+            </div>
+
+            <div
+              style={{
+                paddingTop: "16px",
+                paddingBottom: "4px"
+              }}
+            >
+              <div style={{ fontSize: "15px", marginBottom: "8px" }}>Tema</div>
+
+              <div style={{ display: "flex", gap: "8px", marginLeft: "1px" }}>
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    deleteRound(round.id);
-                  }}
+                  onClick={() => setTheme("light")}
                   style={{
-                    border: "none",
-                    background: "transparent",
-                    color: colors.subtext,
+                    flex: 1,
+                    padding: "8px",
+                    borderRadius: "10px",
+                    border:
+                      theme === "light"
+                        ? `1px solid ${colors.green}`
+                        : `1px solid ${colors.borderStrong}`,
+                    backgroundColor:
+                      theme === "light" ? colors.greenDark : colors.inputBg,
+                    color: colors.text,
                     cursor: "pointer",
-                    fontFamily: appFont,
-                    fontSize: "12px",
-                    padding: 0
+                    fontFamily: appFont
                   }}
                 >
-                  Elimina
+                  Chiaro
+                </button>
+
+                <button
+                  onClick={() => setTheme("dark")}
+                  style={{
+                    flex: 1,
+                    padding: "8px",
+                    borderRadius: "10px",
+                    border:
+                      theme === "dark"
+                        ? `1px solid ${colors.green}`
+                        : `1px solid ${colors.borderStrong}`,
+                    backgroundColor:
+                      theme === "dark" ? colors.greenDark : colors.inputBg,
+                    color: colors.text,
+                    cursor: "pointer",
+                    fontFamily: appFont
+                  }}
+                >
+                  Scuro
                 </button>
               </div>
+
               <div
                 style={{
-                  marginTop: "4px",
-                  color: colors.subtext,
-                  fontSize: "12px"
-                }}
-              >
-                {round.courseName} • {round.formattedDate}
-              </div>
-              <div
-                style={{
+                  marginTop: "10px",
                   display: "flex",
                   gap: "8px",
-                  flexWrap: "wrap",
-                  marginTop: "12px"
+                  marginLeft: "1px"
                 }}
               >
-                <div
+                <button
                   style={{
-                    padding: "8px 12px",
-                    borderRadius: "999px",
-                    backgroundColor: colors.pillBg,
-                    border: `1px solid ${colors.pillBorder}`,
-                    fontSize: "13px"
-                  }}
-                >
-                  L {round.grossTotal}
-                </div>
-                <div
-                  style={{
-                    padding: "8px 12px",
-                    borderRadius: "999px",
-                    backgroundColor: colors.pillBg,
-                    border: `1px solid ${colors.pillBorder}`,
-                    fontSize: "13px"
-                  }}
-                >
-                  N {round.netTotal}
-                </div>
-                <div
-                  style={{
-                    padding: "8px 12px",
-                    borderRadius: "999px",
+                    flex: 1,
+                    padding: "8px",
+                    borderRadius: "10px",
+                    border: `1px solid ${colors.green}`,
                     backgroundColor: colors.greenDark,
-                    border: `1px solid ${colors.greenBorder}`,
-                    color: colors.green,
-                    fontSize: "13px"
+                    color: colors.text,
+                    cursor: "default",
+                    fontFamily: appFont
                   }}
                 >
-                  S {round.stablefordTotal}
-                </div>
+                  Italiano
+                </button>
+
+                <button
+                  disabled
+                  style={{
+                    flex: 1,
+                    padding: "8px",
+                    borderRadius: "10px",
+                    border: `1px solid ${colors.borderStrong}`,
+                    backgroundColor: colors.inputBg,
+                    color: colors.subtext,
+                    cursor: "not-allowed",
+                    fontFamily: appFont,
+                    opacity: 0.8
+                  }}
+                >
+                  English
+                </button>
               </div>
             </div>
-          ))
+
+            <div
+              style={{
+                paddingTop: "16px",
+                paddingBottom: "2px"
+              }}
+            >
+              <button
+                onClick={openPrivacyScreen}
+                style={{
+                  width: "100%",
+                  textAlign: "left",
+                  padding: 0,
+                  border: "none",
+                  background: "transparent",
+                  color: colors.subtext,
+                  opacity: 0.78,
+                  fontSize: "14px",
+                  cursor: "pointer",
+                  fontFamily: appFont
+                }}
+              >
+                Privacy Policy
+              </button>
+            </div>
+
+            <div style={{ paddingTop: "34px" }}>
+              <button
+                onClick={handleLogout}
+                style={{
+                  width: "100%",
+                  textAlign: "left",
+                  padding: "12px 0 2px 0",
+                  border: "none",
+                  background: "transparent",
+                  color: colors.text,
+                  fontSize: "15px",
+                  cursor: "pointer",
+                  fontFamily: appFont
+                }}
+              >
+                Esci
+              </button>
+            </div>
+
+            <button onClick={closeActiveSheet} style={modalCloseButtonStyle}>
+              Chiudi
+            </button>
+          </>
         )}
 
-        <button onClick={closeGlobalRoundsHistory} style={modalCloseButtonStyle}>
-          Chiudi
-        </button>
+        {activeSheet === "hcp" && (
+          <>
+            <h3
+              style={{
+                marginTop: 0,
+                marginBottom: "8px",
+                fontSize: "22px",
+                fontWeight: 700
+              }}
+            >
+              Modifica profilo
+            </h3>
+
+            <p
+              style={{
+                color: colors.subtext,
+                fontSize: "14px",
+                marginTop: 0,
+                marginBottom: "14px",
+                lineHeight: 1.4
+              }}
+            >
+              Aggiorna il nome e il tuo HCP.
+            </p>
+
+            <input
+              type="text"
+              value={firstNameDraft}
+              onChange={(e) => setFirstNameDraft(e.target.value)}
+              placeholder="Il tuo nome"
+              style={{
+                width: "100%",
+                padding: "13px 14px",
+                backgroundColor: colors.inputBg,
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: "12px",
+                color: colors.text,
+                boxSizing: "border-box",
+                outline: "none",
+                fontSize: "16px",
+                fontFamily: appFont,
+                marginBottom: "12px"
+              }}
+            />
+
+            <input
+              type="text"
+              inputMode="decimal"
+              value={hcpDraft}
+              onChange={(e) => setHcpDraft(e.target.value)}
+              placeholder="Es. 36"
+              style={{
+                width: "100%",
+                padding: "13px 14px",
+                backgroundColor: colors.inputBg,
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: "12px",
+                color: colors.text,
+                boxSizing: "border-box",
+                outline: "none",
+                fontSize: "16px",
+                fontFamily: appFont
+              }}
+            />
+
+            <button onClick={saveHcp} style={{
+              marginTop: "20px",
+              width: "100%",
+              padding: "13px",
+              backgroundColor: colors.green,
+              border: "none",
+              color: isLight ? "#08351c" : "black",
+              fontWeight: 700,
+              borderRadius: "12px",
+              cursor: "pointer",
+              opacity: 1,
+              fontFamily: appFont,
+              fontSize: "15px"
+            }}>
+              Salva
+            </button>
+
+            <button onClick={closeActiveSheet} style={modalCloseButtonStyle}>
+              Chiudi
+            </button>
+          </>
+        )}
+
+        {activeSheet === "history" && (
+          <>
+            {savedRounds.length === 0 ? (
+              <div
+                style={{
+                  color: colors.subtext,
+                  lineHeight: 1.5,
+                  backgroundColor: colors.cardSecondary,
+                  border: `1px solid ${colors.border}`,
+                  borderRadius: "14px",
+                  padding: "16px"
+                }}
+              >
+                Nessun giro salvato per ora.
+              </div>
+            ) : (
+              savedRounds.map((round) => (
+                <div
+                  key={round.id}
+                  onClick={() => {
+                    setActiveSheet(null);
+                    setSelectedHistoryRound(round);
+                  }}
+                  style={{
+                    backgroundColor: colors.card,
+                    border: `1px solid ${colors.border}`,
+                    borderRadius: "16px",
+                    padding: "18px",
+                    marginBottom: "12px",
+                    cursor: "pointer"
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                      gap: "12px"
+                    }}
+                  >
+                    <div style={{ fontSize: "14px", fontWeight: 700 }}>
+                      {round.savedName}
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteRound(round.id);
+                      }}
+                      style={{
+                        border: "none",
+                        background: "transparent",
+                        color: colors.subtext,
+                        cursor: "pointer",
+                        fontFamily: appFont,
+                        fontSize: "12px",
+                        padding: 0
+                      }}
+                    >
+                      Elimina
+                    </button>
+                  </div>
+                  <div
+                    style={{
+                      marginTop: "4px",
+                      color: colors.subtext,
+                      fontSize: "12px"
+                    }}
+                  >
+                    {round.courseName} • {round.formattedDate}
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "8px",
+                      flexWrap: "wrap",
+                      marginTop: "12px"
+                    }}
+                  >
+                    <div
+                      style={{
+                        padding: "8px 12px",
+                        borderRadius: "999px",
+                        backgroundColor: colors.pillBg,
+                        border: `1px solid ${colors.pillBorder}`,
+                        fontSize: "13px"
+                      }}
+                    >
+                      L {round.grossTotal}
+                    </div>
+                    <div
+                      style={{
+                        padding: "8px 12px",
+                        borderRadius: "999px",
+                        backgroundColor: colors.pillBg,
+                        border: `1px solid ${colors.pillBorder}`,
+                        fontSize: "13px"
+                      }}
+                    >
+                      N {round.netTotal}
+                    </div>
+                    <div
+                      style={{
+                        padding: "8px 12px",
+                        borderRadius: "999px",
+                        backgroundColor: colors.greenDark,
+                        border: `1px solid ${colors.greenBorder}`,
+                        color: colors.green,
+                        fontSize: "13px"
+                      }}
+                    >
+                      S {round.stablefordTotal}
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+
+            <button onClick={closeActiveSheet} style={modalCloseButtonStyle}>
+              Chiudi
+            </button>
+          </>
+        )}
       </div>
     </div>
   ) : null;
+  const hcpEditorModal = null;
+  const globalRoundsHistoryModal = null;
 
   const historyRoundDetailModal = selectedHistoryRound ? (
     <div
@@ -2060,7 +1904,7 @@ function App() {
     typeof document !== "undefined"
       ? createPortal(
           <>
-            {appMenuModal}
+            {sheetModal}
             {globalRoundsHistoryModal}
             {historyRoundDetailModal}
             {hcpEditorModal}
@@ -2826,7 +2670,10 @@ function App() {
 
           <div style={headerRightButtonWrapStyle}>
             <button
-              onClick={() => setShowAppMenu(true)}
+              onClick={() => {
+                setSheetClosing(false);
+                setActiveSheet("menu");
+              }}
               style={headerCircleButtonStyle({ fontSize: "18px" })}
               title="Apri menu"
               aria-label="Apri menu"
@@ -2993,7 +2840,10 @@ function App() {
 
           <div style={headerRightButtonWrapStyle}>
             <button
-              onClick={() => setShowAppMenu(true)}
+              onClick={() => {
+                setSheetClosing(false);
+                setActiveSheet("menu");
+              }}
               style={headerCircleButtonStyle({ fontSize: "18px" })}
               title="Apri menu"
               aria-label="Apri menu"
@@ -3471,7 +3321,10 @@ function App() {
 
           <div style={headerRightButtonWrapStyle}>
             <button
-              onClick={() => setShowAppMenu(true)}
+              onClick={() => {
+                setSheetClosing(false);
+                setActiveSheet("menu");
+              }}
               style={headerCircleButtonStyle({ fontSize: "18px" })}
               title="Apri menu"
               aria-label="Apri menu"
@@ -3597,7 +3450,10 @@ function App() {
 
         <div style={headerRightButtonWrapStyle}>
           <button
-            onClick={() => setShowAppMenu(true)}
+            onClick={() => {
+              setSheetClosing(false);
+              setActiveSheet("menu");
+            }}
             style={headerCircleButtonStyle({ fontSize: "18px" })}
             title="Apri menu"
             aria-label="Apri menu"
