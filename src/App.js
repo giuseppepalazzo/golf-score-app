@@ -315,6 +315,8 @@ function App() {
     };
   }, [colors.bg, colors.text, isLight]);
 
+  const sessionUserId = session?.user?.id || null;
+
   useEffect(() => {
     if (!hasActiveOverlay) return undefined;
 
@@ -419,7 +421,7 @@ function App() {
     return ids;
   }, [session]);
 
-  const loadRounds = useCallback(async () => {
+  const loadRounds = useCallback(async (coursesOverride = []) => {
     if (!supabase || !session?.user) return [];
 
     const { data, error } = await supabase
@@ -435,7 +437,8 @@ function App() {
       savedName: round.saved_name,
       competitionName: round.competition_name,
       courseId: round.course_id,
-      courseName: savedCourses.find((course) => course.id === round.course_id)?.name || "",
+      courseName:
+        coursesOverride.find((course) => course.id === round.course_id)?.name || "",
       createdAt: round.created_at,
       formattedDate: round.formatted_date,
       playerHcp: round.player_hcp,
@@ -451,7 +454,7 @@ function App() {
 
     setSavedRounds(nextRounds);
     return nextRounds;
-  }, [savedCourses, session]);
+  }, [session]);
 
   const loadProfile = useCallback(async () => {
     if (!supabase || !session?.user) return null;
@@ -533,7 +536,7 @@ function App() {
   }, [session]);
 
   useEffect(() => {
-    if (!session?.user) {
+    if (!sessionUserId) {
       setAppReady(false);
       setNeedsOnboarding(false);
       setSavedRounds([]);
@@ -550,14 +553,14 @@ function App() {
 
     const bootstrapAuthenticatedApp = async () => {
       try {
-        await loadCourses();
+        const initialCourses = await loadCourses();
         await migrateLocalCoursesIfNeeded();
-        await loadCourses();
+        const courses = await loadCourses();
         await loadFavorites();
         const profile = await loadProfile();
 
         if (profile) {
-          await loadRounds();
+          await loadRounds(courses.length ? courses : initialCourses);
         } else {
           setSavedRounds([]);
         }
@@ -567,6 +570,7 @@ function App() {
         }
       } catch (error) {
         if (!cancelled) {
+          console.error("Authenticated bootstrap failed", error);
           setAuthError(error.message || "Errore nel caricamento dei dati.");
           setAppReady(false);
         }
@@ -582,7 +586,7 @@ function App() {
     return () => {
       cancelled = true;
     };
-  }, [session, loadCourses, loadFavorites, loadProfile, loadRounds, migrateLocalCoursesIfNeeded]);
+  }, [sessionUserId, loadCourses, loadFavorites, loadProfile, loadRounds, migrateLocalCoursesIfNeeded]);
 
   const coursesWithFavorites = useMemo(
     () =>
@@ -2669,6 +2673,62 @@ function App() {
     );
   }
 
+  if (session && authError && !appReady && !needsOnboarding && !profileLoading) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          backgroundColor: colors.bg,
+          color: colors.text,
+          fontFamily: appFont,
+          padding: "24px",
+          boxSizing: "border-box",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center"
+        }}
+      >
+        <div
+          style={{
+            width: "100%",
+            maxWidth: "420px",
+            backgroundColor: colors.card,
+            border: `1px solid ${colors.border}`,
+            borderRadius: "24px",
+            padding: "24px",
+            boxSizing: "border-box",
+            boxShadow: isLight
+              ? "0 18px 36px rgba(17, 24, 39, 0.08)"
+              : "0 18px 36px rgba(0, 0, 0, 0.26)"
+          }}
+        >
+          <div style={{ fontSize: "24px", fontWeight: 700 }}>C'è un problema nel caricamento</div>
+          <div
+            style={{
+              marginTop: "10px",
+              color: "#d64545",
+              fontSize: "14px",
+              lineHeight: 1.5
+            }}
+          >
+            {authError}
+          </div>
+
+          <button
+            onClick={() => window.location.reload()}
+            style={primaryButtonStyle(true)}
+          >
+            Riprova
+          </button>
+
+          <button onClick={handleLogout} style={secondaryButtonStyle}>
+            Esci
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (session && (profileLoading || !appReady) && !needsOnboarding) {
     return (
       <div
@@ -2709,6 +2769,19 @@ function App() {
           >
             Caricamento in corso...
           </div>
+
+          {authError && (
+            <div
+              style={{
+                marginTop: "12px",
+                color: "#d64545",
+                fontSize: "13px",
+                lineHeight: 1.5
+              }}
+            >
+              {authError}
+            </div>
+          )}
         </div>
       </div>
     );
