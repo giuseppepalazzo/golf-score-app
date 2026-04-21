@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { hasSupabaseConfig, supabase } from "./lib/supabase";
 
 const appFont =
@@ -294,6 +295,9 @@ function App() {
   useEffect(() => {
     const rootElement = document.getElementById("root");
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+    const appleStatusBarMeta = document.querySelector(
+      'meta[name="apple-mobile-web-app-status-bar-style"]'
+    );
 
     document.body.style.margin = "0";
     document.body.style.backgroundColor = colors.bg;
@@ -307,6 +311,12 @@ function App() {
     if (themeColorMeta) {
       themeColorMeta.setAttribute("content", colors.bg);
     }
+    if (appleStatusBarMeta) {
+      appleStatusBarMeta.setAttribute(
+        "content",
+        isLight ? "default" : "black-translucent"
+      );
+    }
 
     return () => {
       document.body.style.margin = "";
@@ -319,7 +329,7 @@ function App() {
         rootElement.style.backgroundColor = "";
       }
     };
-  }, [colors.bg, colors.text]);
+  }, [colors.bg, colors.text, isLight]);
 
   useEffect(() => {
     if (!hasActiveOverlay) return undefined;
@@ -988,7 +998,9 @@ function App() {
     setShowRoundsHistory(false);
 
     if (showAppMenu) {
-      setShowGlobalRoundsHistory(true);
+      flushSync(() => {
+        setShowGlobalRoundsHistory(true);
+      });
       closeAppMenu();
       return;
     }
@@ -1018,8 +1030,10 @@ function App() {
     setHcpDraft(String(userProfile.hcp));
 
     if (showAppMenu) {
-      setHcpEditorClosing(false);
-      setShowHcpEditor(true);
+      flushSync(() => {
+        setHcpEditorClosing(false);
+        setShowHcpEditor(true);
+      });
       closeAppMenu();
       return;
     }
