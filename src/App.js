@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { flushSync } from "react-dom";
+import { createPortal, flushSync } from "react-dom";
 import { hasSupabaseConfig, supabase } from "./lib/supabase";
 
 const appFont =
@@ -2056,6 +2056,19 @@ function App() {
     </div>
   ) : null;
 
+  const overlayPortal =
+    typeof document !== "undefined"
+      ? createPortal(
+          <>
+            {appMenuModal}
+            {globalRoundsHistoryModal}
+            {historyRoundDetailModal}
+            {hcpEditorModal}
+          </>,
+          document.body
+        )
+      : null;
+
   const titleStyle = {
     fontSize: "22px",
     fontWeight: 600,
@@ -2942,10 +2955,7 @@ function App() {
           Inizia giro
         </button>
 
-        {appMenuModal}
-        {globalRoundsHistoryModal}
-        {historyRoundDetailModal}
-        {hcpEditorModal}
+        {overlayPortal}
       </div>
     );
   }
@@ -3422,10 +3432,7 @@ function App() {
           </div>
         )}
 
-        {appMenuModal}
-        {globalRoundsHistoryModal}
-        {historyRoundDetailModal}
-        {hcpEditorModal}
+        {overlayPortal}
 
       </div>
     );
@@ -3543,9 +3550,7 @@ function App() {
           </p>
         </div>
 
-        {appMenuModal}
-        {historyRoundDetailModal}
-        {hcpEditorModal}
+        {overlayPortal}
       </div>
     );
   }
@@ -3692,10 +3697,7 @@ function App() {
         )}
       </div>
 
-      {appMenuModal}
-      {globalRoundsHistoryModal}
-      {historyRoundDetailModal}
-      {hcpEditorModal}
+      {overlayPortal}
 
       {showDialog && (
         <div
