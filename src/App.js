@@ -1021,8 +1021,20 @@ function App() {
     setHcpDraft(String(userProfile.hcp));
     setSheetClosing(false);
     flushSync(() => {
-      setActiveSheet("hcp");
+    setActiveSheet("hcp");
+  });
+  };
+
+  const handleThemeSelection = (nextTheme) => {
+    if (theme === nextTheme) {
+      closeActiveSheet();
+      return;
+    }
+
+    flushSync(() => {
+      setTheme(nextTheme);
     });
+    closeActiveSheet();
   };
 
   const deleteRound = (roundId) => {
@@ -1394,7 +1406,7 @@ function App() {
 
               <div style={{ display: "flex", gap: "8px", marginLeft: "1px" }}>
                 <button
-                  onClick={() => setTheme("light")}
+                  onClick={() => handleThemeSelection("light")}
                   style={{
                     flex: 1,
                     padding: "8px",
@@ -1414,7 +1426,7 @@ function App() {
                 </button>
 
                 <button
-                  onClick={() => setTheme("dark")}
+                  onClick={() => handleThemeSelection("dark")}
                   style={{
                     flex: 1,
                     padding: "8px",
