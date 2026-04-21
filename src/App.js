@@ -20,7 +20,6 @@ const CARD_FAVORITE_SIZE = "40px";
 const CARD_FAVORITE_RADIUS = "20px";
 const SHEET_CLOSE_DURATION = 220;
 const SHEET_OPEN_DURATION = 280;
-const SHEET_SWAP_DELAY = 56;
 
 const stepperButtonStyle = {
   width: "44px",
@@ -108,7 +107,6 @@ function App() {
   const [appMenuTouchStartY, setAppMenuTouchStartY] = useState(null);
   const [hcpEditorClosing, setHcpEditorClosing] = useState(false);
   const [hcpEditorTouchStartY, setHcpEditorTouchStartY] = useState(null);
-  const [pendingHcpEditorOpen, setPendingHcpEditorOpen] = useState(false);
   const [showGlobalRoundsHistory, setShowGlobalRoundsHistory] = useState(false);
   const [globalRoundsHistoryTouchStartY, setGlobalRoundsHistoryTouchStartY] = useState(null);
   const [selectedHistoryRound, setSelectedHistoryRound] = useState(null);
@@ -195,7 +193,7 @@ function App() {
       greenBorder: isLight ? "#b8e7c8" : "#244233",
       greenManualBg: isLight ? "#e6f8ec" : "#1b3022",
       greenManualBorder: isLight ? "#7cdb9f" : "#52d88b",
-      overlay: isLight ? "rgba(245, 245, 243, 0.64)" : "rgba(0, 0, 0, 0.52)"
+      overlay: isLight ? "rgba(245, 245, 243, 0.60)" : "rgba(0, 0, 0, 0.46)"
     }),
     [isLight]
   );
@@ -990,10 +988,8 @@ function App() {
     setShowRoundsHistory(false);
 
     if (showAppMenu) {
+      setShowGlobalRoundsHistory(true);
       closeAppMenu();
-      window.setTimeout(() => {
-        setShowGlobalRoundsHistory(true);
-      }, SHEET_SWAP_DELAY);
       return;
     }
 
@@ -1022,7 +1018,8 @@ function App() {
     setHcpDraft(String(userProfile.hcp));
 
     if (showAppMenu) {
-      setPendingHcpEditorOpen(true);
+      setHcpEditorClosing(false);
+      setShowHcpEditor(true);
       closeAppMenu();
       return;
     }
@@ -1333,20 +1330,6 @@ function App() {
       setHistoryRoundDetailTouchStartY(null);
     }
   };
-
-  useEffect(() => {
-    if (!pendingHcpEditorOpen || showAppMenu || appMenuClosing) return;
-
-    const timeoutId = window.setTimeout(() => {
-      setHcpEditorClosing(false);
-      setShowHcpEditor(true);
-      setPendingHcpEditorOpen(false);
-    }, SHEET_SWAP_DELAY);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
-  }, [pendingHcpEditorOpen, showAppMenu, appMenuClosing]);
 
   const appMenuModal = showAppMenu ? (
     <div
