@@ -2636,6 +2636,7 @@ function App() {
                   name="otpCode"
                   autoComplete="one-time-code"
                   inputMode="numeric"
+                  pattern="[0-9]*"
                   value={otpCode}
                   onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
                   placeholder="Es. 123456"
