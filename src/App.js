@@ -14,6 +14,7 @@ const appFont =
 const STORAGE_KEY = "golf-score-app-courses-v1";
 const THEME_STORAGE_KEY = "golf-score-app-theme-v1";
 const COURSES_MIGRATION_KEY = "golf-score-app-courses-migrated-v1";
+const LAST_LOGIN_EMAIL_STORAGE_KEY = "stablr:lastLoginEmail";
 const MAX_SAVED_ROUNDS = 100;
 const SCREEN_HORIZONTAL_PADDING = "16px";
 const CARD_ROW_HORIZONTAL_PADDING = "12px";
@@ -139,6 +140,7 @@ function App() {
   const [otpCode, setOtpCode] = useState("");
   const [authError, setAuthError] = useState("");
   const [authMessage, setAuthMessage] = useState("");
+  const [hasSavedLoginEmail, setHasSavedLoginEmail] = useState(false);
   const [courseSaveError, setCourseSaveError] = useState("");
   const [courseSaveLoading, setCourseSaveLoading] = useState(false);
   const [courseReportTarget, setCourseReportTarget] = useState(null);
@@ -362,6 +364,20 @@ function App() {
   useEffect(() => {
     localStorage.setItem(THEME_STORAGE_KEY, theme);
   }, [theme]);
+
+  useEffect(() => {
+    try {
+      const savedEmail = localStorage.getItem(LAST_LOGIN_EMAIL_STORAGE_KEY) || "";
+      if (savedEmail) {
+        setAuthForm({
+          email: savedEmail
+        });
+        setHasSavedLoginEmail(true);
+      }
+    } catch (error) {
+      setHasSavedLoginEmail(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (otpCooldownSeconds <= 0) return undefined;
@@ -1419,6 +1435,13 @@ function App() {
       setAuthError(getFriendlyAuthErrorMessage(error.message));
       setAuthSubmitting(false);
       return;
+    }
+
+    try {
+      localStorage.setItem(LAST_LOGIN_EMAIL_STORAGE_KEY, email);
+      setHasSavedLoginEmail(true);
+    } catch (storageError) {
+      setHasSavedLoginEmail(false);
     }
 
     setAuthMessage("Controlla la tua email e inserisci il codice ricevuto.");
@@ -2625,6 +2648,35 @@ function App() {
                     fontFamily: appFont
                   }}
                 />
+
+                {hasSavedLoginEmail && (
+                  <button
+                    onClick={() => {
+                      try {
+                        localStorage.removeItem(LAST_LOGIN_EMAIL_STORAGE_KEY);
+                      } catch (error) {
+                        // Ignore storage cleanup errors.
+                      }
+
+                      setAuthForm({
+                        email: ""
+                      });
+                      setHasSavedLoginEmail(false);
+                    }}
+                    style={{
+                      marginTop: "10px",
+                      border: "none",
+                      background: "transparent",
+                      color: colors.subtext,
+                      fontSize: "12px",
+                      padding: 0,
+                      cursor: "pointer",
+                      fontFamily: appFont
+                    }}
+                  >
+                    Usa un'altra email
+                  </button>
+                )}
               </div>
             </>
           ) : (
