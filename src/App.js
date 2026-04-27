@@ -1551,7 +1551,9 @@ function App() {
       await supabase.auth.updateUser({
         data: {
           ...(session.user.user_metadata || {}),
-          player_name: cleanName
+          player_name: cleanName,
+          full_name: cleanName,
+          name: cleanName
         }
       });
     }
@@ -1602,7 +1604,9 @@ function App() {
     await supabase.auth.updateUser({
       data: {
         ...(session.user.user_metadata || {}),
-        player_name: cleanName
+        player_name: cleanName,
+        full_name: cleanName,
+        name: cleanName
       }
     });
 
