@@ -108,7 +108,7 @@ function App() {
 
   const [manualReceivedShots, setManualReceivedShots] = useState({});
 
-  const [firstNameDraft, setFirstNameDraft] = useState("");
+  const [playerNameDraft, setPlayerNameDraft] = useState("");
   const [hcpDraft, setHcpDraft] = useState("");
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -134,7 +134,7 @@ function App() {
     email: ""
   });
   const [onboardingForm, setOnboardingForm] = useState({
-    firstName: "",
+    playerName: "",
     hcp: ""
   });
   const [otpCode, setOtpCode] = useState("");
@@ -160,7 +160,7 @@ function App() {
   });
 
   const [userProfile, setUserProfile] = useState({
-    firstName: "",
+    playerName: "",
     hcp: 36,
     role: "user"
   });
@@ -515,7 +515,7 @@ function App() {
     if (!data) {
       setNeedsOnboarding(true);
       setUserProfile({
-        firstName: "",
+        playerName: "",
         hcp: 36,
         role: "user"
       });
@@ -524,7 +524,7 @@ function App() {
     }
 
     setUserProfile({
-      firstName: data.first_name || "",
+      playerName: data.player_name || "",
       hcp:
         typeof data.hcp === "number" || typeof data.hcp === "string"
           ? Number(Number(data.hcp).toFixed(1))
@@ -585,7 +585,7 @@ function App() {
       setSavedRounds([]);
       setFavoriteCourseIds([]);
       setUserProfile({
-        firstName: "",
+        playerName: "",
         hcp: 36,
         role: "user"
       });
@@ -1347,7 +1347,7 @@ function App() {
   };
 
   const openHcpEditor = () => {
-    setFirstNameDraft(String(userProfile.firstName || ""));
+    setPlayerNameDraft(String(userProfile.playerName || ""));
     setHcpDraft(String(userProfile.hcp));
     setSheetClosing(false);
     flushSync(() => {
@@ -1501,7 +1501,7 @@ function App() {
       email: emailToKeep
     });
     setOnboardingForm({
-      firstName: "",
+      playerName: "",
       hcp: ""
     });
     setAuthStep("request");
@@ -1520,7 +1520,7 @@ function App() {
   };
 
   const saveHcp = async () => {
-    const cleanName = firstNameDraft.trim();
+    const cleanName = playerNameDraft.trim();
     const cleanValue = String(hcpDraft).replace(",", ".").trim();
     const numeric = Number(cleanValue);
 
@@ -1528,9 +1528,8 @@ function App() {
 
     if (supabase && session?.user) {
       const nextProfile = {
-        first_name: cleanName,
-        hcp: Number(numeric.toFixed(1)),
-        updated_at: new Date().toISOString()
+        player_name: cleanName,
+        hcp: Number(numeric.toFixed(1))
       };
 
       const { error } = await supabase
@@ -1545,14 +1544,14 @@ function App() {
 
       setUserProfile((prev) => ({
         ...prev,
-        firstName: cleanName,
+        playerName: cleanName,
         hcp: Number(numeric.toFixed(1))
       }));
 
       await supabase.auth.updateUser({
         data: {
           ...(session.user.user_metadata || {}),
-          firstName: cleanName
+          playerName: cleanName
         }
       });
     }
@@ -1563,7 +1562,7 @@ function App() {
   const handleOnboardingSubmit = async () => {
     if (!supabase || !session?.user) return;
 
-    const cleanName = onboardingForm.firstName.trim();
+    const cleanName = onboardingForm.playerName.trim();
     const cleanHcpValue = String(onboardingForm.hcp).replace(",", ".").trim();
     const numericHcp = cleanHcpValue === "" ? null : Number(cleanHcpValue);
 
@@ -1583,7 +1582,7 @@ function App() {
     const nextHcp = numericHcp === null ? 36 : Number(numericHcp.toFixed(1));
     const { error } = await supabase.from("profiles").insert({
       id: session.user.id,
-      first_name: cleanName,
+      player_name: cleanName,
       hcp: nextHcp,
       role: "user"
     });
@@ -1595,7 +1594,7 @@ function App() {
     }
 
     setUserProfile({
-      firstName: cleanName,
+      playerName: cleanName,
       hcp: nextHcp,
       role: "user"
     });
@@ -1662,7 +1661,7 @@ function App() {
     window.setTimeout(() => {
       setActiveSheet(null);
       setSheetClosing(false);
-      setFirstNameDraft("");
+      setPlayerNameDraft("");
       setHcpDraft("");
     }, SHEET_CLOSE_DURATION);
   };
@@ -1959,8 +1958,8 @@ function App() {
 
             <input
               type="text"
-              value={firstNameDraft}
-              onChange={(e) => setFirstNameDraft(e.target.value)}
+              value={playerNameDraft}
+              onChange={(e) => setPlayerNameDraft(e.target.value)}
               placeholder="Il tuo nome"
               style={{
                 width: "100%",
@@ -2908,11 +2907,11 @@ function App() {
             <input
               type="text"
               autoComplete="given-name"
-              value={onboardingForm.firstName}
+              value={onboardingForm.playerName}
               onChange={(e) =>
                 setOnboardingForm((prev) => ({
                   ...prev,
-                  firstName: e.target.value
+                  playerName: e.target.value
                 }))
               }
               placeholder="Il tuo nome sullo scorecard"
@@ -3650,7 +3649,7 @@ function App() {
               fontSize: "13px"
             }}
           >
-            {userProfile.firstName} • HCP{" "}
+            {userProfile.playerName} • HCP{" "}
             <span style={getHcpValueFeedbackStyle(hcpHighlightActive, colors.subtext)}>
               {userProfile.hcp}
             </span>
@@ -4242,7 +4241,7 @@ function App() {
 
       <div style={homeIdentityRowStyle}>
         <div style={homeHeaderIdentityStyle}>
-          <button onClick={openHcpEditor} style={homeNameButtonStyle} title={userProfile.firstName}>
+          <button onClick={openHcpEditor} style={homeNameButtonStyle} title={userProfile.playerName}>
             <div
               style={{
                 fontSize: "24px",
@@ -4254,7 +4253,7 @@ function App() {
                 whiteSpace: "nowrap"
               }}
             >
-              {userProfile.firstName}
+              {userProfile.playerName}
             </div>
           </button>
         </div>

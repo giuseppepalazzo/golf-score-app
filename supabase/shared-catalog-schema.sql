@@ -12,12 +12,32 @@ $$;
 
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
-  first_name text,
+  player_name text,
   hcp numeric,
   role text not null default 'user' check (role in ('user', 'admin')),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+do $$
+begin
+  if exists (
+    select 1
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'profiles'
+      and column_name = 'first_name'
+  ) and not exists (
+    select 1
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'profiles'
+      and column_name = 'player_name'
+  ) then
+    alter table public.profiles rename column first_name to player_name;
+  end if;
+end
+$$;
 
 create table if not exists public.courses (
   id uuid primary key default gen_random_uuid(),
