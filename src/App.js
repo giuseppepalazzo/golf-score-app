@@ -1551,7 +1551,7 @@ function App() {
       await supabase.auth.updateUser({
         data: {
           ...(session.user.user_metadata || {}),
-          playerName: cleanName
+          player_name: cleanName
         }
       });
     }
@@ -1598,6 +1598,14 @@ function App() {
       hcp: nextHcp,
       role: "user"
     });
+
+    await supabase.auth.updateUser({
+      data: {
+        ...(session.user.user_metadata || {}),
+        player_name: cleanName
+      }
+    });
+
     setNeedsOnboarding(false);
     setAppReady(true);
     setAuthSubmitting(false);
