@@ -140,7 +140,6 @@ function App() {
   const [otpCode, setOtpCode] = useState("");
   const [authError, setAuthError] = useState("");
   const [authMessage, setAuthMessage] = useState("");
-  const [hasSavedLoginEmail, setHasSavedLoginEmail] = useState(false);
   const [courseSaveError, setCourseSaveError] = useState("");
   const [courseSaveLoading, setCourseSaveLoading] = useState(false);
   const [courseReportTarget, setCourseReportTarget] = useState(null);
@@ -372,11 +371,8 @@ function App() {
         setAuthForm({
           email: savedEmail
         });
-        setHasSavedLoginEmail(true);
       }
-    } catch (error) {
-      setHasSavedLoginEmail(false);
-    }
+    } catch (error) {}
   }, []);
 
   useEffect(() => {
@@ -1439,10 +1435,7 @@ function App() {
 
     try {
       localStorage.setItem(LAST_LOGIN_EMAIL_STORAGE_KEY, email);
-      setHasSavedLoginEmail(true);
-    } catch (storageError) {
-      setHasSavedLoginEmail(false);
-    }
+    } catch (storageError) {}
 
     setAuthMessage("Controlla la tua email e inserisci il codice ricevuto.");
     setOtpCode("");
@@ -2648,35 +2641,6 @@ function App() {
                     fontFamily: appFont
                   }}
                 />
-
-                {hasSavedLoginEmail && (
-                  <button
-                    onClick={() => {
-                      try {
-                        localStorage.removeItem(LAST_LOGIN_EMAIL_STORAGE_KEY);
-                      } catch (error) {
-                        // Ignore storage cleanup errors.
-                      }
-
-                      setAuthForm({
-                        email: ""
-                      });
-                      setHasSavedLoginEmail(false);
-                    }}
-                    style={{
-                      marginTop: "10px",
-                      border: "none",
-                      background: "transparent",
-                      color: colors.subtext,
-                      fontSize: "12px",
-                      padding: 0,
-                      cursor: "pointer",
-                      fontFamily: appFont
-                    }}
-                  >
-                    Usa un'altra email
-                  </button>
-                )}
               </div>
             </>
           ) : (
