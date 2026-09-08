@@ -1212,3 +1212,19 @@ SEGNO22:
   - club giocabili: 180;
   - Stablr Approved / verdi: 80;
   - playable review / arancioni: 100.
+
+SEGNO23:
+- completato batch 181-200 con controllo di terzo livello esteso a HTML, pagine buca-per-buca, immagini e PDF ufficiali;
+- nuovo builder: `scripts/gesgolf/build-import-batch-2026-09-08.mjs`;
+- 20 club importati: `Acquabona`, `Alta Badia`, `Appiano`, `Carezza`, `Bergamo Albenza`, `Botanic Sa Cuba`, `Casalunga`, `Cervia`, `Cosmopolitan`, `Florinas`, `Forte Marmi`, `Franciacorta`, `Gardagolf`, `Ggz - Zerman`, `Hermitage`, `Lauri`, `Livorno`, `Marigola`, `Metaponto`, `Mirabella`;
+- il contenitore FIG `Appiano - Golf & Country` e' stato separato nei due club fisici `Appiano` e `Carezza`; `Mirasole` non e' stato duplicato perche' gia' gestito dentro `Rovedine`;
+- verdi / Stablr Approved nel lotto: 7 (`Acquabona`, `Cervia`, `Cosmopolitan`, `Florinas`, `Forte Marmi`, `Franciacorta`, `Gardagolf`);
+- arancioni / playable review nel lotto: 13 (`Alta Badia`, `Appiano`, `Carezza`, `Bergamo Albenza`, `Botanic Sa Cuba`, `Casalunga`, `Ggz - Zerman`, `Hermitage`, `Lauri`, `Livorno`, `Marigola`, `Metaponto`, `Mirabella`);
+- validazione normalizzata completata su tutti i 20 file;
+- seed Supabase completato senza errori;
+- audit post-seed: tutti i 20 club presenti, tutte le route attive hanno il numero corretto di buche e almeno un tee; nessuna anomalia rilevata;
+- conteggio Supabase post-seed:
+  - record club DB: 200;
+  - Stablr Approved / verdi: 91;
+  - playable review / arancioni: 109;
+- report dettagliato: `data/gesgolf/reports/third-level-audit-batch-20-2026-09-08.md`.
