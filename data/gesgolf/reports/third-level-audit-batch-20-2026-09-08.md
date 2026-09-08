@@ -28,7 +28,7 @@ Metodo applicato:
 | Lauri | arancione | Il sito ufficiale non pubblica la scorecard completa e le due scorecard secondarie reperite non concordano. |
 | Livorno | arancione | FIG conferma 9 buche Par 28; PAR/HCP provengono da scorecard secondaria perché manca una matrice ufficiale accessibile. |
 | Marigola | arancione | FIG corrente indica Par 28 mentre una scorecard secondaria conserva Par 27; la buca 6 è trattata Par 4 per coerenza col totale FIG, da confermare. |
-| Metaponto | arancione | Mappa ufficiale verificata per struttura/PAR; due scorecard secondarie concordano sull’HCP, ma manca la conferma ufficiale completa. |
+| Metaponto | verde | Revisione successiva: il materiale dettagliato ufficiale espone l'intera sequenza PAR/HCP, identica al percorso FIG/Stablr 18 buche Par 72; promosse anche Prime/Seconde Nove come segmenti deterministici. |
 | Mirabella | arancione | PDF ufficiale controllato per nove buche fisiche Par 31 e due giri; HCP disponibile solo su scorecard secondaria. |
 
 ## Controlli sui dati generati

@@ -11,7 +11,7 @@
     "name_normalized": "metaponto",
     "city": null,
     "country": "Italia",
-    "data_status": "needs_review",
+    "data_status": "verified",
     "source_type": "fig_import",
     "is_complex": false,
     "playable": true,
@@ -22,13 +22,14 @@
       "kind": "club",
       "official_catalog": "fig",
       "original_fig_club_name": "Metaponto",
-      "verification_status": "playable_review",
-      "website_evidence_status": "deep_review_completed_with_open_issue",
+      "verification_status": "verified",
+      "stablr_approved": true,
+      "website_evidence_status": "verified",
       "official_course_links": [
         "https://metapontogolf.it/it/golf/percorso-003.html",
-        "https://18birdies.com/golf-courses/club/144c9380-2077-11e8-aa4b-0680a328ea36/metaponto-golf-club"
+        "https://www.metapontogolf.it/gestione.php?fileid=58&id=download"
       ],
-      "verification_notes": "La mappa ufficiale è stata estratta e verificata per PAR/struttura; HCP incrociato su due scorecard secondarie concordanti, quindi resta in revisione.",
+      "verification_notes": "Il percorso dettagliato ufficiale espone PAR/HCP per tutte le 18 buche: la matrice coincide integralmente con il percorso FIG Par 72 e con i segmenti Prime/Seconde Nove.",
       "physical_hole_count": 18,
       "import_profile": "fig_official_web_third_level",
       "product_rule": "Pubblicare solo i percorsi esplicitamente mappati; escludere duplicati, provvisori e varianti non confermate."
@@ -47,7 +48,7 @@
       "source_payload": {
         "kind": "route",
         "official_catalog": "fig",
-        "hole_by_hole_source": "official_plus_secondary_review",
+        "hole_by_hole_source": "official_club_evidence",
         "fig_display_name": "18 buche",
         "round_variant": {
           "holes_count": 18,
@@ -56,9 +57,9 @@
         },
         "evidence_links": [
           "https://metapontogolf.it/it/golf/percorso-003.html",
-          "https://18birdies.com/golf-courses/club/144c9380-2077-11e8-aa4b-0680a328ea36/metaponto-golf-club"
+          "https://www.metapontogolf.it/gestione.php?fileid=58&id=download"
         ],
-        "evidence_note": "La mappa ufficiale è stata estratta e verificata per PAR/struttura; HCP incrociato su due scorecard secondarie concordanti, quindi resta in revisione."
+        "evidence_note": "Il percorso dettagliato ufficiale espone PAR/HCP per tutte le 18 buche: la matrice coincide integralmente con il percorso FIG Par 72 e con i segmenti Prime/Seconde Nove."
       },
       "holes": [
         {
@@ -299,7 +300,7 @@
       "source_payload": {
         "kind": "route",
         "official_catalog": "fig",
-        "hole_by_hole_source": "official_plus_secondary_review",
+        "hole_by_hole_source": "official_club_evidence",
         "fig_display_name": "Prime Nove",
         "round_variant": {
           "holes_count": 9,
@@ -308,9 +309,9 @@
         },
         "evidence_links": [
           "https://metapontogolf.it/it/golf/percorso-003.html",
-          "https://18birdies.com/golf-courses/club/144c9380-2077-11e8-aa4b-0680a328ea36/metaponto-golf-club"
+          "https://www.metapontogolf.it/gestione.php?fileid=58&id=download"
         ],
-        "evidence_note": "La mappa ufficiale è stata estratta e verificata per PAR/struttura; HCP incrociato su due scorecard secondarie concordanti, quindi resta in revisione."
+        "evidence_note": "Il percorso dettagliato ufficiale espone PAR/HCP per tutte le 18 buche: la matrice coincide integralmente con il percorso FIG Par 72 e con i segmenti Prime/Seconde Nove."
       },
       "holes": [
         {
@@ -459,7 +460,7 @@
       "source_payload": {
         "kind": "route",
         "official_catalog": "fig",
-        "hole_by_hole_source": "official_plus_secondary_review",
+        "hole_by_hole_source": "official_club_evidence",
         "fig_display_name": "Seconde Nove",
         "round_variant": {
           "holes_count": 9,
@@ -468,9 +469,9 @@
         },
         "evidence_links": [
           "https://metapontogolf.it/it/golf/percorso-003.html",
-          "https://18birdies.com/golf-courses/club/144c9380-2077-11e8-aa4b-0680a328ea36/metaponto-golf-club"
+          "https://www.metapontogolf.it/gestione.php?fileid=58&id=download"
         ],
-        "evidence_note": "La mappa ufficiale è stata estratta e verificata per PAR/struttura; HCP incrociato su due scorecard secondarie concordanti, quindi resta in revisione."
+        "evidence_note": "Il percorso dettagliato ufficiale espone PAR/HCP per tutte le 18 buche: la matrice coincide integralmente con il percorso FIG Par 72 e con i segmenti Prime/Seconde Nove."
       },
       "holes": [
         {

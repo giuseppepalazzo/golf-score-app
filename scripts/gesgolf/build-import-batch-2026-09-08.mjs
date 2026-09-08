@@ -254,9 +254,9 @@ const CLUBS = [
     ]
   },
   {
-    figName: "Metaponto", physicalHoleCount: 18,
-    links: ["https://metapontogolf.it/it/golf/percorso-003.html", "https://18birdies.com/golf-courses/club/144c9380-2077-11e8-aa4b-0680a328ea36/metaponto-golf-club"],
-    note: "La mappa ufficiale è stata estratta e verificata per PAR/struttura; HCP incrociato su due scorecard secondarie concordanti, quindi resta in revisione.",
+    figName: "Metaponto", physicalHoleCount: 18, verified: true,
+    links: ["https://metapontogolf.it/it/golf/percorso-003.html", "https://www.metapontogolf.it/gestione.php?fileid=58&id=download"],
+    note: "Il percorso dettagliato ufficiale espone PAR/HCP per tutte le 18 buche: la matrice coincide integralmente con il percorso FIG Par 72 e con i segmenti Prime/Seconde Nove.",
     routes: [
       ["18 buche", "18 Buche", M.metaponto18],
       ["Prime Nove", "Prime Nove", segment(M.metaponto18, 0, 9)],

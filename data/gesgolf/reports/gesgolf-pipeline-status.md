@@ -1228,3 +1228,11 @@ SEGNO23:
   - Stablr Approved / verdi: 91;
   - playable review / arancioni: 109;
 - report dettagliato: `data/gesgolf/reports/third-level-audit-batch-20-2026-09-08.md`.
+
+SEGNO24:
+- completata revisione mirata dei 13 club arancioni del batch 181-200 usando le evidenze aggiuntive fornite e i dati FIG/GesGolf gia' presenti, senza nuova ricerca web generale;
+- `Metaponto` promosso a `Stablr Approved`: il percorso dettagliato ufficiale espone la matrice PAR/HCP completa, identica alla route FIG/Stablr `18 buche` Par 72; `Prime Nove` e `Seconde Nove` sono segmenti deterministici della stessa matrice;
+- restano arancioni: `Appiano`, `Carezza`, `Bergamo Albenza`, `Ggz - Zerman`, `Lauri`, `Livorno`, `Marigola`, `Mirabella`, `Alta Badia`, `Hermitage`, `Casalunga`, `Botanic Sa Cuba`;
+- `Casalunga` resta in review esplicita: due coppie di route GesGolf 2025 con Par 70/35 presentano matrici hole-by-hole discordanti e manca una scorecard ufficiale risolutiva;
+- nessun caso block: FIG conferma i percorsi esposti, ma le incongruenze impediscono la certificazione;
+- report dettagliato: `data/gesgolf/reports/third-level-rereview-orange-13-2026-09-08.md`.
