@@ -1236,3 +1236,10 @@ SEGNO24:
 - `Casalunga` resta in review esplicita: due coppie di route GesGolf 2025 con Par 70/35 presentano matrici hole-by-hole discordanti e manca una scorecard ufficiale risolutiva;
 - nessun caso block: FIG conferma i percorsi esposti, ma le incongruenze impediscono la certificazione;
 - report dettagliato: `data/gesgolf/reports/third-level-rereview-orange-13-2026-09-08.md`.
+
+SEGNO25:
+- riesame di cross-check delle 12 evidenze aggiuntive sui club ancora arancioni, documentato in `data/gesgolf/reports/third-level-rereview-orange-12-crosscheck-2026-09-09.md`;
+- nessuna promozione aggiuntiva: le scorecard esterne confermano Livorno e Mirabella soltanto come fonti secondarie, mentre Appiano, Carezza, Ggz - Zerman, Lauri, Marigola e Casalunga presentano mismatch materiale con i playable course FIG/importati;
+- Bergamo Albenza: Blu, Giallo, Rosso, Blu-Giallo e Rosso-Blu sono corroborati dalle matrici ufficiali, ma Rosso-Giallo conserva una trasformazione HCP non esposta esplicitamente; il club resta `playable_review` fino alla certificazione di tutte le route attive;
+- Casalunga resta review esplicita: la scorecard Hole19 9/36 converge con il vecchio GesGolf Augusta 18/72, non con il playable course FIG New Storm 2025 9/35 e 18/70;
+- nessuna matrice di raw/normalizzato GesGolf attribuibile ai restanti dieci club e' presente nel repository; gli import esistenti non sono trattati come seconda fonte indipendente.
